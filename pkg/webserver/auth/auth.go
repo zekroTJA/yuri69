@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -74,7 +73,6 @@ func (t AuthHandler) HandleLogin(ctx *routing.Context, userID string) error {
 
 func (t AuthHandler) HandleRefresh(ctx *routing.Context) error {
 	cookie, err := ctx.Request.Cookie("refreshToken")
-	fmt.Println(err, cookie)
 	if err == http.ErrNoCookie {
 		return ctx.WriteWithStatus(nil, http.StatusUnauthorized)
 	}

@@ -83,7 +83,7 @@ func main() {
 	}()
 
 	// --- Setup Player Manager ---
-	mgr, err := player.NewManager(dc, st, ll)
+	mgr, err := player.NewPlayer(cfg.Player, dc, st, ll)
 	if err != nil {
 		logrus.WithError(err).Fatal("Manager creation failed")
 	}
@@ -95,8 +95,9 @@ func main() {
 	}()
 	logrus.Info("Player manager initialized")
 
-	time.Sleep(3 * time.Second)
 	fmt.Println(mgr.Play("526196711962705925", "959799153754509312", "mothers"))
+	time.Sleep(3 * time.Second)
+	mgr.Destroy("526196711962705925")
 
 	// --- Setup Web Server ---
 	ws, err := webserver.New(cfg.Webserver)

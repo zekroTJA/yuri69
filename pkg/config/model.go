@@ -5,6 +5,7 @@ import (
 
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/lavalink"
+	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/storage"
 	"github.com/zekrotja/yuri69/pkg/webserver"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
@@ -31,4 +32,5 @@ type Config struct {
 	Webserver webserver.WebserverConfig
 	Discord   discord.DiscordConfig
 	Lavalink  lavalink.LavalinkConfig
+	Player    player.PlayerConfig
 }

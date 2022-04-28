@@ -17,6 +17,8 @@ type File struct {
 	basePath string
 }
 
+var _ IStorage = (*File)(nil)
+
 func NewFile(c FileConfig) (*File, error) {
 	return &File{basePath: c.BasePath}, nil
 }

@@ -26,6 +26,8 @@ type Minio struct {
 	location string
 }
 
+var _ IStorage = (*Minio)(nil)
+
 func NewMinio(c MinioConfig) (*Minio, error) {
 	var t Minio
 	var err error
