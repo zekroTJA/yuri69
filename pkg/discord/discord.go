@@ -11,6 +11,7 @@ func New(c DiscordConfig) (*Discord, error) {
 	var err error
 
 	t.session, err = discordgo.New("Bot " + c.Token)
+	t.session.State.TrackVoice = true
 	if err != nil {
 		return nil, err
 	}

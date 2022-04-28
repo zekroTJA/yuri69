@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/config"
 	"github.com/zekrotja/yuri69/pkg/debug"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/lavalink"
+	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/storage"
 	"github.com/zekrotja/yuri69/pkg/util"
 	"github.com/zekrotja/yuri69/pkg/webserver"
@@ -69,15 +72,31 @@ func main() {
 	}()
 
 	// --- Setup Lavalink Connection ---
-	lv, err := lavalink.New(cfg.Lavalink, dc)
+	ll, err := lavalink.New(cfg.Lavalink, dc)
 	if err != nil {
 		logrus.WithError(err).Fatal("Lavalink connection failed")
 	}
 	logrus.Info("Lavalink connection initialized")
 	defer func() {
 		logrus.Info("Shutting down Lavalink connection ...")
-		lv.Close()
+		ll.Close()
 	}()
+
+	// --- Setup Player Manager ---
+	mgr, err := player.NewManager(dc, st, ll)
+	if err != nil {
+		logrus.WithError(err).Fatal("Manager creation failed")
+	}
+	go func() {
+		err = mgr.ListenAndServeBlocking()
+		if err != nil {
+			logrus.WithError(err).Fatal("Manager file provider startup failed")
+		}
+	}()
+	logrus.Info("Player manager initialized")
+
+	time.Sleep(3 * time.Second)
+	fmt.Println(mgr.Play("526196711962705925", "959799153754509312", "mothers"))
 
 	// --- Setup Web Server ---
 	ws, err := webserver.New(cfg.Webserver)
@@ -97,5 +116,5 @@ func main() {
 	util.Block(context.Background())
 
 	_ = st
-	_ = lv
+	_ = ll
 }

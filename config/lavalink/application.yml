@@ -45,4 +45,4 @@ logging:
 
   level:
     root: INFO
-    lavalink: INFO
+    lavalink: DEBUG

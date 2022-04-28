@@ -1,8 +1,8 @@
 package lavalink
 
 import (
+	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gompus/snowflake"
@@ -16,8 +16,6 @@ type Lavalink struct {
 	dc     *discord.Discord
 	client *waterlink.Client
 	conn   *waterlink.Connection
-
-	players sync.Map
 }
 
 func New(c LavalinkConfig, dc *discord.Discord) (*Lavalink, error) {
@@ -28,11 +26,16 @@ func New(c LavalinkConfig, dc *discord.Discord) (*Lavalink, error) {
 
 	creds := waterlink.Credentials{
 		Authorization: c.Password,
-		// UserID:        snowflake.MustParse(t.dc.Session().State.User.ID),
+		UserID:        snowflake.MustParse(t.dc.Session().State.User.ID),
+		ResumeKey:     "yuri69session",
 	}
-	opts := waterlink.ConnectionOptions{}
+	opts := waterlink.ConnectionOptions{
+		HandleEventError: func(err error) {
+			logrus.WithError(err).Error("Lavalink error")
+		},
+	}
 
-	t.client, err = waterlink.NewClient(c.Address, creds)
+	t.client, err = waterlink.NewClient(fmt.Sprintf("http://%s", c.Address), creds)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +70,27 @@ func (t *Lavalink) Play(guildID, ident string) error {
 		return err
 	}
 
-	g := t.conn.Guild(sf)
-	return g.PlayTrack(tracks.Tracks[0])
+	if len(tracks.Tracks) == 0 {
+		return errors.New("no tracks have been loaded")
+	}
+
+	return t.conn.Guild(sf).PlayTrack(tracks.Tracks[0])
+}
+
+func (t *Lavalink) Destroy(guildID string) error {
+	sf, err := snowflake.Parse(guildID)
+	if err != nil {
+		return err
+	}
+
+	return t.conn.Guild(sf).Destroy()
 }
 
 func (t *Lavalink) handleVoiceServerUpdate(s *discordgo.Session, e *discordgo.VoiceServerUpdate) {
-	logrus.WithField("guild", e.GuildID).Debugf("Update voice server: %+v", e)
+	logrus.
+		WithField("guild", e.GuildID).
+		WithField("sessionID", s.State.SessionID).
+		Debugf("Update voice server: %+v", e)
 
 	g := t.conn.Guild(snowflake.MustParse(e.GuildID))
 	err := g.UpdateVoice(s.State.SessionID, e.Token, e.Endpoint)
@@ -80,6 +98,7 @@ func (t *Lavalink) handleVoiceServerUpdate(s *discordgo.Session, e *discordgo.Vo
 		logrus.
 			WithError(err).
 			WithField("guild", e.GuildID).
+			WithField("sessionID", s.State.SessionID).
 			Error("Voice server update failed")
 	}
 }

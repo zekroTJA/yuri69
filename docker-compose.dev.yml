@@ -6,3 +6,5 @@ services:
       - "2333:2333"
     volumes:
       - "./config/lavalink/application.yml:/opt/Lavalink/application.yml:ro"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
