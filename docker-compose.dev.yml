@@ -1,0 +1,8 @@
+services:
+  lavalink:
+    container_name: lavalink
+    image: fredboat/lavalink:master
+    ports:
+      - "2333:2333"
+    volumes:
+      - "./config/lavalink/application.yml:/opt/Lavalink/application.yml:ro"

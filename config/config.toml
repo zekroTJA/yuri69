@@ -1,0 +1,26 @@
+[Storage]
+type = "file"
+
+[Storage.File]
+basepath = "data"
+
+[Discord]
+token = ""
+ownerid = "221905671296253953"
+
+[Webserver]
+bindaddress = "localhost:8080"
+publicaddress = "http://localhost:8080"
+
+[Webserver.DiscordOAuth]
+clientid = ""
+clientsecret = ""
+
+[Webserver.Auth]
+refreshtokenkey = ""
+accesstokenkey = ""
+accesstokenlifetime = "10m"
+
+[Lavalink]
+address = "localhost:2333"
+password = ""
