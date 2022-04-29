@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strings"
 
@@ -109,6 +110,7 @@ func (t *Nuts) GetSound(uid string) (Sound, error) {
 	err := t.db.View(func(tx *nutsdb.Tx) error {
 		var err error
 		e, err = tx.Get(bucketSounds, []byte(uid))
+		fmt.Println(err)
 		return t.wrapErr(err)
 
 	})
@@ -124,7 +126,9 @@ func (t *Nuts) wrapErr(err error) error {
 	if err == nil {
 		return nil
 	}
-	if err == nutsdb.ErrBucket ||
+	if err == nutsdb.ErrKeyNotFound ||
+		err == nutsdb.ErrNotFoundKey ||
+		err == nutsdb.ErrBucketNotFound ||
 		strings.HasPrefix(err.Error(), "bucket not found:") ||
 		err == nutsdb.ErrBucketEmpty {
 		return ErrNotFound

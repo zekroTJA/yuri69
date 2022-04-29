@@ -28,7 +28,7 @@ func (t *Webserver) handleSoundsUpload(ctx *routing.Context) error {
 		return ctx.WriteWithStatus(err.Error(), http.StatusBadRequest)
 	}
 
-	ct := fh.Header.Get("Content-Type")
+	ct := ctx.Query("type", fh.Header.Get("Content-Type"))
 	if ct == "" {
 		return errs.WrapUserError("no content type was specified")
 	}
@@ -51,10 +51,23 @@ func (t *Webserver) handleSoundsCreate(ctx *routing.Context) error {
 		return ctx.WriteWithStatus(err.Error(), http.StatusBadRequest)
 	}
 
+	req.CreatorId, _ = ctx.Get("userid").(string)
 	sound, err := t.ct.CreateSound(req)
 	if err != nil {
 		return err
 	}
 
 	return ctx.Write(sound)
+}
+
+func (t *Webserver) handleSoundsDelete(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+	id := ctx.Param("id")
+
+	err := t.ct.RemoveSound(id, userid)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(StatusOK)
 }

@@ -1,6 +1,19 @@
 package models
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
+
+var (
+	StatusOK      = StatusModel{Status: http.StatusOK, Message: "Ok"}
+	StatusCreated = StatusModel{Status: http.StatusCreated, Message: "Created"}
+)
+
+type StatusModel struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}
 
 type AuthLoginResponse struct {
 	AccessToken string    `json:"access_token"`

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"mime"
+	"net/http"
 	"os/exec"
 	"strings"
 	"time"
@@ -160,11 +161,34 @@ func (t *Controller) ListSounds(
 		order = string(database.SortOrderCreated)
 	}
 	sounds, err := t.db.GetSounds(database.SortOrder(order), flagsMust, flagsNot)
-	if err != nil {
+	if err == database.ErrNotFound {
+		sounds = []Sound{}
+	} else if err != nil {
 		return nil, err
 	}
 
 	return sounds, nil
+}
+
+func (t *Controller) RemoveSound(id, userID string) error {
+	sound, err := t.db.GetSound(id)
+	if err != nil {
+		return err
+	}
+
+	if sound.CreatorId != userID {
+		return errs.WrapUserError(
+			"you need to be either the creator of the sound or an admin to delete it",
+			http.StatusForbidden)
+	}
+
+	err = t.db.RemoveSound(id)
+	if err != nil {
+		return err
+	}
+
+	err = t.st.DeleteObject(static.BucketSounds, id)
+	return err
 }
 
 // --- Helpers ---

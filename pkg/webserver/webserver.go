@@ -10,6 +10,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2/fault"
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/controller"
+	"github.com/zekrotja/yuri69/pkg/database"
 	"github.com/zekrotja/yuri69/pkg/discordoauth"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
@@ -68,6 +69,7 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 
 	gSounds := gApi.Group("/sounds")
 	gSounds.Get("", t.handleSoundsList)
+	gSounds.Delete("/<id>", t.handleSoundsDelete)
 	gSounds.Put("/upload", t.handleSoundsUpload)
 	gSounds.Post("/create", t.handleSoundsCreate)
 
@@ -86,6 +88,19 @@ func (t *Webserver) onAuthError(ctx *routing.Context, status int, msg string) er
 }
 
 func (t *Webserver) errorHandler(ctx *routing.Context, err error) error {
+	httpError, ok := errs.As[routing.HTTPError](err)
+	if ok {
+		ctx.Response.WriteHeader(httpError.StatusCode())
+		return httpError
+	}
+
+	if err == database.ErrNotFound {
+		err = errs.StatusError{
+			Status:  http.StatusNotFound,
+			Message: "Not Found",
+		}
+	}
+
 	statusErr, ok := errs.As[errs.StatusError](err)
 	if ok {
 		ctx.Response.WriteHeader(statusErr.Status)
