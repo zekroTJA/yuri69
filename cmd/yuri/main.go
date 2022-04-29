@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/config"
+	"github.com/zekrotja/yuri69/pkg/controller"
+	"github.com/zekrotja/yuri69/pkg/database"
 	"github.com/zekrotja/yuri69/pkg/debug"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/lavalink"
@@ -48,6 +48,17 @@ func main() {
 	}
 	logrus.WithField("file", *fConfigFile).Info("Config loaded")
 	logrus.Debugf("Config Content: %+v", cfg)
+
+	// --- Setup Database Module
+	db, err := database.New(cfg.Database)
+	if err != nil {
+		logrus.WithError(err).Fatal("Database initialization failed")
+	}
+	defer func() {
+		logrus.Info("Shutting down database connection ...")
+		db.Close()
+	}()
+	logrus.WithField("typ", cfg.Database.Type).Info("Database initialized")
 
 	// --- Setup Storage Module ---
 	st, err := storage.New(cfg.Storage)
@@ -95,12 +106,16 @@ func main() {
 	}()
 	logrus.Info("Player manager initialized")
 
-	fmt.Println(mgr.Play("526196711962705925", "959799153754509312", "mothers"))
-	time.Sleep(3 * time.Second)
-	mgr.Destroy("526196711962705925")
+	// --- Setup Controller ---
+	ct, err := controller.New(db, st)
+	if err != nil {
+		logrus.WithError(err).Fatal("Controller initialization failed")
+	}
+	defer ct.Close()
+	logrus.Info("Controller initialized")
 
 	// --- Setup Web Server ---
-	ws, err := webserver.New(cfg.Webserver)
+	ws, err := webserver.New(cfg.Webserver, ct)
 	if err != nil {
 		logrus.WithError(err).Fatal("Webserver initialization failed")
 	}
@@ -116,6 +131,5 @@ func main() {
 	// or an exit signal was received.
 	util.Block(context.Background())
 
-	_ = st
-	_ = ll
+	_ = ct
 }

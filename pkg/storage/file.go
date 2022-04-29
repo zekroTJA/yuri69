@@ -38,7 +38,7 @@ func (t *File) BucketExists(name string) (bool, error) {
 }
 
 func (t *File) CreateBucket(name string, location ...string) error {
-	return os.MkdirAll(path.Join(t.basePath, name), os.ModeDir)
+	return os.MkdirAll(path.Join(t.basePath, name), os.ModePerm)
 }
 
 func (t *File) CreateBucketIfNotExists(name string, location ...string) error {
@@ -72,11 +72,11 @@ func (t *File) PutObject(
 	if err != nil {
 		return err
 	}
-	if stat.IsDir() {
+	if stat != nil && stat.IsDir() {
 		return errors.New("given file dir is a location")
 	}
 
-	fh, err = os.Open(fd)
+	fh, err = os.Create(fd)
 	if err != nil {
 		return err
 	}

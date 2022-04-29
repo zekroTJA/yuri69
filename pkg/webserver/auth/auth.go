@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	routing "github.com/go-ozzo/ozzo-routing/v2"
@@ -89,6 +90,31 @@ func (t AuthHandler) HandleRefresh(ctx *routing.Context) error {
 	}
 
 	return t.respondAccessToken(ctx, claims)
+}
+
+func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
+	authHeader := ctx.Request.Header.Get("authorization")
+	if !strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
+		ctx.Abort()
+		ctx.Response.WriteHeader(http.StatusUnauthorized)
+		return nil
+	}
+	authToken := authHeader[len("bearer "):]
+
+	claims, err := t.accessTokenHandler.Verify(authToken)
+	if jwt.IsJWTError(err) {
+		ctx.Abort()
+		ctx.Response.WriteHeader(http.StatusUnauthorized)
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	ctx.Set("claims", claims)
+	ctx.Set("userid", claims.UserID)
+
+	return nil
 }
 
 func (t AuthHandler) respondAccessToken(ctx *routing.Context, claims Claims) error {

@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/zekrotja/yuri69/pkg/database"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/lavalink"
 	"github.com/zekrotja/yuri69/pkg/player"
@@ -12,10 +13,16 @@ import (
 )
 
 var DefaultConfig = Config{
+	Database: database.DatabaseConfig{
+		Type: "nuts",
+		Nuts: database.NutsConfig{
+			Location: "data/db",
+		},
+	},
 	Storage: storage.StorageConfig{
 		Type: "file",
 		File: storage.FileConfig{
-			BasePath: "data",
+			BasePath: "data/st",
 		},
 	},
 	Webserver: webserver.WebserverConfig{
@@ -28,6 +35,7 @@ var DefaultConfig = Config{
 }
 
 type Config struct {
+	Database  database.DatabaseConfig
 	Storage   storage.StorageConfig
 	Webserver webserver.WebserverConfig
 	Discord   discord.DiscordConfig

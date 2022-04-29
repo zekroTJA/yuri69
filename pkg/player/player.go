@@ -14,6 +14,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/generic"
 	"github.com/zekrotja/yuri69/pkg/lavalink"
+	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/storage"
 )
 
@@ -99,7 +100,7 @@ func (t *Player) Destroy(guildID string) error {
 func (t *Player) handleGetFile(ctx *routing.Context) error {
 	id := ctx.Param("id")
 
-	r, _, err := t.st.GetObject("sounds", id)
+	r, _, err := t.st.GetObject(static.BucketSounds, id)
 	if err != nil {
 		return ctx.WriteWithStatus("", http.StatusBadRequest)
 	}
