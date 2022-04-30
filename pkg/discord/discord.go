@@ -30,3 +30,14 @@ func (t *Discord) Open() error {
 func (t *Discord) Close() error {
 	return t.session.Close()
 }
+
+func (t *Discord) FindUserVS(userID string) (discordgo.VoiceState, bool) {
+	for _, g := range t.session.State.Guilds {
+		for _, vs := range g.VoiceStates {
+			for vs.UserID == userID {
+				return *vs, true
+			}
+		}
+	}
+	return discordgo.VoiceState{}, false
+}

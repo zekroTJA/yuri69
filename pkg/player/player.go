@@ -76,7 +76,7 @@ func (t *Player) ListenAndServeBlocking() error {
 	return t.server.ListenAndServe()
 }
 
-func (t *Player) Play(guildID, channelID, ident string) error {
+func (t *Player) Init(guildID, channelID string) error {
 	vc, ok := t.vcs.Load(guildID)
 	if !ok || vc.ChannelID != channelID {
 		err := t.dc.Session().ChannelVoiceJoinManual(guildID, channelID, false, true)
@@ -84,8 +84,20 @@ func (t *Player) Play(guildID, channelID, ident string) error {
 			return err
 		}
 	}
+	return nil
+}
 
-	return t.ll.Play(guildID, fmt.Sprintf("http://%s:6969/file/%s", t.hostname, ident))
+func (t *Player) PlaySound(guildID, channelID, ident string) error {
+	return t.Play(guildID, channelID,
+		fmt.Sprintf("http://%s:6969/file/%s", t.hostname, ident))
+}
+
+func (t *Player) Play(guildID, channelID, url string) error {
+	if err := t.Init(guildID, channelID); err != nil {
+		return err
+	}
+
+	return t.ll.Play(guildID, url)
 }
 
 func (t *Player) Destroy(guildID string) error {

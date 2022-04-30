@@ -14,8 +14,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/zekroTJA/timedmap"
 	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/storage"
 )
@@ -23,13 +25,21 @@ import (
 type Controller struct {
 	db database.IDatabase
 	st storage.IStorage
+	pl *player.Player
+	dg *discord.Discord
 
 	ffmpegExec string
 
 	pendingCrations *timedmap.TimedMap[string, string]
 }
 
-func New(db database.IDatabase, st storage.IStorage) (*Controller, error) {
+func New(
+	db database.IDatabase,
+	st storage.IStorage,
+	pl *player.Player,
+	dg *discord.Discord,
+) (*Controller, error) {
+
 	var (
 		t   Controller
 		err error
@@ -37,6 +47,8 @@ func New(db database.IDatabase, st storage.IStorage) (*Controller, error) {
 
 	t.db = db
 	t.st = st
+	t.pl = pl
+	t.dg = dg
 
 	t.pendingCrations = timedmap.New[string, string](5 * time.Minute)
 
@@ -189,6 +201,44 @@ func (t *Controller) RemoveSound(id, userID string) error {
 
 	err = t.st.DeleteObject(static.BucketSounds, id)
 	return err
+}
+
+func (t *Controller) JoinChannel(userID string) error {
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return errs.WrapUserError("you need to be in a voice channel to perform this action")
+	}
+
+	return t.pl.Init(vs.GuildID, vs.ChannelID)
+}
+
+func (t *Controller) LeaveChannel(guildID, userID string) error {
+	if guildID == "" {
+		vs, ok := t.dg.FindUserVS(userID)
+		if !ok {
+			return errs.WrapUserError("you need to be in a voice channel to perform this action")
+		}
+		guildID = vs.GuildID
+	}
+
+	return t.pl.Destroy(guildID)
+}
+
+func (t *Controller) Play(userID, ident string) error {
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return errs.WrapUserError("you need to be in a voice channel to perform this action")
+	}
+
+	identLower := strings.ToLower(ident)
+	if strings.HasPrefix(identLower, "https://youtu.be/") ||
+		strings.HasPrefix(identLower, "https://youtube.com/watch?=v") ||
+		strings.HasPrefix(identLower, "https://www.youtube.com/watch?=v") {
+
+		return t.pl.Play(vs.GuildID, vs.ChannelID, ident)
+	}
+
+	return t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
 }
 
 // --- Helpers ---

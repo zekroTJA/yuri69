@@ -14,6 +14,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/discordoauth"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
+	"github.com/zekrotja/yuri69/pkg/webserver/controllers"
 )
 
 type Webserver struct {
@@ -58,6 +59,21 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 		t.onAuthError,
 		t.authHandler.HandleLogin)
 
+	t.registerRoutes(oauth)
+
+	return &t, nil
+}
+
+func (t *Webserver) ListenAndServeBlocking() error {
+	t.server = &http.Server{
+		Addr:    t.bindAddress,
+		Handler: t.router,
+	}
+
+	return t.server.ListenAndServe()
+}
+
+func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	gApi := t.router.Group("/api/v1")
 
 	gAuth := gApi.Group("/auth")
@@ -67,22 +83,9 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 
 	gApi.Use(t.authHandler.CheckAuth)
 
-	gSounds := gApi.Group("/sounds")
-	gSounds.Get("", t.handleSoundsList)
-	gSounds.Delete("/<id>", t.handleSoundsDelete)
-	gSounds.Put("/upload", t.handleSoundsUpload)
-	gSounds.Post("/create", t.handleSoundsCreate)
-
-	return &t, nil
+	controllers.NewSoundsController(gApi.Group("/sounds"), t.ct)
 }
-func (t *Webserver) ListenAndServeBlocking() error {
-	t.server = &http.Server{
-		Addr:    t.bindAddress,
-		Handler: t.router,
-	}
 
-	return t.server.ListenAndServe()
-}
 func (t *Webserver) onAuthError(ctx *routing.Context, status int, msg string) error {
 	return ctx.WriteWithStatus(msg, status)
 }

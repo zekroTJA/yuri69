@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 	"strings"
 
@@ -110,7 +109,6 @@ func (t *Nuts) GetSound(uid string) (Sound, error) {
 	err := t.db.View(func(tx *nutsdb.Tx) error {
 		var err error
 		e, err = tx.Get(bucketSounds, []byte(uid))
-		fmt.Println(err)
 		return t.wrapErr(err)
 
 	})
