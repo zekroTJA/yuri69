@@ -14,5 +14,6 @@ cmd/test/*
 web/.angular/
 internal/util/embedded/webdist/*
 !internal/util/embedded/webdist/keep
+.task/
 
 data/

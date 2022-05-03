@@ -3,6 +3,7 @@ package controller
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"mime"
 	"net/http"
@@ -20,6 +21,11 @@ import (
 	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/storage"
+	"github.com/zekrotja/yuri69/pkg/util"
+)
+
+var (
+	reservedUids = []string{"random", "upload", "create"}
 )
 
 type Controller struct {
@@ -109,6 +115,12 @@ func (t *Controller) UploadSound(
 func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 	if req.Uid == "" {
 		return Sound{}, errs.WrapUserError("uid must be specified")
+	}
+
+	req.Uid = strings.ToLower(req.Uid)
+	if util.Contains(reservedUids, req.Uid) {
+		return Sound{}, errs.WrapUserError(
+			fmt.Sprintf("UID '%s' is reserved and can not be used", req.Uid))
 	}
 
 	_, err := t.db.GetSound(req.Uid)

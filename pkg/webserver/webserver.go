@@ -7,10 +7,12 @@ import (
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/go-ozzo/ozzo-routing/v2/access"
 	"github.com/go-ozzo/ozzo-routing/v2/content"
+	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	"github.com/go-ozzo/ozzo-routing/v2/fault"
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/debug"
 	"github.com/zekrotja/yuri69/pkg/discordoauth"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
@@ -46,6 +48,17 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 			}).Debugf("%s %s %s", req.Method, req.URL.String(), req.Proto)
 		}),
 	)
+
+	if debug.Enabled() {
+		const corsOrigin = "http://localhost:3000"
+		logrus.Warnf("CORS enabled for address %s", corsOrigin)
+		t.router.Use(cors.Handler(cors.Options{
+			AllowOrigins:     corsOrigin,
+			AllowCredentials: true,
+			AllowMethods:     "*",
+			AllowHeaders:     "*",
+		}))
+	}
 
 	t.authHandler, err = auth.New(cfg.Auth)
 	if err != nil {

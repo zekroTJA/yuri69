@@ -35,6 +35,30 @@ tasks:
           -l 5
           -debug'
 
+  deps:
+    dir: web/
+    sources:
+      - "package.json"
+      - "yarn.lock"
+    generates:
+      - "node_modules/**"
+    cmds:
+      - "yarn"
+
+  build-fe:
+    dir: web/
+    deps:
+      - deps
+    cmds:
+      - yarn build
+
+  run-fe:
+    dir: web/
+    deps:
+      - deps
+    cmds:
+      - yarn run dev
+
   docker:
     cmds:
       - 'docker-compose
