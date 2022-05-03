@@ -1,0 +1,42 @@
+# https://taskfile.dev
+
+version: '3'
+
+
+vars:
+  APP_NAME: yuri
+  CONFIG_DIR: ./config/private.config.toml
+  BIN_DIR: ./bin
+  BIN: '{{.BIN_DIR}}/{{.APP_NAME}}{{if eq OS "windows"}}.exe{{end}}'
+
+
+tasks:
+
+  default:
+    deps:
+      - release
+
+  release:
+    deps:
+      - build-be
+
+  build-be:
+    cmds:
+      - go build
+          -o {{.BIN}}
+            ./cmd/{{.APP_NAME}}/main.go
+
+  run:
+    deps:
+      - build-be
+    cmds:
+      - '{{.BIN}}
+          -c {{.CONFIG_DIR}}
+          -l 5
+          -debug'
+
+  docker:
+    cmds:
+      - 'docker-compose
+          -f ./docker-compose.dev.yml
+          {{.CLI_ARGS}}'
