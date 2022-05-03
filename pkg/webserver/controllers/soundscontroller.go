@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"net/http"
-
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/errs"
@@ -40,7 +38,7 @@ func (t *soundsController) handleSoundsList(ctx *routing.Context) error {
 func (t *soundsController) handleSoundsUpload(ctx *routing.Context) error {
 	f, fh, err := ctx.Request.FormFile("file")
 	if err != nil {
-		return ctx.WriteWithStatus(err.Error(), http.StatusBadRequest)
+		return errs.WrapUserError(err)
 	}
 
 	ct := ctx.Query("type", fh.Header.Get("Content-Type"))
@@ -63,7 +61,7 @@ func (t *soundsController) handleSoundsCreate(ctx *routing.Context) error {
 	var req CreateSoundRequest
 	err := ctx.Read(&req)
 	if err != nil {
-		return ctx.WriteWithStatus(err.Error(), http.StatusBadRequest)
+		return errs.WrapUserError(err)
 	}
 
 	req.CreatorId, _ = ctx.Get("userid").(string)
@@ -82,7 +80,7 @@ func (t *soundsController) handleSoundsUpdate(ctx *routing.Context) error {
 	var req UpdateSoundRequest
 	err := ctx.Read(&req)
 	if err != nil {
-		return ctx.WriteWithStatus(err.Error(), http.StatusBadRequest)
+		return errs.WrapUserError(err)
 	}
 
 	req.Uid = id

@@ -3,7 +3,9 @@ package controllers
 import (
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
+	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/player"
 )
 
 type playerController struct {
@@ -16,6 +18,7 @@ func NewPlayerController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Post("/leave", t.handleLeave)
 	r.Post("/play/<ident>", t.handlePlay)
 	r.Post("/stop", t.handleStop)
+	r.Post("/volume", t.handleSetVolume)
 
 	return
 }
@@ -59,6 +62,26 @@ func (t *playerController) handleStop(ctx *routing.Context) error {
 
 	err := t.ct.Stop(userid)
 	if err != nil {
+		return err
+	}
+
+	return ctx.Write(StatusOK)
+}
+
+func (t *playerController) handleSetVolume(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	var req SetVolumeRequest
+	if err := ctx.Read(&req); err != nil {
+		return errs.WrapUserError(err)
+	}
+
+	if req.Volume < 1 || req.Volume > 200 {
+		return errs.WrapUserError("Volume must be a value in range [1, 200]")
+	}
+
+	err := t.ct.SetVolume(userid, req.Volume)
+	if err != nil && err != player.ErrNoGuildPlayer {
 		return err
 	}
 

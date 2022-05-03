@@ -1,7 +1,6 @@
 package player
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -102,7 +101,7 @@ func (t *Player) Play(guildID, channelID, url string) error {
 func (t *Player) Destroy(guildID string) error {
 	_, ok := t.vcs.Load(guildID)
 	if !ok {
-		return errors.New("no player for this guild")
+		return ErrNoGuildPlayer
 	}
 
 	return t.dc.Session().ChannelVoiceJoinManual(guildID, "", false, true)
@@ -111,7 +110,7 @@ func (t *Player) Destroy(guildID string) error {
 func (t *Player) Stop(guildID string) error {
 	_, ok := t.vcs.Load(guildID)
 	if !ok {
-		return errors.New("no player for this guild")
+		return ErrNoGuildPlayer
 	}
 
 	return t.ll.Stop(guildID)
@@ -120,7 +119,7 @@ func (t *Player) Stop(guildID string) error {
 func (t *Player) SetVolume(guildID string, volume uint16) error {
 	_, ok := t.vcs.Load(guildID)
 	if !ok {
-		return errors.New("no player for this guild")
+		return ErrNoGuildPlayer
 	}
 
 	return t.ll.SetVolume(guildID, volume)

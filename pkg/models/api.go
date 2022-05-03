@@ -37,3 +37,7 @@ type SoundUploadResponse struct {
 	UploadId string    `json:"upload_id"`
 	Deadline time.Time `json:"deadline"`
 }
+
+type SetVolumeRequest struct {
+	Volume int `json:"volume"`
+}
