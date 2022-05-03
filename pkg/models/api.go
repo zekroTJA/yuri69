@@ -29,6 +29,10 @@ type CreateSoundRequest struct {
 	Overdrive bool `json:"overdrive"`
 }
 
+type UpdateSoundRequest struct {
+	Sound
+}
+
 type SoundUploadResponse struct {
 	UploadId string    `json:"upload_id"`
 	Deadline time.Time `json:"deadline"`

@@ -17,9 +17,10 @@ type soundsController struct {
 func NewSoundsController(r *routing.RouteGroup, ct *controller.Controller) {
 	t := soundsController{ct: ct}
 	r.Get("", t.handleSoundsList)
-	r.Delete("/<id>", t.handleSoundsDelete)
 	r.Put("/upload", t.handleSoundsUpload)
 	r.Post("/create", t.handleSoundsCreate)
+	r.Post("/<id>", t.handleSoundsUpdate)
+	r.Delete("/<id>", t.handleSoundsDelete)
 	return
 }
 
@@ -72,6 +73,25 @@ func (t *soundsController) handleSoundsCreate(ctx *routing.Context) error {
 	}
 
 	return ctx.Write(sound)
+}
+
+func (t *soundsController) handleSoundsUpdate(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+	id := ctx.Param("id")
+
+	var req UpdateSoundRequest
+	err := ctx.Read(&req)
+	if err != nil {
+		return ctx.WriteWithStatus(err.Error(), http.StatusBadRequest)
+	}
+
+	req.Uid = id
+	newSound, err := t.ct.UpdateSound(req, userid)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(newSound)
 }
 
 func (t *soundsController) handleSoundsDelete(ctx *routing.Context) error {

@@ -20,6 +20,9 @@ type IDatabase interface {
 	RemoveSound(uid string) error
 	GetSounds(sortOrder SortOrder, tagsMust, tagsNot []string) ([]Sound, error)
 	GetSound(uid string) (Sound, error)
+
+	SetGuildVolume(guildID string, volume int) error
+	GetGuildVolume(guildID string) (int, error)
 }
 
 type DatabaseConfig struct {

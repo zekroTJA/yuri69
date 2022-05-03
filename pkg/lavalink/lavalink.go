@@ -86,6 +86,24 @@ func (t *Lavalink) Destroy(guildID string) error {
 	return t.conn.Guild(sf).Destroy()
 }
 
+func (t *Lavalink) Stop(guildID string) error {
+	sf, err := snowflake.Parse(guildID)
+	if err != nil {
+		return err
+	}
+
+	return t.conn.Guild(sf).Stop()
+}
+
+func (t *Lavalink) SetVolume(guildID string, volume uint16) error {
+	sf, err := snowflake.Parse(guildID)
+	if err != nil {
+		return err
+	}
+
+	return t.conn.Guild(sf).UpdateVolume(volume)
+}
+
 func (t *Lavalink) handleVoiceServerUpdate(s *discordgo.Session, e *discordgo.VoiceServerUpdate) {
 	logrus.
 		WithField("guild", e.GuildID).

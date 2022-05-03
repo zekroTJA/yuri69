@@ -103,11 +103,31 @@ func (t *Player) Play(guildID, channelID, url string) error {
 func (t *Player) Destroy(guildID string) error {
 	_, ok := t.vcs.Load(guildID)
 	if !ok {
-		return errors.New("no connection for this guild")
+		return errors.New("no player for this guild")
 	}
 
 	return t.dc.Session().ChannelVoiceJoinManual(guildID, "", false, true)
 }
+
+func (t *Player) Stop(guildID string) error {
+	_, ok := t.vcs.Load(guildID)
+	if !ok {
+		return errors.New("no player for this guild")
+	}
+
+	return t.ll.Stop(guildID)
+}
+
+func (t *Player) SetVolume(guildID string, volume uint16) error {
+	_, ok := t.vcs.Load(guildID)
+	if !ok {
+		return errors.New("no player for this guild")
+	}
+
+	return t.ll.SetVolume(guildID, volume)
+}
+
+// --- Internal stuff ---
 
 func (t *Player) handleGetFile(ctx *routing.Context) error {
 	id := ctx.Param("id")

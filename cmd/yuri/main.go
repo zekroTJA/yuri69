@@ -50,7 +50,7 @@ func main() {
 	logrus.Debugf("Config Content: %+v", cfg)
 
 	// --- Setup Database Module
-	db, err := database.New(cfg.Database)
+	db, err := database.WrapCache(database.New(cfg.Database))
 	if err != nil {
 		logrus.WithError(err).Fatal("Database initialization failed")
 	}
@@ -93,13 +93,13 @@ func main() {
 		ll.Close()
 	}()
 
-	// --- Setup Player Manager ---
-	mgr, err := player.NewPlayer(cfg.Player, dc, st, ll)
+	// --- Setup Player ---
+	pl, err := player.NewPlayer(cfg.Player, dc, st, ll)
 	if err != nil {
 		logrus.WithError(err).Fatal("Manager creation failed")
 	}
 	go func() {
-		err = mgr.ListenAndServeBlocking()
+		err = pl.ListenAndServeBlocking()
 		if err != nil {
 			logrus.WithError(err).Fatal("Manager file provider startup failed")
 		}
@@ -107,7 +107,7 @@ func main() {
 	logrus.Info("Player manager initialized")
 
 	// --- Setup Controller ---
-	ct, err := controller.New(db, st)
+	ct, err := controller.New(db, st, pl, dc)
 	if err != nil {
 		logrus.WithError(err).Fatal("Controller initialization failed")
 	}

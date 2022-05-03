@@ -12,6 +12,9 @@ import (
 
 const (
 	bucketSounds = "sounds"
+	bucketGuilds = "guilds"
+
+	keySeparator = ":"
 )
 
 type NutsConfig struct {
@@ -120,6 +123,32 @@ func (t *Nuts) GetSound(uid string) (Sound, error) {
 	return sound, err
 }
 
+func (t *Nuts) SetGuildVolume(guildID string, volume int) error {
+	data, err := marshal(volume)
+	if err != nil {
+		return err
+	}
+	return t.db.Update(func(tx *nutsdb.Tx) error {
+		return tx.Put(bucketGuilds, key(guildID, "volume"), data, 0)
+	})
+}
+
+func (t *Nuts) GetGuildVolume(guildID string) (int, error) {
+	var e *nutsdb.Entry
+	err := t.db.View(func(tx *nutsdb.Tx) error {
+		var err error
+		e, err = tx.Get(bucketGuilds, key(guildID, "volume"))
+		return t.wrapErr(err)
+	})
+	if err != nil {
+		return 0, err
+	}
+	v, err := unmarshal[int](e.Value)
+	return v, err
+}
+
+// --- Internal ---
+
 func (t *Nuts) wrapErr(err error) error {
 	if err == nil {
 		return nil
@@ -141,4 +170,8 @@ func marshal(v any) ([]byte, error) {
 func unmarshal[T any](data []byte) (v T, err error) {
 	err = json.Unmarshal(data, &v)
 	return v, err
+}
+
+func key(elements ...string) []byte {
+	return []byte(strings.Join(elements, keySeparator))
 }

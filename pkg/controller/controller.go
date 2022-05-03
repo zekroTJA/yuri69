@@ -182,6 +182,30 @@ func (t *Controller) ListSounds(
 	return sounds, nil
 }
 
+func (t *Controller) UpdateSound(newSound UpdateSoundRequest, userID string) (Sound, error) {
+	oldSound, err := t.db.GetSound(newSound.Uid)
+	if err != nil {
+		return Sound{}, err
+	}
+
+	// if oldSound.CreatorId != userID {
+	// 	return errs.WrapUserError(
+	// 		"you need to be either the creator of the sound or an admin to update it",
+	// 		http.StatusForbidden)
+	// }
+
+	newSound.Created = oldSound.Created
+	newSound.CreatorId = oldSound.CreatorId
+	newSound.Uid = oldSound.Uid
+
+	err = t.db.PutSound(newSound.Sound)
+	if err != nil {
+		return Sound{}, err
+	}
+
+	return newSound.Sound, nil
+}
+
 func (t *Controller) RemoveSound(id, userID string) error {
 	sound, err := t.db.GetSound(id)
 	if err != nil {
@@ -238,7 +262,38 @@ func (t *Controller) Play(userID, ident string) error {
 		return t.pl.Play(vs.GuildID, vs.ChannelID, ident)
 	}
 
+	volume, err := t.db.GetGuildVolume(vs.GuildID)
+	if err != nil {
+		return err
+	}
+
+	if err = t.pl.SetVolume(vs.GuildID, uint16(volume)); err != nil {
+		return err
+	}
+
 	return t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
+}
+
+func (t *Controller) Stop(userID string) error {
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return errs.WrapUserError("you need to be in a voice channel to perform this action")
+	}
+
+	return t.pl.Stop(vs.GuildID)
+}
+
+func (t *Controller) SetVolume(userID string, volume int) error {
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return errs.WrapUserError("you need to be in a voice channel to perform this action")
+	}
+
+	if err := t.db.SetGuildVolume(vs.GuildID, volume); err != nil {
+		return err
+	}
+
+	return t.pl.SetVolume(vs.GuildID, uint16(volume))
 }
 
 // --- Helpers ---
