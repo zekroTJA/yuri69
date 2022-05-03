@@ -263,7 +263,15 @@ func (t *Controller) Play(userID, ident string) error {
 	}
 
 	volume, err := t.db.GetGuildVolume(vs.GuildID)
+	if err == database.ErrNotFound {
+		err = nil
+		volume = 50
+	}
 	if err != nil {
+		return err
+	}
+
+	if err = t.pl.Init(vs.GuildID, vs.ChannelID); err != nil {
 		return err
 	}
 

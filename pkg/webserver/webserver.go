@@ -84,6 +84,7 @@ func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	gApi.Use(t.authHandler.CheckAuth)
 
 	controllers.NewSoundsController(gApi.Group("/sounds"), t.ct)
+	controllers.NewPlayerController(gApi.Group("/players"), t.ct)
 }
 
 func (t *Webserver) onAuthError(ctx *routing.Context, status int, msg string) error {

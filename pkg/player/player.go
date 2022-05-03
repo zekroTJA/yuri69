@@ -16,6 +16,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/lavalink"
 	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/storage"
+	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 type Player struct {
@@ -25,7 +26,8 @@ type Player struct {
 
 	hostname string
 
-	vcs generic.SyncMap[string, voiceConnection]
+	vcs     generic.SyncMap[string, voiceConnection]
+	waiters util.Waiters[string]
 
 	router *routing.Router
 	server *http.Server
@@ -83,6 +85,7 @@ func (t *Player) Init(guildID, channelID string) error {
 		if err != nil {
 			return err
 		}
+		t.waiters.CreateAndWait(guildID)
 	}
 	return nil
 }
@@ -93,10 +96,6 @@ func (t *Player) PlaySound(guildID, channelID, ident string) error {
 }
 
 func (t *Player) Play(guildID, channelID, url string) error {
-	if err := t.Init(guildID, channelID); err != nil {
-		return err
-	}
-
 	return t.ll.Play(guildID, url)
 }
 
@@ -158,12 +157,17 @@ func (t *Player) handleVoiceUpdate(_ *discordgo.Session, e *discordgo.VoiceState
 	}
 }
 
+func (t *Player) initVs(guildID, channelID string) {
+	t.vcs.Store(guildID, voiceConnection{
+		GuildID:   guildID,
+		ChannelID: channelID,
+	})
+	t.waiters.BroadcastAndRemove(guildID)
+}
+
 func (t *Player) onVoiceJoin(e *discordgo.VoiceStateUpdate) {
 	if e.UserID == t.dc.Session().State.User.ID {
-		t.vcs.Store(e.GuildID, voiceConnection{
-			GuildID:   e.GuildID,
-			ChannelID: e.ChannelID,
-		})
+		t.initVs(e.GuildID, e.ChannelID)
 		logrus.
 			WithField("guildID", e.GuildID).
 			WithField("chanID", e.ChannelID).
@@ -175,10 +179,7 @@ func (t *Player) onVoiceJoin(e *discordgo.VoiceStateUpdate) {
 
 func (t *Player) onVoiceMove(e *discordgo.VoiceStateUpdate) {
 	if e.UserID == t.dc.Session().State.User.ID {
-		t.vcs.Store(e.GuildID, voiceConnection{
-			GuildID:   e.GuildID,
-			ChannelID: e.ChannelID,
-		})
+		t.initVs(e.GuildID, e.ChannelID)
 		logrus.
 			WithField("guildID", e.GuildID).
 			WithField("chanID", e.ChannelID).

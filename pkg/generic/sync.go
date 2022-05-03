@@ -1,6 +1,8 @@
 package generic
 
-import "sync"
+import (
+	"sync"
+)
 
 type SyncMap[TKey any, TVal any] struct {
 	sync.Map

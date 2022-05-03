@@ -39,7 +39,7 @@ func (t *DatabaseCache) GetGuildVolume(guildID string) (int, error) {
 	vi, _ := t.cache.Load(ckey("guilds", guildID, "volume"))
 	v, ok := vi.(int)
 	if !ok {
-		v, err = t.GetGuildVolume(guildID)
+		v, err = t.IDatabase.GetGuildVolume(guildID)
 	}
 
 	return v, err
