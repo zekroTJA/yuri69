@@ -10,6 +10,13 @@ var (
 	StatusCreated = StatusModel{Status: http.StatusCreated, Message: "Created"}
 )
 
+type SortOrder string
+
+const (
+	SortOrderName    = SortOrder("name")
+	SortOrderCreated = SortOrder("created")
+)
+
 type StatusModel struct {
 	Status  int    `json:"status"`
 	Message string `json:"message"`

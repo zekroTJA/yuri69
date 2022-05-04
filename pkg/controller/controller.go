@@ -8,6 +8,7 @@ import (
 	"mime"
 	"net/http"
 	"os/exec"
+	"sort"
 	"strings"
 	"time"
 
@@ -178,18 +179,46 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 
 func (t *Controller) ListSounds(
 	order string,
-	flagsMust []string,
-	flagsNot []string,
+	tagsMust []string,
+	tagsNot []string,
 ) ([]Sound, error) {
 	if order == "" {
-		order = string(database.SortOrderCreated)
+		order = string(SortOrderCreated)
 	}
-	sounds, err := t.db.GetSounds(database.SortOrder(order), flagsMust, flagsNot)
+	sounds, err := t.db.GetSounds()
 	if err == database.ErrNotFound {
 		sounds = []Sound{}
 	} else if err != nil {
 		return nil, err
 	}
+
+	if len(tagsMust) != 0 || len(tagsNot) != 0 {
+		newSounds := make([]Sound, 0, len(sounds))
+		for _, sound := range sounds {
+			if !util.ContainsAll(sound.Tags, tagsMust) || util.ContainsAny(sound.Tags, tagsNot) {
+				continue
+			}
+			newSounds = append(newSounds, sound)
+		}
+		sounds = newSounds
+	}
+
+	var less func(i, j int) bool
+
+	switch SortOrder(strings.ToLower(order)) {
+	case SortOrderName:
+		less = func(i, j int) bool {
+			return sounds[i].String() < sounds[j].String()
+		}
+	case SortOrderCreated:
+		less = func(i, j int) bool {
+			return sounds[i].Created.After(sounds[j].Created)
+		}
+	default:
+		return nil, errs.WrapUserError("invalid sort order")
+	}
+
+	sort.Slice(sounds, less)
 
 	return sounds, nil
 }
@@ -292,6 +321,10 @@ func (t *Controller) Play(userID, ident string) error {
 	}
 
 	return t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
+}
+
+func (t *Controller) PlayRandom() error {
+	return nil
 }
 
 func (t *Controller) Stop(userID string) error {

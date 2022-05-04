@@ -2,12 +2,10 @@ package database
 
 import (
 	"encoding/json"
-	"sort"
 	"strings"
 
 	"github.com/xujiajun/nutsdb"
 	. "github.com/zekrotja/yuri69/pkg/models"
-	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 const (
@@ -65,7 +63,7 @@ func (t *Nuts) RemoveSound(uid string) error {
 	})
 }
 
-func (t *Nuts) GetSounds(sortOrder SortOrder, tagsMust, tagsNot []string) ([]Sound, error) {
+func (t *Nuts) GetSounds() ([]Sound, error) {
 	var entries nutsdb.Entries
 	err := t.db.View(func(tx *nutsdb.Tx) error {
 		var err error
@@ -82,28 +80,9 @@ func (t *Nuts) GetSounds(sortOrder SortOrder, tagsMust, tagsNot []string) ([]Sou
 		if err != nil {
 			return nil, err
 		}
-		if !util.ContainsAll(sound.Tags, tagsMust) || util.ContainsAny(sound.Tags, tagsNot) {
-			continue
-		}
 		sounds = append(sounds, sound)
 	}
 
-	var less func(i, j int) bool
-
-	switch sortOrder {
-	case SortOrderName:
-		less = func(i, j int) bool {
-			return sounds[i].String() < sounds[j].String()
-		}
-	case SortOrderCreated:
-		less = func(i, j int) bool {
-			return sounds[i].Created.Before(sounds[j].Created)
-		}
-	default:
-		less = func(i, j int) bool { return false }
-	}
-
-	sort.Slice(sounds, less)
 	return sounds, nil
 }
 
