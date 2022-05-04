@@ -21,12 +21,12 @@ refreshtokenkey = ""
 accesstokenkey = ""
 accesstokenlifetime = "10m"
 
-[Lavalink]
-address = "localhost:2333"
-password = ""
-
 [Player]
 Hostname = "host.docker.internal"
+
+[Player.Lavalink]
+address = "localhost:2333"
+password = ""
 
 [Database]
 Type = "nuts"

@@ -1,6 +1,7 @@
 package player
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,7 +10,9 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
+	"github.com/lukasl-dev/waterlink/v2/event"
 	"github.com/sirupsen/logrus"
+	"github.com/zekroTJA/timedmap"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/generic"
 	"github.com/zekrotja/yuri69/pkg/lavalink"
@@ -19,6 +22,8 @@ import (
 )
 
 type Player struct {
+	*util.EventBus[Event]
+
 	dc *discord.Discord
 	st storage.IStorage
 	ll *lavalink.Lavalink
@@ -32,6 +37,7 @@ type Player struct {
 	server *http.Server
 
 	autoLeaveTimer *time.Timer
+	trackCache     *timedmap.TimedMap[string, string]
 }
 
 type voiceConnection struct {
@@ -43,10 +49,12 @@ func NewPlayer(
 	c PlayerConfig,
 	dc *discord.Discord,
 	st storage.IStorage,
-	ll *lavalink.Lavalink,
 ) (*Player, error) {
 
-	var t Player
+	var (
+		t   Player
+		err error
+	)
 
 	t.hostname = c.Hostname
 	if t.hostname == "" {
@@ -57,14 +65,35 @@ func NewPlayer(
 		}
 	}
 
+	t.EventBus = util.NewEventBus[Event](100)
+	t.trackCache = timedmap.New[string, string](5 * time.Minute)
+
 	t.dc = dc
 	t.st = st
-	t.ll = ll
+
+	t.ll, err = lavalink.New(c.Lavalink, dc, t.handleEvent)
+	if err != nil {
+		return nil, err
+	}
 
 	t.router = routing.New()
 	t.router.Get("/file/<id>", t.handleGetFile)
 
 	t.dc.Session().AddHandler(t.handleVoiceUpdate)
+
+	t.SubscribeFunc(func(e Event) {
+		entry := logrus.WithFields(logrus.Fields{
+			"type":  e.Type,
+			"ident": e.Ident,
+			"guild": e.GuildID,
+		})
+
+		if e.Err != nil {
+			entry.WithError(err).Error("Lavalink Event")
+		} else {
+			entry.Debug("Lavalink Event")
+		}
+	})
 
 	return &t, nil
 }
@@ -91,11 +120,19 @@ func (t *Player) Init(guildID, channelID string) error {
 
 func (t *Player) PlaySound(guildID, channelID, ident string) error {
 	return t.Play(guildID, channelID,
-		fmt.Sprintf("http://%s:6969/file/%s", t.hostname, ident))
+		fmt.Sprintf("http://%s:6969/file/%s", t.hostname, ident), ident)
 }
 
-func (t *Player) Play(guildID, channelID, url string) error {
-	return t.ll.Play(guildID, url)
+func (t *Player) Play(guildID, channelID, url, ident string) error {
+	track, err := t.ll.Play(guildID, url)
+	if track.ID != "" {
+		if ident == "" {
+			ident = url
+		}
+		t.trackCache.Set(track.Info.URI, ident,
+			time.Duration(track.Info.Length)*time.Microsecond+30*time.Second)
+	}
+	return err
 }
 
 func (t *Player) Destroy(guildID string) error {
@@ -123,6 +160,10 @@ func (t *Player) SetVolume(guildID string, volume uint16) error {
 	}
 
 	return t.ll.SetVolume(guildID, volume)
+}
+
+func (t *Player) Close() error {
+	return t.ll.Close()
 }
 
 // --- Internal stuff ---
@@ -256,4 +297,69 @@ func (t *Player) getChannelVoiceConnections(guildID, channelID string) (int, err
 	}
 
 	return n, nil
+}
+
+func (t *Player) getIdentFromCache(trackID string) string {
+	info, err := t.ll.DecodeTrackId(trackID)
+	if err != nil {
+		logrus.WithError(err).
+			WithField("trackID", trackID).
+			Error("Failed decoding track id")
+		return ""
+	}
+
+	return t.trackCache.GetValue(info.URI)
+}
+
+func (t *Player) handleEvent(e any) {
+	switch et := e.(type) {
+	// case event.PlayerUpdate:
+	// case event.Stats:
+
+	case event.WebSocketClosed:
+		logrus.Warn("Lavalink websokcet connection closed. Trying reconnect ...")
+		// TODO: Try reconnect
+
+	case event.TrackException:
+		ident := t.getIdentFromCache(et.TrackID)
+		if ident == "" {
+			return
+		}
+		t.Publish(Event{
+			Type:    EventPlayException,
+			Ident:   ident,
+			GuildID: et.GuildID.String(),
+			Err:     errors.New(et.Error),
+		})
+	case event.TrackStuck:
+		ident := t.getIdentFromCache(et.TrackID)
+		if ident == "" {
+			return
+		}
+		t.Publish(Event{
+			Type:    EventPlayStuck,
+			Ident:   ident,
+			GuildID: et.GuildID.String(),
+		})
+	case event.TrackStart:
+		ident := t.getIdentFromCache(et.TrackID)
+		if ident == "" {
+			return
+		}
+		t.Publish(Event{
+			Type:    EventPlayStart,
+			Ident:   ident,
+			GuildID: et.GuildID.String(),
+		})
+	case event.TrackEnd:
+		ident := t.getIdentFromCache(et.TrackID)
+		if ident == "" {
+			return
+		}
+		t.Publish(Event{
+			Type:    EventPlayEnd,
+			Ident:   ident,
+			GuildID: et.GuildID.String(),
+		})
+	}
 }

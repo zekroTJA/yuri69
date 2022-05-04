@@ -300,14 +300,6 @@ func (t *Controller) Play(userID, ident string) error {
 		return errs.WrapUserError("you need to be in a voice channel to perform this action")
 	}
 
-	identLower := strings.ToLower(ident)
-	if strings.HasPrefix(identLower, "https://youtu.be/") ||
-		strings.HasPrefix(identLower, "https://youtube.com/watch?=v") ||
-		strings.HasPrefix(identLower, "https://www.youtube.com/watch?=v") {
-
-		return t.pl.Play(vs.GuildID, vs.ChannelID, ident)
-	}
-
 	return t.play(vs, ident)
 }
 
@@ -451,6 +443,14 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 
 	if err = t.pl.SetVolume(vs.GuildID, uint16(volume)); err != nil {
 		return err
+	}
+
+	identLower := strings.ToLower(ident)
+	if strings.HasPrefix(identLower, "https://youtu.be/") ||
+		strings.HasPrefix(identLower, "https://youtube.com/watch?=v") ||
+		strings.HasPrefix(identLower, "https://www.youtube.com/watch?=v") {
+
+		return t.pl.Play(vs.GuildID, vs.ChannelID, ident, ident)
 	}
 
 	return t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)

@@ -7,6 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/gompus/snowflake"
 	"github.com/lukasl-dev/waterlink/v2"
+	"github.com/lukasl-dev/waterlink/v2/track"
 	"github.com/lukasl-dev/waterlink/v2/track/query"
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/discord"
@@ -18,7 +19,7 @@ type Lavalink struct {
 	conn   *waterlink.Connection
 }
 
-func New(c LavalinkConfig, dc *discord.Discord) (*Lavalink, error) {
+func New(c LavalinkConfig, dc *discord.Discord, eventHandler func(any)) (*Lavalink, error) {
 	var t Lavalink
 	var err error
 
@@ -33,6 +34,9 @@ func New(c LavalinkConfig, dc *discord.Discord) (*Lavalink, error) {
 		HandleEventError: func(err error) {
 			logrus.WithError(err).Error("Lavalink error")
 		},
+	}
+	if eventHandler != nil {
+		opts.EventHandler = waterlink.EventHandlerFunc(eventHandler)
 	}
 
 	t.client, err = waterlink.NewClient(fmt.Sprintf("http://%s", c.Address), creds)
@@ -54,10 +58,10 @@ func (t *Lavalink) Close() error {
 	return t.conn.Close()
 }
 
-func (t *Lavalink) Play(guildID, ident string) error {
+func (t *Lavalink) Play(guildID, ident string) (track.Track, error) {
 	tracks, err := t.client.LoadTracks(query.Of(ident))
 	if err != nil {
-		return err
+		return track.Track{}, err
 	}
 
 	logrus.
@@ -65,16 +69,17 @@ func (t *Lavalink) Play(guildID, ident string) error {
 		WithField("n", len(tracks.Tracks)).
 		Debug("Tracks loaded")
 
+	if len(tracks.Tracks) == 0 {
+		return track.Track{}, errors.New("no tracks have been loaded")
+	}
+
 	sf, err := snowflake.Parse(guildID)
 	if err != nil {
-		return err
+		return track.Track{}, err
 	}
 
-	if len(tracks.Tracks) == 0 {
-		return errors.New("no tracks have been loaded")
-	}
-
-	return t.conn.Guild(sf).PlayTrack(tracks.Tracks[0])
+	track := tracks.Tracks[0]
+	return track, t.conn.Guild(sf).PlayTrack(track)
 }
 
 func (t *Lavalink) Destroy(guildID string) error {
@@ -102,6 +107,10 @@ func (t *Lavalink) SetVolume(guildID string, volume uint16) error {
 	}
 
 	return t.conn.Guild(sf).UpdateVolume(volume)
+}
+
+func (t *Lavalink) DecodeTrackId(uid string) (*track.Info, error) {
+	return t.client.DecodeTrack(uid)
 }
 
 func (t *Lavalink) handleVoiceServerUpdate(s *discordgo.Session, e *discordgo.VoiceServerUpdate) {

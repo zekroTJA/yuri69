@@ -10,7 +10,6 @@ import (
 	"github.com/zekrotja/yuri69/pkg/database"
 	"github.com/zekrotja/yuri69/pkg/debug"
 	"github.com/zekrotja/yuri69/pkg/discord"
-	"github.com/zekrotja/yuri69/pkg/lavalink"
 	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/storage"
 	"github.com/zekrotja/yuri69/pkg/util"
@@ -82,29 +81,22 @@ func main() {
 		dc.Close()
 	}()
 
-	// --- Setup Lavalink Connection ---
-	ll, err := lavalink.New(cfg.Lavalink, dc)
-	if err != nil {
-		logrus.WithError(err).Fatal("Lavalink connection failed")
-	}
-	logrus.Info("Lavalink connection initialized")
-	defer func() {
-		logrus.Info("Shutting down Lavalink connection ...")
-		ll.Close()
-	}()
-
 	// --- Setup Player ---
-	pl, err := player.NewPlayer(cfg.Player, dc, st, ll)
+	pl, err := player.NewPlayer(cfg.Player, dc, st)
 	if err != nil {
-		logrus.WithError(err).Fatal("Manager creation failed")
+		logrus.WithError(err).Fatal("Player creation failed")
 	}
 	go func() {
 		err = pl.ListenAndServeBlocking()
 		if err != nil {
-			logrus.WithError(err).Fatal("Manager file provider startup failed")
+			logrus.WithError(err).Fatal("Player startup failed")
 		}
 	}()
-	logrus.Info("Player manager initialized")
+	logrus.Info("Player initialized")
+	defer func() {
+		logrus.Info("Shutting down player ...")
+		pl.Close()
+	}()
 
 	// --- Setup Controller ---
 	ct, err := controller.New(db, st, pl, dc)
