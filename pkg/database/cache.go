@@ -52,6 +52,16 @@ func (t *DatabaseCache) GetSounds() ([]Sound, error) {
 	return r, nil
 }
 
+func (t *DatabaseCache) PutSound(sound Sound) error {
+	t.cache.Delete("sounds")
+	return t.IDatabase.PutSound(sound)
+}
+
+func (t *DatabaseCache) RemoveSound(uid string) error {
+	t.cache.Delete("sound")
+	return t.IDatabase.RemoveSound(uid)
+}
+
 func (t *DatabaseCache) SetGuildVolume(guildID string, volume int) error {
 	t.cache.Store(ckey("guilds", guildID, "volume"), volume)
 	return t.IDatabase.SetGuildVolume(guildID, volume)
