@@ -6,6 +6,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/player"
+	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 type playerController struct {
@@ -16,6 +17,7 @@ func NewPlayerController(r *routing.RouteGroup, ct *controller.Controller) {
 	t := playerController{ct: ct}
 	r.Post("/join", t.handleJoin)
 	r.Post("/leave", t.handleLeave)
+	r.Post("/play/random", t.handlePlayRandom)
 	r.Post("/play/<ident>", t.handlePlay)
 	r.Post("/stop", t.handleStop)
 	r.Post("/volume", t.handleSetVolume)
@@ -38,6 +40,19 @@ func (t *playerController) handleLeave(ctx *routing.Context) error {
 	userid, _ := ctx.Get("userid").(string)
 
 	err := t.ct.LeaveChannel("", userid)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(StatusOK)
+}
+
+func (t *playerController) handlePlayRandom(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+	filterMust := util.SplitAndClean(ctx.Query("include"), ",")
+	filterNot := util.SplitAndClean(ctx.Query("exclude"), ",")
+
+	err := t.ct.PlayRandom(userid, filterMust, filterNot)
 	if err != nil {
 		return err
 	}

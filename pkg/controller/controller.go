@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/rand"
 	"mime"
 	"net/http"
 	"os/exec"
@@ -12,12 +13,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
 	"github.com/zekroTJA/timedmap"
 	"github.com/zekrotja/yuri69/pkg/database"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/errs"
+	"github.com/zekrotja/yuri69/pkg/generic"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/static"
@@ -38,6 +41,7 @@ type Controller struct {
 	ffmpegExec string
 
 	pendingCrations *timedmap.TimedMap[string, string]
+	history         *generic.RingQueue[string]
 }
 
 func New(
@@ -52,12 +56,19 @@ func New(
 		err error
 	)
 
+	rand.Seed(time.Now().UnixNano())
+
 	t.db = db
 	t.st = st
 	t.pl = pl
 	t.dg = dg
 
 	t.pendingCrations = timedmap.New[string, string](5 * time.Minute)
+
+	t.history = generic.NewRingQueue[string](1)
+	if err = t.resizeHistoryBuffer(); err != nil {
+		return nil, err
+	}
 
 	t.ffmpegExec, err = exec.LookPath("ffmpeg")
 	if errors.Is(err, exec.ErrNotFound) {
@@ -174,7 +185,8 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 		return Sound{}, err
 	}
 
-	return req.Sound, nil
+	err = t.resizeHistoryBuffer()
+	return req.Sound, err
 }
 
 func (t *Controller) ListSounds(
@@ -182,25 +194,13 @@ func (t *Controller) ListSounds(
 	tagsMust []string,
 	tagsNot []string,
 ) ([]Sound, error) {
-	if order == "" {
-		order = string(SortOrderCreated)
-	}
-	sounds, err := t.db.GetSounds()
-	if err == database.ErrNotFound {
-		sounds = []Sound{}
-	} else if err != nil {
+	sounds, err := t.listSoundsFiltered(tagsMust, tagsNot)
+	if err != nil {
 		return nil, err
 	}
 
-	if len(tagsMust) != 0 || len(tagsNot) != 0 {
-		newSounds := make([]Sound, 0, len(sounds))
-		for _, sound := range sounds {
-			if !util.ContainsAll(sound.Tags, tagsMust) || util.ContainsAny(sound.Tags, tagsNot) {
-				continue
-			}
-			newSounds = append(newSounds, sound)
-		}
-		sounds = newSounds
+	if order == "" {
+		order = string(SortOrderCreated)
 	}
 
 	var less func(i, j int) bool
@@ -265,6 +265,11 @@ func (t *Controller) RemoveSound(id, userID string) error {
 	}
 
 	err = t.st.DeleteObject(static.BucketSounds, id)
+	if err != nil {
+		return err
+	}
+
+	err = t.resizeHistoryBuffer()
 	return err
 }
 
@@ -303,27 +308,39 @@ func (t *Controller) Play(userID, ident string) error {
 		return t.pl.Play(vs.GuildID, vs.ChannelID, ident)
 	}
 
-	volume, err := t.db.GetGuildVolume(vs.GuildID)
-	if err == database.ErrNotFound {
-		err = nil
-		volume = 50
+	return t.play(vs, ident)
+}
+
+func (t *Controller) PlayRandom(userID string, tagsMust []string, tagsNot []string) error {
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return errs.WrapUserError("you need to be in a voice channel to perform this action")
 	}
+
+	sounds, err := t.listSoundsFiltered(tagsMust, tagsNot)
 	if err != nil {
 		return err
 	}
 
-	if err = t.pl.Init(vs.GuildID, vs.ChannelID); err != nil {
-		return err
+	historySnapshot := t.history.Snapshot()
+
+	var sound Sound
+	// If no sound could be picked which is not in the history
+	// in 10 tries, play the last randomly picked sound anyway
+	// to prevent long wait times.
+	for i := 0; i < 10; i++ {
+		rng := rand.Intn(len(sounds))
+		sound = sounds[rng]
+		if !util.Contains(historySnapshot, sound.Uid) {
+			break
+		}
 	}
 
-	if err = t.pl.SetVolume(vs.GuildID, uint16(volume)); err != nil {
-		return err
+	if err = t.play(vs, sound.Uid); err != nil {
+		return nil
 	}
 
-	return t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
-}
-
-func (t *Controller) PlayRandom() error {
+	t.history.Enqueue(sound.Uid)
 	return nil
 }
 
@@ -375,4 +392,66 @@ func (t *Controller) ffmpeg(
 	}
 
 	return err
+}
+
+func (t *Controller) listSoundsFiltered(tagsMust []string, tagsNot []string) ([]Sound, error) {
+	sounds, err := t.db.GetSounds()
+	if err == database.ErrNotFound {
+		sounds = []Sound{}
+	} else if err != nil {
+		return nil, err
+	}
+
+	if len(tagsMust) != 0 || len(tagsNot) != 0 {
+		newSounds := make([]Sound, 0, len(sounds))
+		for _, sound := range sounds {
+			if !util.ContainsAll(sound.Tags, tagsMust) || util.ContainsAny(sound.Tags, tagsNot) {
+				continue
+			}
+			newSounds = append(newSounds, sound)
+		}
+		sounds = newSounds
+	}
+
+	return sounds, nil
+}
+
+func (t *Controller) resizeHistoryBuffer() error {
+	sounds, err := t.db.GetSounds()
+	if err != nil {
+		return err
+	}
+
+	nSounds := len(sounds)
+
+	nBuff := nSounds / 5
+	if nBuff > 10 {
+		nBuff = 10
+	}
+
+	t.history.Resize(nBuff)
+	logrus.WithField("size", nBuff).Debug("Resized history buffer")
+
+	return nil
+}
+
+func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
+	volume, err := t.db.GetGuildVolume(vs.GuildID)
+	if err == database.ErrNotFound {
+		err = nil
+		volume = 50
+	}
+	if err != nil {
+		return err
+	}
+
+	if err = t.pl.Init(vs.GuildID, vs.ChannelID); err != nil {
+		return err
+	}
+
+	if err = t.pl.SetVolume(vs.GuildID, uint16(volume)); err != nil {
+		return err
+	}
+
+	return t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
 }
