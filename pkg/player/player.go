@@ -83,13 +83,14 @@ func NewPlayer(
 
 	t.SubscribeFunc(func(e Event) {
 		entry := logrus.WithFields(logrus.Fields{
-			"type":  e.Type,
-			"ident": e.Ident,
-			"guild": e.GuildID,
+			"type":   e.Type,
+			"ident":  e.Ident,
+			"guild":  e.GuildID,
+			"userid": e.UserID,
 		})
 
 		if e.Err != nil {
-			entry.WithError(err).Error("Lavalink Event")
+			entry.WithError(err).Error("Player Error")
 		} else {
 			entry.Debug("Lavalink Event")
 		}
@@ -195,6 +196,8 @@ func (t *Player) handleVoiceUpdate(_ *discordgo.Session, e *discordgo.VoiceState
 	} else if e.BeforeUpdate != nil && e.ChannelID == "" {
 		t.onVoiceLeave(e)
 	}
+
+	t.checkFastTrigger(e)
 }
 
 func (t *Player) initVs(guildID, channelID string) {
@@ -279,6 +282,25 @@ func (t *Player) cancelAutoLeave(e *discordgo.VoiceState) {
 			t.autoLeaveTimer.Stop()
 			t.autoLeaveTimer = nil
 		}
+	}
+}
+
+func (t *Player) checkFastTrigger(e *discordgo.VoiceStateUpdate) {
+	if e.UserID == t.dc.Session().State.User.ID {
+		return
+	}
+
+	if e.BeforeUpdate != nil && !e.BeforeUpdate.SelfMute && e.SelfMute {
+		time.AfterFunc(250*time.Millisecond, func() {
+			vs, ok := t.dc.FindUserVS(e.UserID)
+			if ok && !vs.SelfMute {
+				t.Publish(Event{
+					Type:    EventFastTrigger,
+					GuildID: vs.GuildID,
+					UserID:  vs.UserID,
+				})
+			}
+		})
 	}
 }
 

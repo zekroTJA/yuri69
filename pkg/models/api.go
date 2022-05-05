@@ -48,3 +48,7 @@ type SoundUploadResponse struct {
 type SetVolumeRequest struct {
 	Volume int `json:"volume"`
 }
+
+type FastTrigger struct {
+	FastTrigger string `json:"fast_trigger"`
+}

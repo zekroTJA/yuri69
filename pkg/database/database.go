@@ -14,8 +14,11 @@ type IDatabase interface {
 	GetSounds() ([]Sound, error)
 	GetSound(uid string) (Sound, error)
 
-	SetGuildVolume(guildID string, volume int) error
 	GetGuildVolume(guildID string) (int, error)
+	SetGuildVolume(guildID string, volume int) error
+
+	GetUserFastTrigger(userID string) (string, error)
+	SetUserFastTrigger(userID, ident string) error
 }
 
 type DatabaseConfig struct {

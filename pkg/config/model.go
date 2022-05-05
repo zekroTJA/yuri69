@@ -32,6 +32,9 @@ var DefaultConfig = Config{
 			AccessTokenLifetime:  10 * time.Minute,
 		},
 	},
+	Player: player.PlayerConfig{
+		FastTriggerTime: 300 * time.Millisecond,
+	},
 }
 
 type Config struct {

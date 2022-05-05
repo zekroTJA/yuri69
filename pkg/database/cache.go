@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 
@@ -37,7 +36,6 @@ func (t *DatabaseCache) GetSounds() ([]Sound, error) {
 
 	vi, _ := t.cache.Load(key)
 	v, ok := vi.([]Sound)
-	fmt.Println(v, ok)
 	if !ok {
 		v, err = t.IDatabase.GetSounds()
 		if err != nil {
@@ -62,11 +60,6 @@ func (t *DatabaseCache) RemoveSound(uid string) error {
 	return t.IDatabase.RemoveSound(uid)
 }
 
-func (t *DatabaseCache) SetGuildVolume(guildID string, volume int) error {
-	t.cache.Store(ckey("guilds", guildID, "volume"), volume)
-	return t.IDatabase.SetGuildVolume(guildID, volume)
-}
-
 func (t *DatabaseCache) GetGuildVolume(guildID string) (int, error) {
 	var err error
 	key := ckey("guilds", guildID, "volume")
@@ -82,6 +75,33 @@ func (t *DatabaseCache) GetGuildVolume(guildID string) (int, error) {
 	}
 
 	return v, nil
+}
+
+func (t *DatabaseCache) SetGuildVolume(guildID string, volume int) error {
+	t.cache.Store(ckey("guilds", guildID, "volume"), volume)
+	return t.IDatabase.SetGuildVolume(guildID, volume)
+}
+
+func (t *DatabaseCache) GetUserFastTrigger(userID string) (string, error) {
+	var err error
+	key := ckey("users", userID, "fasttrigger")
+
+	vi, _ := t.cache.Load(key)
+	v, ok := vi.(string)
+	if !ok {
+		v, err = t.IDatabase.GetUserFastTrigger(userID)
+		if err != nil {
+			return "", err
+		}
+		t.cache.Store(key, v)
+	}
+
+	return v, nil
+}
+
+func (t *DatabaseCache) SetUserFastTrigger(userID, ident string) error {
+	t.cache.Store(ckey("users", userID, "fasttrigger"), ident)
+	return t.IDatabase.SetUserFastTrigger(userID, ident)
 }
 
 // --- Felpers ---

@@ -11,6 +11,7 @@ import (
 const (
 	bucketSounds = "sounds"
 	bucketGuilds = "guilds"
+	bucketUsers  = "users"
 
 	keySeparator = ":"
 )
@@ -87,46 +88,55 @@ func (t *Nuts) GetSounds() ([]Sound, error) {
 }
 
 func (t *Nuts) GetSound(uid string) (Sound, error) {
-	var e *nutsdb.Entry
-	err := t.db.View(func(tx *nutsdb.Tx) error {
-		var err error
-		e, err = tx.Get(bucketSounds, []byte(uid))
-		return t.wrapErr(err)
+	return getValue[Sound](t, bucketSounds, key(uid))
+}
 
-	})
-	if err != nil {
-		return Sound{}, err
-	}
-
-	sound, err := unmarshal[Sound](e.Value)
-	return sound, err
+func (t *Nuts) GetGuildVolume(guildID string) (int, error) {
+	return getValue[int](t, bucketGuilds, key(guildID, "volume"))
 }
 
 func (t *Nuts) SetGuildVolume(guildID string, volume int) error {
-	data, err := marshal(volume)
+	return setValue(t, bucketGuilds, key(guildID, "volume"), volume)
+}
+
+func (t *Nuts) GetUserFastTrigger(userID string) (string, error) {
+	return getValue[string](t, bucketUsers, key(userID, "fasttrigger"))
+}
+
+func (t *Nuts) SetUserFastTrigger(userID, ident string) error {
+	return setValue(t, bucketUsers, key(userID, "fasttrigger"), ident)
+}
+
+// --- Internal ---
+
+func getValue[TVal any](t *Nuts, bucket string, key []byte) (TVal, error) {
+	var (
+		def TVal
+		e   *nutsdb.Entry
+	)
+
+	err := t.db.View(func(tx *nutsdb.Tx) error {
+		var err error
+		e, err = tx.Get(bucket, key)
+		return t.wrapErr(err)
+	})
+	if err != nil {
+		return def, err
+	}
+
+	v, err := unmarshal[TVal](e.Value)
+	return v, err
+}
+
+func setValue[TVal any](t *Nuts, bucket string, key []byte, val TVal) error {
+	data, err := marshal(val)
 	if err != nil {
 		return err
 	}
 	return t.db.Update(func(tx *nutsdb.Tx) error {
-		return tx.Put(bucketGuilds, key(guildID, "volume"), data, 0)
+		return tx.Put(bucket, key, data, 0)
 	})
 }
-
-func (t *Nuts) GetGuildVolume(guildID string) (int, error) {
-	var e *nutsdb.Entry
-	err := t.db.View(func(tx *nutsdb.Tx) error {
-		var err error
-		e, err = tx.Get(bucketGuilds, key(guildID, "volume"))
-		return t.wrapErr(err)
-	})
-	if err != nil {
-		return 0, err
-	}
-	v, err := unmarshal[int](e.Value)
-	return v, err
-}
-
-// --- Internal ---
 
 func (t *Nuts) wrapErr(err error) error {
 	if err == nil {

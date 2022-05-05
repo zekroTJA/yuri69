@@ -75,6 +75,13 @@ func New(
 		return nil, errors.New("ffmpeg executable was not found")
 	}
 
+	t.pl.SubscribeFunc(func(e player.Event) {
+		switch e.Type {
+		case player.EventFastTrigger:
+			t.execFastTrigger(e.GuildID, e.UserID)
+		}
+	})
+
 	return &t, nil
 }
 
@@ -345,6 +352,20 @@ func (t *Controller) Stop(userID string) error {
 	return t.pl.Stop(vs.GuildID)
 }
 
+func (t *Controller) GetVolume(userID string) (int, error) {
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return 0, errs.WrapUserError("you need to be in a voice channel to perform this action")
+	}
+
+	v, err := t.db.GetGuildVolume(vs.GuildID)
+	if err != nil && err != database.ErrNotFound {
+		return 0, err
+	}
+
+	return v, nil
+}
+
 func (t *Controller) SetVolume(userID string, volume int) error {
 	vs, ok := t.dg.FindUserVS(userID)
 	if !ok {
@@ -356,6 +377,18 @@ func (t *Controller) SetVolume(userID string, volume int) error {
 	}
 
 	return t.pl.SetVolume(vs.GuildID, uint16(volume))
+}
+
+func (t *Controller) GetFastTrigger(userID string) (string, error) {
+	ident, err := t.db.GetUserFastTrigger(userID)
+	if err == database.ErrNotFound {
+		err = nil
+	}
+	return ident, err
+}
+
+func (t *Controller) SetFastTrigger(userID, ident string) error {
+	return t.db.SetUserFastTrigger(userID, ident)
 }
 
 // --- Helpers ---
@@ -454,4 +487,32 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 	}
 
 	return t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
+}
+
+func (t *Controller) execFastTrigger(guildID, userID string) {
+	ident, err := t.db.GetUserFastTrigger(userID)
+	fmt.Println(userID, ident, err)
+	if err != nil && err != database.ErrNotFound {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"guildid": guildID,
+			"userid":  userID,
+		}).Error("Getting fast trigger setting failed")
+		return
+	}
+	if ident == "" {
+		return
+	}
+
+	if strings.ToLower(ident) == "random" {
+		err = t.PlayRandom(userID, nil, nil)
+	} else {
+		err = t.Play(userID, ident)
+	}
+	if err != nil {
+		logrus.WithError(err).WithFields(logrus.Fields{
+			"guildid": guildID,
+			"userid":  userID,
+			"ident":   ident,
+		}).Error("Playing fast trigegr sound failed")
+	}
 }
