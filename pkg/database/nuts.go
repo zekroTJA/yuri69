@@ -107,6 +107,14 @@ func (t *Nuts) SetUserFastTrigger(userID, ident string) error {
 	return setValue(t, bucketUsers, key(userID, "fasttrigger"), ident)
 }
 
+func (t *Nuts) GetGuildFilters(guildID string) (GuildFilters, error) {
+	return getValue[GuildFilters](t, bucketUsers, key(guildID, "filters"))
+}
+
+func (t *Nuts) SetGuildFilters(guildID string, f GuildFilters) error {
+	return setValue(t, bucketGuilds, key(guildID, "filters"), f)
+}
+
 // --- Internal ---
 
 func getValue[TVal any](t *Nuts, bucket string, key []byte) (TVal, error) {

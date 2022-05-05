@@ -132,8 +132,11 @@ func (t *Controller) UploadSound(
 }
 
 func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
-	if req.Uid == "" {
-		return Sound{}, errs.WrapUserError("uid must be specified")
+	req.Sanitize()
+
+	err := req.Check()
+	if err != nil {
+		return Sound{}, err
 	}
 
 	req.Uid = strings.ToLower(req.Uid)
@@ -142,7 +145,7 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 			fmt.Sprintf("UID '%s' is reserved and can not be used", req.Uid))
 	}
 
-	_, err := t.db.GetSound(req.Uid)
+	_, err = t.db.GetSound(req.Uid)
 	if err == nil {
 		return Sound{}, errs.WrapUserError("sound with specified ID already exists")
 	}
@@ -389,6 +392,36 @@ func (t *Controller) GetFastTrigger(userID string) (string, error) {
 
 func (t *Controller) SetFastTrigger(userID, ident string) error {
 	return t.db.SetUserFastTrigger(userID, ident)
+}
+
+func (t *Controller) GetGuildFilter(userID string) (GuildFilters, error) {
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return GuildFilters{},
+			errs.WrapUserError("you need to be in a voice channel to perform this action")
+	}
+
+	f, err := t.db.GetGuildFilters(vs.GuildID)
+	if err == database.ErrNotFound {
+		err = nil
+	}
+
+	return f, err
+}
+
+func (t *Controller) SetGuildFilter(userID string, f GuildFilters) error {
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return errs.WrapUserError("you need to be in a voice channel to perform this action")
+	}
+
+	f.Sanitize()
+	err := f.Check()
+	if err != nil {
+		return err
+	}
+
+	return t.db.SetGuildFilters(vs.GuildID, f)
 }
 
 // --- Helpers ---

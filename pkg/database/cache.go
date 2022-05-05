@@ -104,6 +104,28 @@ func (t *DatabaseCache) SetUserFastTrigger(userID, ident string) error {
 	return t.IDatabase.SetUserFastTrigger(userID, ident)
 }
 
+func (t *DatabaseCache) GetGuildFilters(guildID string) (GuildFilters, error) {
+	var err error
+	key := ckey("guilds", guildID, "filters")
+
+	vi, _ := t.cache.Load(key)
+	v, ok := vi.(GuildFilters)
+	if !ok {
+		v, err = t.IDatabase.GetGuildFilters(guildID)
+		if err != nil {
+			return GuildFilters{}, err
+		}
+		t.cache.Store(key, v)
+	}
+
+	return v, nil
+}
+
+func (t *DatabaseCache) SetGuildFilters(guildID string, f GuildFilters) error {
+	t.cache.Store(ckey("guilds", guildID, "filters"), f)
+	return t.IDatabase.SetGuildFilters(guildID, f)
+}
+
 // --- Felpers ---
 
 func ckey(elements ...string) string {

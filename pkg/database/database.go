@@ -19,6 +19,9 @@ type IDatabase interface {
 
 	GetUserFastTrigger(userID string) (string, error)
 	SetUserFastTrigger(userID, ident string) error
+
+	GetGuildFilters(guildID string) (GuildFilters, error)
+	SetGuildFilters(guildID string, f GuildFilters) error
 }
 
 type DatabaseConfig struct {

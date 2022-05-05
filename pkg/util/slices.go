@@ -1,5 +1,11 @@
 package util
 
+import (
+	"sort"
+
+	"golang.org/x/exp/constraints"
+)
+
 func IndexOf[T comparable](s []T, v T) int {
 	if len(s) == 0 {
 		return -1
@@ -47,4 +53,31 @@ func ContainsAll[T comparable](s []T, v []T) bool {
 	}
 
 	return true
+}
+
+func HasDuplicates[T constraints.Ordered](v []T) bool {
+	if len(v) < 2 {
+		return false
+	}
+
+	s := make([]T, len(v))
+	copy(s, v)
+
+	sort.Slice(s, func(i, j int) bool {
+		return s[i] < s[j]
+	})
+
+	for i := 1; i < len(s); i++ {
+		if s[i-1] == s[i] {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ApplyToAll[T any](s []T, f func(v T) T) {
+	for i, v := range s {
+		s[i] = f(v)
+	}
 }
