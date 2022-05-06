@@ -41,3 +41,19 @@ func (t *Discord) FindUserVS(userID string) (discordgo.VoiceState, bool) {
 	}
 	return discordgo.VoiceState{}, false
 }
+
+func (t *Discord) UsersInGuildVoice(guildID string) ([]string, error) {
+	g, err := t.session.State.Guild(guildID)
+	if err != nil {
+		return nil, err
+	}
+
+	userIDs := make([]string, 0, len(g.VoiceStates))
+	for _, vs := range g.VoiceStates {
+		if vs.UserID != t.session.State.User.ID {
+			userIDs = append(userIDs, vs.UserID)
+		}
+	}
+
+	return userIDs, nil
+}

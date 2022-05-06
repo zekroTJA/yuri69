@@ -6,7 +6,10 @@ require (
 	github.com/go-ozzo/ozzo-routing/v2 v2.4.0
 	github.com/gompus/snowflake v0.0.4
 	github.com/joho/godotenv v1.4.0
+	github.com/rs/xid v1.2.1
 	github.com/traefik/paerser v0.1.5
+	github.com/xujiajun/nutsdb v0.8.0
+	github.com/zekroTJA/timedmap v1.4.1-0.20220429084118-b915da1846e3
 	github.com/zekrotja/jwt v0.0.0-20220425161655-dc6ec1e71619
 )
 
@@ -29,12 +32,9 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rs/xid v1.2.1 // indirect
 	github.com/smartystreets/assertions v1.2.1 // indirect
 	github.com/xujiajun/mmap-go v1.0.1 // indirect
-	github.com/xujiajun/nutsdb v0.8.0 // indirect
 	github.com/xujiajun/utils v0.0.0-20190123093513-8bf096c4f53b // indirect
-	github.com/zekroTJA/timedmap v1.4.1-0.20220429084118-b915da1846e3 // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
 	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
@@ -46,7 +46,6 @@ require (
 require (
 	github.com/BurntSushi/toml v1.0.0 // indirect
 	github.com/bwmarrin/discordgo v0.25.0
-	github.com/go-ozzo/ozzo-routing v2.1.4+incompatible
 	github.com/lukasl-dev/waterlink/v2 v2.0.0
 	github.com/minio/minio-go/v7 v7.0.24
 	github.com/sirupsen/logrus v1.8.1

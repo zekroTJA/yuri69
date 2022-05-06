@@ -14,9 +14,9 @@ const (
 )
 
 type Event struct {
-	Type    EventType
-	Ident   string
-	GuildID string
-	UserID  string
-	Err     error
+	Type    EventType `json:"type"`
+	Ident   string    `json:"ident,omitempty"`
+	GuildID string    `json:"guild_id,omitempty"`
+	UserID  string    `json:"user_id,omitempty"`
+	Err     error     `json:"error,omitempty"`
 }

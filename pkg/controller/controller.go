@@ -32,7 +32,15 @@ var (
 	reservedUids = []string{"random", "upload", "create"}
 )
 
+type ControllerEvent struct {
+	IsBroadcast bool
+	Receivers   []string
+	Event       Event[any]
+}
+
 type Controller struct {
+	*util.EventBus[ControllerEvent]
+
 	db database.IDatabase
 	st storage.IStorage
 	pl *player.Player
@@ -58,6 +66,8 @@ func New(
 
 	rand.Seed(time.Now().UnixNano())
 
+	t.EventBus = util.NewEventBus[ControllerEvent]()
+
 	t.db = db
 	t.st = st
 	t.pl = pl
@@ -79,6 +89,19 @@ func New(
 		switch e.Type {
 		case player.EventFastTrigger:
 			t.execFastTrigger(e.GuildID, e.UserID)
+		default:
+			users, err := dg.UsersInGuildVoice(e.GuildID)
+			if err != nil {
+				return
+			}
+			t.Publish(ControllerEvent{
+				Receivers: users,
+				Event: Event[any]{
+					Type:    string(e.Type),
+					Origin:  "player",
+					Payload: e,
+				},
+			})
 		}
 	})
 
@@ -317,6 +340,21 @@ func (t *Controller) PlayRandom(userID string, tagsMust []string, tagsNot []stri
 	vs, ok := t.dg.FindUserVS(userID)
 	if !ok {
 		return errs.WrapUserError("you need to be in a voice channel to perform this action")
+	}
+
+	var (
+		guildFilters GuildFilters
+		err          error
+	)
+	if len(tagsMust) == 0 || len(tagsNot) == 0 {
+		guildFilters, err = t.db.GetGuildFilters(vs.GuildID)
+	}
+
+	if len(tagsNot) == 0 {
+		tagsNot = guildFilters.Exclude
+	}
+	if len(tagsMust) == 0 {
+		tagsNot = guildFilters.Include
 	}
 
 	sounds, err := t.listSoundsFiltered(tagsMust, tagsNot)

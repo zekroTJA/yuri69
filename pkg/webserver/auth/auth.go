@@ -92,6 +92,10 @@ func (t AuthHandler) HandleRefresh(ctx *routing.Context) error {
 	return t.respondAccessToken(ctx, claims)
 }
 
+func (t AuthHandler) CheckAuthRaw(authToken string) (Claims, error) {
+	return t.accessTokenHandler.Verify(authToken)
+}
+
 func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
 	authHeader := ctx.Request.Header.Get("authorization")
 	if !strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
@@ -101,7 +105,7 @@ func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
 	}
 	authToken := authHeader[len("bearer "):]
 
-	claims, err := t.accessTokenHandler.Verify(authToken)
+	claims, err := t.CheckAuthRaw(authToken)
 	if jwt.IsJWTError(err) {
 		ctx.Abort()
 		ctx.Response.WriteHeader(http.StatusUnauthorized)

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	routing "github.com/go-ozzo/ozzo-routing/v2"
-	"github.com/go-ozzo/ozzo-routing/v2/access"
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	"github.com/go-ozzo/ozzo-routing/v2/fault"
@@ -17,6 +16,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 	"github.com/zekrotja/yuri69/pkg/webserver/controllers"
+	"github.com/zekrotja/yuri69/pkg/webserver/ws"
 )
 
 type Webserver struct {
@@ -25,6 +25,7 @@ type Webserver struct {
 	server      *http.Server
 	authHandler *auth.AuthHandler
 	ct          *controller.Controller
+	hub         *ws.Hub
 }
 
 func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
@@ -40,13 +41,13 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 	t.router.Use(
 		content.TypeNegotiator(content.JSON),
 		fault.Recovery(logrus.Debugf, t.errorHandler),
-		access.CustomLogger(func(req *http.Request, res *access.LogResponseWriter, elapsed float64) {
-			clientIP := access.GetClientIP(req)
-			logrus.WithFields(logrus.Fields{
-				"client": clientIP,
-				"took":   fmt.Sprintf("%.3fms", elapsed),
-			}).Debugf("%s %s %s", req.Method, req.URL.String(), req.Proto)
-		}),
+		// access.CustomLogger(func(req *http.Request, res *access.LogResponseWriter, elapsed float64) {
+		// 	clientIP := access.GetClientIP(req)
+		// 	logrus.WithFields(logrus.Fields{
+		// 		"client": clientIP,
+		// 		"took":   fmt.Sprintf("%.3fms", elapsed),
+		// 	}).Debugf("%s %s %s", req.Method, req.URL.String(), req.Proto)
+		// }),
 	)
 
 	if debug.Enabled() {
@@ -72,7 +73,11 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 		t.onAuthError,
 		t.authHandler.HandleLogin)
 
+	t.hub = ws.NewHub(t.authHandler)
+
 	t.registerRoutes(oauth)
+
+	t.ct.SubscribeFunc(t.eventHandler)
 
 	return &t, nil
 }
@@ -94,12 +99,26 @@ func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	gAuth.Get("/oauthcallback", oauth.HandlerCallback)
 	gAuth.Get("/refresh", t.authHandler.HandleRefresh)
 
+	gApi.Any("/ws", t.hub.Upgrade)
+
 	gApi.Use(t.authHandler.CheckAuth)
 
 	controllers.NewSoundsController(gApi.Group("/sounds"), t.ct)
 	controllers.NewPlayerController(gApi.Group("/players"), t.ct)
 	controllers.NewUsersController(gApi.Group("/users"), t.ct)
 	controllers.NewGuildsController(gApi.Group("/guilds"), t.ct)
+}
+
+func (t *Webserver) eventHandler(e controller.ControllerEvent) {
+	var err error
+	if e.IsBroadcast {
+		err = t.hub.Broadcast(e.Event)
+	} else {
+		err = t.hub.BroadcastScoped(e.Event, e.Receivers)
+	}
+	if err != nil {
+		logrus.WithError(err).Errorf("Broadcasting event failed: %+v", e)
+	}
 }
 
 func (t *Webserver) onAuthError(ctx *routing.Context, status int, msg string) error {
