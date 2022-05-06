@@ -85,25 +85,7 @@ func New(
 		return nil, errors.New("ffmpeg executable was not found")
 	}
 
-	t.pl.SubscribeFunc(func(e player.Event) {
-		switch e.Type {
-		case player.EventFastTrigger:
-			t.execFastTrigger(e.GuildID, e.UserID)
-		default:
-			users, err := dg.UsersInGuildVoice(e.GuildID)
-			if err != nil {
-				return
-			}
-			t.Publish(ControllerEvent{
-				Receivers: users,
-				Event: Event[any]{
-					Type:    string(e.Type),
-					Origin:  "player",
-					Payload: e,
-				},
-			})
-		}
-	})
+	t.pl.SubscribeFunc(t.playerEventHandler)
 
 	return &t, nil
 }
@@ -218,6 +200,15 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 		return Sound{}, err
 	}
 
+	t.Publish(ControllerEvent{
+		IsBroadcast: true,
+		Event: Event[any]{
+			Type:    EventSoundCreated,
+			Origin:  EventSenderController,
+			Payload: req.Sound,
+		},
+	})
+
 	err = t.resizeHistoryBuffer()
 	return req.Sound, err
 }
@@ -277,6 +268,15 @@ func (t *Controller) UpdateSound(newSound UpdateSoundRequest, userID string) (So
 		return Sound{}, err
 	}
 
+	t.Publish(ControllerEvent{
+		IsBroadcast: true,
+		Event: Event[any]{
+			Type:    EventSoundUpdated,
+			Origin:  EventSenderController,
+			Payload: newSound.Sound,
+		},
+	})
+
 	return newSound.Sound, nil
 }
 
@@ -301,6 +301,15 @@ func (t *Controller) RemoveSound(id, userID string) error {
 	if err != nil {
 		return err
 	}
+
+	t.Publish(ControllerEvent{
+		IsBroadcast: true,
+		Event: Event[any]{
+			Type:    EventSoundDeleted,
+			Origin:  EventSenderController,
+			Payload: sound,
+		},
+	})
 
 	err = t.resizeHistoryBuffer()
 	return err
@@ -417,7 +426,18 @@ func (t *Controller) SetVolume(userID string, volume int) error {
 		return err
 	}
 
-	return t.pl.SetVolume(vs.GuildID, uint16(volume))
+	err := t.pl.SetVolume(vs.GuildID, uint16(volume))
+	if err != nil {
+		return err
+	}
+
+	return t.publishToGuildUsers(vs.GuildID, Event[any]{
+		Type:   EventGuildFilterUpdated,
+		Origin: EventSenderController,
+		Payload: SetVolumeRequest{
+			Volume: volume,
+		},
+	})
 }
 
 func (t *Controller) GetFastTrigger(userID string) (string, error) {
@@ -459,7 +479,44 @@ func (t *Controller) SetGuildFilter(userID string, f GuildFilters) error {
 		return err
 	}
 
-	return t.db.SetGuildFilters(vs.GuildID, f)
+	err = t.db.SetGuildFilters(vs.GuildID, f)
+	if err != nil {
+		return err
+	}
+
+	return t.publishToGuildUsers(vs.GuildID, Event[any]{
+		Type:    EventGuildFilterUpdated,
+		Origin:  EventSenderController,
+		Payload: f,
+	})
+}
+
+func (t *Controller) GetCurrentState(userID string) (EventStatePayload, error) {
+	var (
+		res EventStatePayload
+		err error
+	)
+
+	vs, ok := t.dg.FindUserVS(userID)
+	if !ok {
+		return res, nil
+	}
+	res.Connected = true
+
+	res.Volume, err = t.db.GetGuildVolume(vs.GuildID)
+	if err == database.ErrNotFound {
+		err = nil
+		res.Volume = 50
+	}
+	if err != nil {
+		return EventStatePayload{}, err
+	}
+	res.Filters, err = t.db.GetGuildFilters(vs.GuildID)
+	if err != nil && err != database.ErrNotFound {
+		return EventStatePayload{}, err
+	}
+
+	return res, nil
 }
 
 // --- Helpers ---
@@ -585,5 +642,53 @@ func (t *Controller) execFastTrigger(guildID, userID string) {
 			"userid":  userID,
 			"ident":   ident,
 		}).Error("Playing fast trigegr sound failed")
+	}
+}
+
+func (t *Controller) publishToGuildUsers(guildID string, e Event[any]) error {
+	users, err := t.dg.UsersInGuildVoice(guildID)
+	if err != nil {
+		return err
+	}
+	t.Publish(ControllerEvent{
+		Receivers: users,
+		Event:     e,
+	})
+	return nil
+}
+
+func (t *Controller) playerEventHandler(e player.Event) {
+	switch e.Type {
+	case player.EventFastTrigger:
+		t.execFastTrigger(e.GuildID, e.UserID)
+
+	case player.EventVoiceJoin:
+		volume, err := t.db.GetGuildVolume(e.GuildID)
+		if err == database.ErrNotFound {
+			err = nil
+			volume = 50
+		}
+		if err != nil {
+			return
+		}
+		filters, err := t.db.GetGuildFilters(e.GuildID)
+		if err != nil && err != database.ErrNotFound {
+			return
+		}
+		t.publishToGuildUsers(e.GuildID, Event[any]{
+			Type:   string(e.Type),
+			Origin: EventSenderPlayer,
+			Payload: EventVoiceJoinPayload{
+				Volume:  volume,
+				Filters: filters,
+			},
+		})
+
+	default:
+		t.publishToGuildUsers(e.GuildID, Event[any]{
+			Type:    string(e.Type),
+			Origin:  EventSenderPlayer,
+			Payload: e,
+		})
 	}
 }

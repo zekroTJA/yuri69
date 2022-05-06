@@ -163,7 +163,11 @@ func (t *subscription) onMessage(msg []byte) {
 			return
 		}
 		t.userId = claims.UserID
-		t.publishEvent(Event[any]{Type: "authok"})
+		payload, err := t.hub.ct.GetCurrentState(t.userId)
+		if err != nil {
+			logrus.WithError(err).Error("Getting current state failed")
+		}
+		t.publishEvent(Event[any]{Type: "authok", Payload: payload})
 	}
 }
 

@@ -8,6 +8,9 @@ const (
 	EventPlayStuck     = EventType("playstuck")
 	EventPlayException = EventType("playexception")
 
+	EventVoiceJoin  = EventType("voicejoin")
+	EventVoiceLeave = EventType("voiceleave")
+
 	EventFastTrigger = EventType("fasttrigger")
 
 	EventError = EventType("error")

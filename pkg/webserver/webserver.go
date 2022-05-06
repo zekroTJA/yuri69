@@ -73,7 +73,7 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 		t.onAuthError,
 		t.authHandler.HandleLogin)
 
-	t.hub = ws.NewHub(t.authHandler)
+	t.hub = ws.NewHub(t.authHandler, t.ct)
 
 	t.registerRoutes(oauth)
 

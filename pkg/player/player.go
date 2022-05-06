@@ -205,6 +205,10 @@ func (t *Player) initVs(guildID, channelID string) {
 		GuildID:   guildID,
 		ChannelID: channelID,
 	})
+	t.Publish(Event{
+		Type:    EventVoiceJoin,
+		GuildID: guildID,
+	})
 	t.waiters.BroadcastAndRemove(guildID)
 }
 
@@ -239,6 +243,10 @@ func (t *Player) onVoiceLeave(e *discordgo.VoiceStateUpdate) {
 	if e.UserID == t.dc.Session().State.User.ID {
 		t.vcs.Delete(e.GuildID)
 		t.ll.Destroy(e.GuildID)
+		t.Publish(Event{
+			Type:    EventVoiceLeave,
+			GuildID: e.GuildID,
+		})
 		logrus.
 			WithField("guildID", e.GuildID).
 			WithField("chanID", e.ChannelID).

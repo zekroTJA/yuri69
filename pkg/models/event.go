@@ -6,6 +6,17 @@ import (
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
+const (
+	EventSoundCreated       = "soundcreated"
+	EventSoundUpdated       = "soundupdated"
+	EventSoundDeleted       = "sounddeleted"
+	EventVolumeUpdated      = "volumeupdated"
+	EventGuildFilterUpdated = "guildfilterupdated"
+
+	EventSenderController = "controller"
+	EventSenderPlayer     = "player"
+)
+
 type EventType struct {
 	Type string `json:"type"`
 }
@@ -23,6 +34,17 @@ type EventAuthPromptPayload struct {
 
 type EventAuthRequest struct {
 	Token string `json:"token"`
+}
+
+type EventVoiceJoinPayload struct {
+	Volume  int          `json:"volume,omitempty"`
+	Filters GuildFilters `json:"filters,omitempty"`
+}
+
+type EventStatePayload struct {
+	EventVoiceJoinPayload
+
+	Connected bool `json:"connected"`
 }
 
 type EventErrorPayload struct {

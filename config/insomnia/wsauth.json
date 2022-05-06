@@ -1,0 +1,6 @@
+{
+  "type": "auth",
+  "payload": {
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2ODMxODgyMjMsIm5iZiI6MTY1MTY1MjIyMywiaWF0IjoxNjUxNjUyMjIzLCJVc2VySUQiOiIyMjE5MDU2NzEyOTYyNTM5NTMifQ.VEww8mo_tRX2IHbC1Tzk7Wfbg5WGZYf-mbitgmsFO20"
+  }
+}

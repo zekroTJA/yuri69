@@ -7,6 +7,7 @@ import (
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
+	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/generic"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/util"
@@ -16,11 +17,12 @@ import (
 type Hub struct {
 	upgrader    websocket.Upgrader
 	authHandler *auth.AuthHandler
+	ct          *controller.Controller
 
 	subs generic.SyncMap[string, *subscription]
 }
 
-func NewHub(authHandler *auth.AuthHandler) *Hub {
+func NewHub(authHandler *auth.AuthHandler, ct *controller.Controller) *Hub {
 	return &Hub{
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -28,6 +30,7 @@ func NewHub(authHandler *auth.AuthHandler) *Hub {
 			CheckOrigin:     func(r *http.Request) bool { return true },
 		},
 		authHandler: authHandler,
+		ct:          ct,
 	}
 }
 
