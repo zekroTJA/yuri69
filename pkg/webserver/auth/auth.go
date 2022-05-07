@@ -9,6 +9,7 @@ import (
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/zekrotja/jwt"
 	"github.com/zekrotja/yuri69/pkg/debug"
+	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"
 )
 
@@ -99,17 +100,13 @@ func (t AuthHandler) CheckAuthRaw(authToken string) (Claims, error) {
 func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
 	authHeader := ctx.Request.Header.Get("authorization")
 	if !strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
-		ctx.Abort()
-		ctx.Response.WriteHeader(http.StatusUnauthorized)
-		return nil
+		return errs.WrapUserError("invalid access token", http.StatusUnauthorized)
 	}
 	authToken := authHeader[len("bearer "):]
 
 	claims, err := t.CheckAuthRaw(authToken)
 	if jwt.IsJWTError(err) {
-		ctx.Abort()
-		ctx.Response.WriteHeader(http.StatusUnauthorized)
-		return nil
+		return errs.WrapUserError("invalid access token", http.StatusUnauthorized)
 	}
 	if err != nil {
 		return err

@@ -41,13 +41,6 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 	t.router.Use(
 		content.TypeNegotiator(content.JSON),
 		fault.Recovery(logrus.Debugf, t.errorHandler),
-		// access.CustomLogger(func(req *http.Request, res *access.LogResponseWriter, elapsed float64) {
-		// 	clientIP := access.GetClientIP(req)
-		// 	logrus.WithFields(logrus.Fields{
-		// 		"client": clientIP,
-		// 		"took":   fmt.Sprintf("%.3fms", elapsed),
-		// 	}).Debugf("%s %s %s", req.Method, req.URL.String(), req.Proto)
-		// }),
 	)
 
 	if debug.Enabled() {
@@ -92,14 +85,14 @@ func (t *Webserver) ListenAndServeBlocking() error {
 }
 
 func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
+	t.router.Any("/ws", t.hub.Upgrade)
+
 	gApi := t.router.Group("/api/v1")
 
 	gAuth := gApi.Group("/auth")
 	gAuth.Get("/login", oauth.HandlerInit)
 	gAuth.Get("/oauthcallback", oauth.HandlerCallback)
 	gAuth.Get("/refresh", t.authHandler.HandleRefresh)
-
-	gApi.Any("/ws", t.hub.Upgrade)
 
 	gApi.Use(t.authHandler.CheckAuth)
 

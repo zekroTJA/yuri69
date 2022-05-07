@@ -147,18 +147,36 @@ func (t *subscription) onMessage(msg []byte) {
 		}
 		authPayload, err := unmarshal[Event[EventAuthRequest]](msg)
 		if err != nil {
-			t.publishEvent(WrapErrorEvent(err, http.StatusBadRequest))
+			t.publishEvent(Event[any]{
+				Type: "authpromptfailed",
+				Payload: StatusModel{
+					Status:  http.StatusBadRequest,
+					Message: err.Error(),
+				},
+			})
 			t.Close()
 			return
 		}
 		if authPayload.Payload.Token == "" {
-			t.publishEvent(WrapErrorEvent(errors.New("token is empty"), http.StatusBadRequest))
+			t.publishEvent(Event[any]{
+				Type: "authpromptfailed",
+				Payload: StatusModel{
+					Status:  http.StatusBadRequest,
+					Message: "token is empty",
+				},
+			})
 			t.Close()
 			return
 		}
 		claims, err := t.hub.authHandler.CheckAuthRaw(authPayload.Payload.Token)
 		if err != nil {
-			t.publishEvent(WrapErrorEvent(err, http.StatusBadRequest))
+			t.publishEvent(Event[any]{
+				Type: "authpromptfailed",
+				Payload: StatusModel{
+					Status:  http.StatusBadRequest,
+					Message: err.Error(),
+				},
+			})
 			t.Close()
 			return
 		}
