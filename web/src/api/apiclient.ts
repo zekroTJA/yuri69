@@ -1,0 +1,76 @@
+import { HttpClient } from "./httpclient";
+import {
+  Event,
+  FastTrigger,
+  GuildFilters,
+  Sound,
+  Status,
+  UploadSoundResponse,
+} from "./models";
+
+export class APIClient extends HttpClient {
+  constructor(onWsEnevt: (e: Event<any>) => void) {
+    super();
+    this.connectWS(onWsEnevt);
+  }
+
+  loginUrl(): string {
+    return this.basePath("auth/login");
+  }
+
+  sounds(): Promise<Sound> {
+    return this.req("GET", "sounds");
+  }
+
+  soundsUpload(file: File): Promise<UploadSoundResponse> {
+    return this.req("PUT", "sounds/upload", file);
+  }
+
+  soundsCreate(sound: Sound): Promise<Sound> {
+    return this.req("POST", "sounds/create", sound);
+  }
+
+  soundsUpdate(sound: Sound): Promise<Sound> {
+    return this.req("POST", `sounds/${sound.uid}`, sound);
+  }
+
+  soundsDelete(sound: Sound): Promise<Status> {
+    return this.req("DELETE", `sounds/${sound.uid}`);
+  }
+
+  playersJoin(): Promise<Status> {
+    return this.req("POST", "players/join");
+  }
+
+  playersLeave(): Promise<Status> {
+    return this.req("POST", "players/leave");
+  }
+
+  playersPlay(ident: string): Promise<Status> {
+    return this.req("POST", `players/play/${ident}`);
+  }
+
+  playersStop(): Promise<Status> {
+    return this.req("POST", "players/stop");
+  }
+
+  playersVolume(volume: number): Promise<Status> {
+    return this.req("POST", "players/volume", { volume });
+  }
+
+  guildsGetFilters(): Promise<GuildFilters> {
+    return this.req("GET", "guilds/filters");
+  }
+
+  guildsSetFilters(filters: GuildFilters): Promise<GuildFilters> {
+    return this.req("POST", "guilds/filters", filters);
+  }
+
+  usersGetFasttrigger(): Promise<FastTrigger> {
+    return this.req("GET", "users/settings/fasttrigger");
+  }
+
+  usersSetFasttrigger(fasttrigger: FastTrigger): Promise<Status> {
+    return this.req("POST", "users/settings/fasttrigger", fasttrigger);
+  }
+}

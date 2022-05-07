@@ -1,45 +1,30 @@
-import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import { useState } from "react";
+import { createGlobalStyle, ThemeProvider } from "styled-components";
+import { DarkTheme } from "./theme/theme";
 
-function App() {
-  const [count, setCount] = useState(0)
+const GlobalStyle = createGlobalStyle`
+  @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500&display=swap");
 
+  body {
+    font-family: 'Rubik', sans-serif;
+    background-color: ${(p) => p.theme.background};
+    color: ${(p) => p.theme.text};
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+`;
+
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
-    </div>
-  )
-}
+    <ThemeProvider theme={DarkTheme}>
+      <div>
+        <p>pog</p>
+      </div>
+      <GlobalStyle />
+    </ThemeProvider>
+  );
+};
 
-export default App
+export default App;
