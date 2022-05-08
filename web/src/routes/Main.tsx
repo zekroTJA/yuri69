@@ -1,16 +1,25 @@
-import { useApi } from "../hooks/useApi";
-import { useSounds } from "../hooks/useSounds";
+import { Outlet } from 'react-router-dom';
+import styled from 'styled-components';
+import { Sidebar } from '../components/Sidebar';
 
 type Props = {};
 
-export const MainRoute: React.FC<Props> = ({}) => {
-  const { sounds } = useSounds();
+const MainContainer = styled.div`
+  height: 100%;
+  display: flex;
 
+  > main {
+    margin-left: 5.5em;
+  }
+`;
+
+export const MainRoute: React.FC<Props> = ({}) => {
   return (
-    <>
-      {sounds?.map((s) => (
-        <p>{s.uid}</p>
-      ))}
-    </>
+    <MainContainer>
+      <Sidebar />
+      <main>
+        <Outlet />
+      </main>
+    </MainContainer>
   );
 };
