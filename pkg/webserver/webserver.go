@@ -8,6 +8,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	"github.com/go-ozzo/ozzo-routing/v2/fault"
+	"github.com/go-ozzo/ozzo-routing/v2/file"
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/database"
@@ -69,6 +70,15 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 	t.hub = ws.NewHub(t.authHandler, t.ct)
 
 	t.registerRoutes(oauth)
+
+	t.router.Get("/*", file.Server(file.PathMap{
+		"/":       "",
+		"/assets": "/assets",
+	}, file.ServerOptions{
+		RootPath:     "web/dist",
+		IndexFile:    "index.html",
+		CatchAllFile: "index.html",
+	}))
 
 	t.ct.SubscribeFunc(t.eventHandler)
 
