@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"net/url"
 
-	routing "github.com/go-ozzo/ozzo-routing/v2"
+	routing "github.com/zekrotja/ozzo-routing/v2"
 )
 
 const (

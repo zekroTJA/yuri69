@@ -18,9 +18,11 @@ tasks:
 
   release:
     deps:
-      - build-be
+      - build
 
-  build-be:
+  build:
+    deps:
+      - embedfe
     cmds:
       - go build
           -o {{.BIN}}
@@ -28,7 +30,7 @@ tasks:
 
   run:
     deps:
-      - build-be
+      - build
     cmds:
       - '{{.BIN}}
           -c {{.CONFIG_DIR}}
@@ -45,14 +47,28 @@ tasks:
     cmds:
       - "yarn"
 
-  build-fe:
+  buildfe:
     dir: web/
+    sources:
+      - "**"
+    generates:
+      - "dist/**"
     deps:
       - deps
     cmds:
       - yarn build
 
-  run-fe:
+  embedfe:
+    deps:
+      - buildfe
+    cmds:
+      - '{{if eq OS "windows"}}
+          xcopy web\\dist pkg\\webserver\\_webdist /E /H /Y
+        {{else}}
+          cp -r web/dist/* pkg/webserver/_webdist
+        {{end}}'
+
+  runfe:
     dir: web/
     deps:
       - deps

@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/lukasl-dev/waterlink/v2/event"
 	"github.com/sirupsen/logrus"
 	"github.com/zekroTJA/timedmap"
+	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/generic"
 	"github.com/zekrotja/yuri69/pkg/lavalink"

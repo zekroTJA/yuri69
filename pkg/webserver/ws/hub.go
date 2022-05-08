@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
+	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/generic"
 	. "github.com/zekrotja/yuri69/pkg/models"

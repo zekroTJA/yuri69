@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	routing "github.com/go-ozzo/ozzo-routing/v2"
+	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"

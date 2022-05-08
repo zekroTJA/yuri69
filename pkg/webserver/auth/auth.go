@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/zekrotja/jwt"
+	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/debug"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"

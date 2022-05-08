@@ -1,15 +1,18 @@
 package webserver
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"net/http"
+	"os"
 
-	routing "github.com/go-ozzo/ozzo-routing/v2"
-	"github.com/go-ozzo/ozzo-routing/v2/content"
-	"github.com/go-ozzo/ozzo-routing/v2/cors"
-	"github.com/go-ozzo/ozzo-routing/v2/fault"
-	"github.com/go-ozzo/ozzo-routing/v2/file"
 	"github.com/sirupsen/logrus"
+	routing "github.com/zekrotja/ozzo-routing/v2"
+	"github.com/zekrotja/ozzo-routing/v2/content"
+	"github.com/zekrotja/ozzo-routing/v2/cors"
+	"github.com/zekrotja/ozzo-routing/v2/fault"
+	"github.com/zekrotja/ozzo-routing/v2/file"
 	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/database"
 	"github.com/zekrotja/yuri69/pkg/debug"
@@ -18,6 +21,11 @@ import (
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 	"github.com/zekrotja/yuri69/pkg/webserver/controllers"
 	"github.com/zekrotja/yuri69/pkg/webserver/ws"
+)
+
+var (
+	//go:embed _webdist
+	embeddedFS embed.FS
 )
 
 type Webserver struct {
@@ -70,15 +78,7 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 	t.hub = ws.NewHub(t.authHandler, t.ct)
 
 	t.registerRoutes(oauth)
-
-	t.router.Get("/*", file.Server(file.PathMap{
-		"/":       "",
-		"/assets": "/assets",
-	}, file.ServerOptions{
-		RootPath:     "web/dist",
-		IndexFile:    "index.html",
-		CatchAllFile: "index.html",
-	}))
+	t.hookFS()
 
 	t.ct.SubscribeFunc(t.eventHandler)
 
@@ -110,6 +110,28 @@ func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	controllers.NewPlayerController(gApi.Group("/players"), t.ct)
 	controllers.NewUsersController(gApi.Group("/users"), t.ct)
 	controllers.NewGuildsController(gApi.Group("/guilds"), t.ct)
+}
+
+func (t *Webserver) hookFS() error {
+	fsys, _ := fs.Sub(embeddedFS, "_webdist")
+	_, err := fs.Stat(fsys, "index.html")
+	if err != nil {
+		logrus.WithError(err).Debug("Using external static web files")
+		fsys = os.DirFS("web/dist")
+	} else {
+		logrus.Debug("Use embedded static web files")
+	}
+
+	t.router.Get("/*", file.Server(file.PathMap{
+		"/":       "",
+		"/assets": "/assets",
+	}, file.ServerOptions{
+		FS:           fsys,
+		IndexFile:    "index.html",
+		CatchAllFile: "index.html",
+	}))
+
+	return nil
 }
 
 func (t *Webserver) eventHandler(e controller.ControllerEvent) {
