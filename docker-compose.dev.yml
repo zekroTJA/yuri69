@@ -8,3 +8,4 @@ services:
       - "./config/lavalink/application.yml:/opt/Lavalink/application.yml:ro"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    restart: unless-stopped
