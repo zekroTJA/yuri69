@@ -4,14 +4,13 @@ export enum AppTheme {
 }
 
 export const DarkTheme = {
-  background: "#111417",
-  background2: "#191c20",
-  background3: "#25282c",
+  background: "#101018",
+  background2: "#171721",
+  background3: "#1d1d26",
 
   text: "#f4f4f5",
 
-  accent: "#fe281f",
-  accentDarker: "#b33a2d",
+  accent: "#137ed6",
 
   white: "#f4f4f5",
   whiteDarker: "#dddddd",

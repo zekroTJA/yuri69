@@ -18,7 +18,7 @@ export class APIClient extends HttpClient {
     return this.basePath("auth/login");
   }
 
-  sounds(): Promise<Sound> {
+  sounds(): Promise<Sound[]> {
     return this.req("GET", "sounds");
   }
 

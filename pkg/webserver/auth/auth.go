@@ -70,13 +70,15 @@ func (t AuthHandler) HandleLogin(ctx *routing.Context, userID string) error {
 		Secure:   !debug.Enabled(),
 	})
 
-	return t.respondAccessToken(ctx, claims)
+	ctx.Response.Header().Set("Location", "/")
+	ctx.Response.WriteHeader(http.StatusTemporaryRedirect)
+	return nil
 }
 
 func (t AuthHandler) HandleRefresh(ctx *routing.Context) error {
 	cookie, err := ctx.Request.Cookie("refreshToken")
 	if err == http.ErrNoCookie {
-		return ctx.WriteWithStatus(nil, http.StatusUnauthorized)
+		return errs.WrapUserError("no refresh token provided", http.StatusUnauthorized)
 	}
 	if err != nil {
 		return err
@@ -84,7 +86,7 @@ func (t AuthHandler) HandleRefresh(ctx *routing.Context) error {
 
 	claims, err := t.refreshTokenHandler.Verify(cookie.Value)
 	if jwt.IsJWTError(err) {
-		return ctx.WriteWithStatus(nil, http.StatusUnauthorized)
+		return errs.WrapUserError(err, http.StatusUnauthorized)
 	}
 	if err != nil {
 		return err
