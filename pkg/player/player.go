@@ -220,6 +220,11 @@ func (t *Player) onVoiceJoin(e *discordgo.VoiceStateUpdate) {
 			WithField("chanID", e.ChannelID).
 			Debug("Voice state created")
 	} else {
+		t.Publish(Event{
+			Type:    EventVoiceInit,
+			GuildID: e.GuildID,
+			UserID:  e.UserID,
+		})
 		t.cancelAutoLeave(e.VoiceState)
 	}
 }
@@ -252,6 +257,11 @@ func (t *Player) onVoiceLeave(e *discordgo.VoiceStateUpdate) {
 			WithField("chanID", e.ChannelID).
 			Debug("Voice state removed")
 	} else {
+		t.Publish(Event{
+			Type:    EventVoiceDeinit,
+			GuildID: e.GuildID,
+			UserID:  e.UserID,
+		})
 		t.autoLeave(e.BeforeUpdate)
 	}
 }

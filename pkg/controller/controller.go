@@ -663,24 +663,35 @@ func (t *Controller) playerEventHandler(e player.Event) {
 		t.execFastTrigger(e.GuildID, e.UserID)
 
 	case player.EventVoiceJoin:
-		volume, err := t.db.GetGuildVolume(e.GuildID)
-		if err == database.ErrNotFound {
-			err = nil
-			volume = 50
-		}
+		ep, err := t.getVoiceJoinPayload(e.GuildID)
 		if err != nil {
 			return
 		}
-		filters, err := t.db.GetGuildFilters(e.GuildID)
-		if err != nil && err != database.ErrNotFound {
+		t.publishToGuildUsers(e.GuildID, Event[any]{
+			Type:    string(e.Type),
+			Origin:  EventSenderPlayer,
+			Payload: ep,
+		})
+
+	case player.EventVoiceInit:
+		ep, err := t.getVoiceJoinPayload(e.GuildID)
+		if err != nil {
 			return
 		}
-		t.publishToGuildUsers(e.GuildID, Event[any]{
-			Type:   string(e.Type),
-			Origin: EventSenderPlayer,
-			Payload: EventVoiceJoinPayload{
-				Volume:  volume,
-				Filters: filters,
+		t.Publish(ControllerEvent{
+			Receivers: []string{e.UserID},
+			Event: Event[any]{
+				Type:    string(e.Type),
+				Origin:  EventSenderPlayer,
+				Payload: ep,
+			},
+		})
+	case player.EventVoiceDeinit:
+		t.Publish(ControllerEvent{
+			Receivers: []string{e.UserID},
+			Event: Event[any]{
+				Type:   string(e.Type),
+				Origin: EventSenderPlayer,
 			},
 		})
 
@@ -691,4 +702,26 @@ func (t *Controller) playerEventHandler(e player.Event) {
 			Payload: e,
 		})
 	}
+}
+
+func (t *Controller) getVoiceJoinPayload(guildID string) (EventVoiceJoinPayload, error) {
+	var (
+		e   EventVoiceJoinPayload
+		err error
+	)
+
+	e.Volume, err = t.db.GetGuildVolume(guildID)
+	if err == database.ErrNotFound {
+		err = nil
+		e.Volume = 50
+	}
+	if err != nil {
+		return EventVoiceJoinPayload{}, err
+	}
+	e.Filters, err = t.db.GetGuildFilters(guildID)
+	if err != nil && err != database.ErrNotFound {
+		return EventVoiceJoinPayload{}, err
+	}
+
+	return e, nil
 }

@@ -2,9 +2,15 @@ import { HttpClient } from './httpclient';
 import { Event, FastTrigger, GuildFilters, Sound, Status, UploadSoundResponse } from './models';
 
 export class APIClient extends HttpClient {
-  constructor(onWsEnevt: (e: Event<any>) => void) {
+  private _onWsEvent: (e: Event<any>) => void = () => {};
+
+  constructor() {
     super();
-    this.connectWS(onWsEnevt);
+    this.connectWS(this._onWsEvent);
+  }
+
+  set onWsEvent(handler: (e: Event<any>) => void) {
+    this._onWsEvent = handler;
   }
 
   loginUrl(): string {

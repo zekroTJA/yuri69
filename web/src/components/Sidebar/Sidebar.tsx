@@ -58,6 +58,7 @@ export const Sidebar: React.FC<Props> = ({}) => {
           label={`Order by ${order === 'created' ? 'Name' : 'Date'}`}
           color={theme.green}
         />
+        {/* <Entry /> */}
       </EntryContainer>
       <SidebarBackground />
     </SidebarContainer>

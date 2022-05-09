@@ -11,6 +11,9 @@ const (
 	EventVoiceJoin  = EventType("voicejoin")
 	EventVoiceLeave = EventType("voiceleave")
 
+	EventVoiceInit   = EventType("voiceinit")
+	EventVoiceDeinit = EventType("voicedeinit")
+
 	EventFastTrigger = EventType("fasttrigger")
 
 	EventError = EventType("error")

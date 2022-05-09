@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
+import { Button } from '../Button';
 import { Styled } from '../props';
 import { LinearGradient } from '../styleParts';
 
@@ -9,14 +10,22 @@ type Props = Styled & {
   to?: string;
   action?: () => void;
   color?: string;
+  disabled?: boolean;
 };
 
-const EntryContainer = styled.div<{ color?: string }>`
-  cursor: pointer;
+const EntryContainer = styled(Button)<{ color?: string }>`
   display: flex;
   align-items: center;
+  justify-content: left;
+  transition: all 0.2s ease;
+  padding: 0;
+  width: 100%;
 
   ${(p) => LinearGradient(p.color ?? p.theme.background3)}
+
+  &:enabled:hover {
+    filter: brightness(1.2);
+  }
 `;
 
 const Icon = styled.div`

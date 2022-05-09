@@ -1,9 +1,17 @@
 export enum EventType {
-  EventSoundCreated = "soundcreated",
-  EventSoundUpdated = "soundupdated",
-  EventSoundDeleted = "sounddeleted",
-  EventVolumeUpdated = "volumeupdated",
-  EventGuildFilterUpdated = "guildfilterupdated",
+  EventSoundCreated = 'soundcreated',
+  EventSoundUpdated = 'soundupdated',
+  EventSoundDeleted = 'sounddeleted',
+  EventVolumeUpdated = 'volumeupdated',
+  EventGuildFilterUpdated = 'guildfilterupdated',
+  EventPlayStart = 'playstart',
+  EventPlayEnd = 'playend',
+  EventPlayStuck = 'playstuck',
+  EventPlayException = 'playexception',
+  EventVoiceJoin = 'voicejoin',
+  EventVoiceLeave = 'voiceleave',
+  EventVoiceInit = 'voiceinit',
+  EventVoiceDeinit = 'voicedeinit',
 }
 
 export type Sound = {

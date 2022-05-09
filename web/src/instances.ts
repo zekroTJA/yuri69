@@ -1,3 +1,3 @@
-import { APIClient } from "./api";
+import { APIClient } from './api';
 
-export const ApiClientInstance = new APIClient(() => {});
+export const ApiClientInstance = new APIClient();
