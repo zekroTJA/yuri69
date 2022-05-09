@@ -432,7 +432,7 @@ func (t *Controller) SetVolume(userID string, volume int) error {
 	}
 
 	return t.publishToGuildUsers(vs.GuildID, Event[any]{
-		Type:   EventGuildFilterUpdated,
+		Type:   EventVolumeUpdated,
 		Origin: EventSenderController,
 		Payload: SetVolumeRequest{
 			Volume: volume,
