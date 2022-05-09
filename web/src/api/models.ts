@@ -1,17 +1,18 @@
 export enum EventType {
-  EventSoundCreated = 'soundcreated',
-  EventSoundUpdated = 'soundupdated',
-  EventSoundDeleted = 'sounddeleted',
-  EventVolumeUpdated = 'volumeupdated',
-  EventGuildFilterUpdated = 'guildfilterupdated',
-  EventPlayStart = 'playstart',
-  EventPlayEnd = 'playend',
-  EventPlayStuck = 'playstuck',
-  EventPlayException = 'playexception',
-  EventVoiceJoin = 'voicejoin',
-  EventVoiceLeave = 'voiceleave',
-  EventVoiceInit = 'voiceinit',
-  EventVoiceDeinit = 'voicedeinit',
+  AuthOK = 'authok',
+  SoundCreated = 'soundcreated',
+  SoundUpdated = 'soundupdated',
+  SoundDeleted = 'sounddeleted',
+  VolumeUpdated = 'volumeupdated',
+  GuildFilterUpdated = 'guildfilterupdated',
+  PlayStart = 'playstart',
+  PlayEnd = 'playend',
+  PlayStuck = 'playstuck',
+  PlayException = 'playexception',
+  VoiceJoin = 'voicejoin',
+  VoiceLeave = 'voiceleave',
+  VoiceInit = 'voiceinit',
+  VoiceDeinit = 'voicedeinit',
 }
 
 export type Sound = {
@@ -52,8 +53,8 @@ export type UploadSoundResponse = {
   deadline: string;
 };
 
-export type SetSoundRequest = {
-  volume: string;
+export type SetVolumeRequest = {
+  volume: number;
 };
 
 export type FastTrigger = {
@@ -82,9 +83,17 @@ export type EventVoiceJoinPayload = {
 
 export type EventStatePayload = EventVoiceJoinPayload & {
   connected: boolean;
+  joined: boolean;
 };
 
 export type EventErrorPlayload = {
   code: number;
   message: string;
+};
+
+export type EventPlayer = {
+  ident?: string;
+  guild_id?: string;
+  user_id?: string;
+  error?: string;
 };

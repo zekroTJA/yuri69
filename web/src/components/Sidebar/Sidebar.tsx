@@ -1,8 +1,16 @@
 import styled, { useTheme } from 'styled-components';
 import { Entry } from './Entry';
+import { useStore } from '../../store';
+import { useApi } from '../../hooks/useApi';
 import ImgAvatar from '../../../assets/avatar.jpg';
 import { ReactComponent as IconOrder } from '../../../assets/order.svg';
-import { useStore } from '../../store';
+import { ReactComponent as IconJoin } from '../../../assets/join.svg';
+import { ReactComponent as IconLeave } from '../../../assets/leave.svg';
+import { ReactComponent as IconStop } from '../../../assets/stop.svg';
+import { ReactComponent as IconVolume } from '../../../assets/volume.svg';
+import { Slider } from '../Slider';
+import { debounce } from 'debounce';
+import { useCallback } from 'react';
 
 type Props = {};
 
@@ -32,7 +40,7 @@ const EntryContainer = styled.nav`
   transition: all 0.2s ease;
 
   &:hover {
-    width: 18em;
+    width: 20em;
 
     ~ ${SidebarBackground} {
       background-color: rgba(0 0 0 / 40%);
@@ -44,21 +52,69 @@ const Avatar = styled.img`
   width: 4em;
 `;
 
+const Spacer = styled.div`
+  width: 100%;
+  height: 0.6em;
+`;
+
 export const Sidebar: React.FC<Props> = ({}) => {
-  const [order, setOrder] = useStore((s) => [s.order, s.setOrder]);
+  const fetch = useApi();
+  const [order, setOrder, connected, joined, playing, volume, setVolume] = useStore((s) => [
+    s.order,
+    s.setOrder,
+    s.connected,
+    s.joined,
+    s.playing,
+    s.volume,
+    s.setVolume,
+  ]);
   const theme = useTheme();
+
+  const _setVolume = (v: number) => {
+    setVolume(v);
+    _updateVolume(v);
+  };
+
+  const _updateVolume = useCallback(
+    debounce((v: number) => {
+      fetch((c) => c.playersVolume(v)).catch();
+    }, 250),
+    [],
+  );
 
   return (
     <SidebarContainer>
       <EntryContainer>
         <Entry to="/" icon={<Avatar src={ImgAvatar} />} label="Yuri" />
+        <Spacer />
         <Entry
           action={() => setOrder(order === 'created' ? 'name' : 'created')}
           icon={<IconOrder />}
           label={`Order by ${order === 'created' ? 'Name' : 'Date'}`}
           color={theme.green}
         />
-        {/* <Entry /> */}
+        <Entry
+          action={() => fetch((c) => (joined ? c.playersLeave() : c.playersJoin())).catch()}
+          icon={joined ? <IconLeave /> : <IconJoin />}
+          label={joined ? 'Leave' : 'Join'}
+          disabled={!connected}
+          color={theme.orange}
+        />
+        <Entry
+          action={() => fetch((c) => c.playersStop()).catch()}
+          icon={<IconStop />}
+          label="Stop"
+          disabled={!connected || !playing}
+          color={theme.pink}
+        />
+        <Entry
+          icon={<IconVolume />}
+          label={
+            <Slider min={1} max={200} value={volume} onChange={_setVolume} disabled={!connected} />
+          }
+          disabled={!connected}
+          color={theme.cyan}
+        />
       </EntryContainer>
       <SidebarBackground />
     </SidebarContainer>

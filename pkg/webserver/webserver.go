@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	//go:embed _webdist
+	//go:embed _webdist/*
 	embeddedFS embed.FS
 )
 

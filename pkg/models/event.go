@@ -45,6 +45,7 @@ type EventStatePayload struct {
 	EventVoiceJoinPayload
 
 	Connected bool `json:"connected"`
+	Joined    bool `json:"joined"`
 }
 
 type EventErrorPayload struct {

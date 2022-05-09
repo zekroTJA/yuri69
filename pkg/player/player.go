@@ -167,6 +167,11 @@ func (t *Player) Close() error {
 	return t.ll.Close()
 }
 
+func (t *Player) HasPlayer(guildID string) bool {
+	_, ok := t.vcs.Load(guildID)
+	return ok
+}
+
 // --- Internal stuff ---
 
 func (t *Player) handleGetFile(ctx *routing.Context) error {

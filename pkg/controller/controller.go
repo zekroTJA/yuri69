@@ -503,6 +503,8 @@ func (t *Controller) GetCurrentState(userID string) (EventStatePayload, error) {
 	}
 	res.Connected = true
 
+	res.Joined = t.pl.HasPlayer(vs.GuildID)
+
 	res.Volume, err = t.db.GetGuildVolume(vs.GuildID)
 	if err == database.ErrNotFound {
 		err = nil
@@ -619,7 +621,6 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 
 func (t *Controller) execFastTrigger(guildID, userID string) {
 	ident, err := t.db.GetUserFastTrigger(userID)
-	fmt.Println(userID, ident, err)
 	if err != nil && err != database.ErrNotFound {
 		logrus.WithError(err).WithFields(logrus.Fields{
 			"guildid": guildID,

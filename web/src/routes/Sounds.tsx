@@ -1,4 +1,5 @@
-import { useSounds } from "../hooks/useSounds";
+import { useSounds } from '../hooks/useSounds';
+import { uid } from 'react-uid';
 
 type Props = {};
 
@@ -8,7 +9,7 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
   return (
     <>
       {sounds?.map((s) => (
-        <p>{s.uid}</p>
+        <p key={uid(s)}>{s.uid}</p>
       ))}
     </>
   );

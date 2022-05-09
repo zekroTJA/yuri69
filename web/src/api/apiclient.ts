@@ -6,7 +6,9 @@ export class APIClient extends HttpClient {
 
   constructor() {
     super();
-    this.connectWS(this._onWsEvent);
+    this.connectWS((e) => {
+      this._onWsEvent(e);
+    });
   }
 
   set onWsEvent(handler: (e: Event<any>) => void) {

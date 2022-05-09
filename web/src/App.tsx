@@ -4,10 +4,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainRoute } from './routes/Main';
 import { LoginRoute } from './routes/Login';
 import { SoundsRoute } from './routes/Sounds';
+import { useWSHooks } from './hooks/useWSHooks';
+import './fonts.css';
 
 const GlobalStyle = createGlobalStyle`
-  @import url("https://fonts.googleapis.com/css2?family=Rubik:wght@300;500;600&display=swap");
-
   body {
     font-family: 'Rubik', sans-serif;
     background-color: ${(p) => p.theme.background};
@@ -27,6 +27,8 @@ const Outlet = styled.div`
 `;
 
 const App: React.FC = () => {
+  useWSHooks();
+
   return (
     <ThemeProvider theme={DarkTheme}>
       <Outlet>

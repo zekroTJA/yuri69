@@ -6,7 +6,7 @@ import { LinearGradient } from '../styleParts';
 
 type Props = Styled & {
   icon: JSX.Element;
-  label: string;
+  label: JSX.Element | string;
   to?: string;
   action?: () => void;
   color?: string;
@@ -35,6 +35,7 @@ const Icon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 1em;
 
   > svg {
     width: 50%;
@@ -46,7 +47,7 @@ const Label = styled.span`
   font-weight: 600;
   text-transform: uppercase;
   font-size: 1.3rem;
-  padding: 0 1em;
+  padding: 0 1em 0 0;
   white-space: nowrap;
 `;
 
@@ -58,10 +59,12 @@ export const Entry: React.FC<Props> = ({ icon, label, to, action = () => {}, col
     else action();
   };
 
+  const _label = typeof label === 'string' ? <Label>{label}</Label> : label;
+
   return (
     <EntryContainer onClick={_onClick} color={color} {...props}>
       <Icon>{icon}</Icon>
-      <Label>{label}</Label>
+      {_label}
     </EntryContainer>
   );
 };
