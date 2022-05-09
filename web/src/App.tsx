@@ -6,6 +6,8 @@ import { LoginRoute } from './routes/Login';
 import { SoundsRoute } from './routes/Sounds';
 import { useWSHooks } from './hooks/useWSHooks';
 import './fonts.css';
+import { SettingsRoute } from './routes/Settings';
+import { UploadRoute } from './routes/Upload';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -18,6 +20,10 @@ const GlobalStyle = createGlobalStyle`
 
   * {
     box-sizing: border-box;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
   }
 `;
 
@@ -36,7 +42,8 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<MainRoute />}>
               <Route index element={<SoundsRoute />} />
-              <Route path="settings" element={<p>pog</p>} />
+              <Route path="upload" element={<UploadRoute />} />
+              <Route path="settings" element={<SettingsRoute />} />
             </Route>
             <Route path="/login" element={<LoginRoute />} />
             <Route path="*" element={<Navigate to="/" />} />

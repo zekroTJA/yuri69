@@ -8,6 +8,8 @@ import { ReactComponent as IconJoin } from '../../../assets/join.svg';
 import { ReactComponent as IconLeave } from '../../../assets/leave.svg';
 import { ReactComponent as IconStop } from '../../../assets/stop.svg';
 import { ReactComponent as IconVolume } from '../../../assets/volume.svg';
+import { ReactComponent as IconSettings } from '../../../assets/settings.svg';
+import { ReactComponent as IconUpload } from '../../../assets/upload.svg';
 import { Slider } from '../Slider';
 import { debounce } from 'debounce';
 import { useCallback } from 'react';
@@ -115,6 +117,9 @@ export const Sidebar: React.FC<Props> = ({}) => {
           disabled={!connected}
           color={theme.cyan}
         />
+        <Spacer />
+        <Entry icon={<IconUpload />} label="Upload" to="upload" color={theme.gray} />
+        <Entry icon={<IconSettings />} label="Settings" to="settings" color={theme.gray} />
       </EntryContainer>
       <SidebarBackground />
     </SidebarContainer>

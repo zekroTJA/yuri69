@@ -5,12 +5,12 @@ import styled from 'styled-components';
 import { useStore } from '../store';
 import { Sound } from '../api/models';
 import { useApi } from '../hooks/useApi';
+import { RouteContainer } from '../components/RouteContainer';
 
 type Props = {};
 
-const ButtonsContainer = styled.div`
+const ButtonsContainer = styled(RouteContainer)`
   display: flex;
-  padding-top: 1.5em;
   gap: 0.7em;
 `;
 
