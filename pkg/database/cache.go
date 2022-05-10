@@ -56,7 +56,7 @@ func (t *DatabaseCache) PutSound(sound Sound) error {
 }
 
 func (t *DatabaseCache) RemoveSound(uid string) error {
-	t.cache.Delete("sound")
+	t.cache.Delete("sounds")
 	return t.IDatabase.RemoveSound(uid)
 }
 
