@@ -96,6 +96,14 @@ func (t *Webserver) ListenAndServeBlocking() error {
 
 func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	t.router.Any("/ws", t.hub.Upgrade)
+	t.router.Get("/invite", func(ctx *routing.Context) error {
+		url := fmt.Sprintf(
+			"https://discord.com/api/oauth2/authorize?client_id=%s&permissions=36702208&scope=applications.commands%%20bot",
+			t.ct.GetSelfUser().ID)
+		ctx.Response.Header().Set("Location", url)
+		ctx.Response.WriteHeader(http.StatusTemporaryRedirect)
+		return nil
+	})
 
 	gApi := t.router.Group("/api/v1")
 
