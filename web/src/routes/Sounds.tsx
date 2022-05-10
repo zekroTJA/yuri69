@@ -87,7 +87,7 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
             sound={s}
             activate={_activateSound}
             active={s.uid === playing}
-            disabled={!connected}
+            playable={connected}
             openContext={_openSoundOptions}
           />
         ))}
@@ -107,14 +107,16 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
         show={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         heading="Delete Sound"
-        controls={[
-          <Button variant="red" onClick={_deleteSound}>
-            Delete
-          </Button>,
-          <Button variant="gray" onClick={() => setShowDeleteModal(false)}>
-            Cancel
-          </Button>,
-        ]}>
+        controls={
+          <>
+            <Button variant="red" onClick={_deleteSound}>
+              Delete
+            </Button>
+            <Button variant="gray" onClick={() => setShowDeleteModal(false)}>
+              Cancel
+            </Button>
+          </>
+        }>
         <span>
           Do you really want to delete the sound <Embed>{toDelete?.uid}</Embed>?
         </span>

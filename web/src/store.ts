@@ -1,7 +1,12 @@
 import create from 'zustand';
-import { GuildFilters } from './api';
+import { GuildFilters, Sound } from './api';
 
 type Store = {
+  sounds: Sound[];
+  setSounds: (sounds: Sound[]) => void;
+  addSound: (sound: Sound) => void;
+  removeSound: (sound: Sound) => void;
+
   order: string;
   setOrder: (order: string) => void;
 
@@ -22,6 +27,11 @@ type Store = {
 };
 
 export const useStore = create<Store>((set, get) => ({
+  sounds: [],
+  setSounds: (sounds) => set({ sounds }),
+  addSound: (sound) => set({ sounds: [sound, ...get().sounds] }),
+  removeSound: (sound) => set({ sounds: [...get().sounds.filter((s) => s.uid !== sound.uid)] }),
+
   order: 'created',
   setOrder: (order) => set({ order }),
 

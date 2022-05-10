@@ -23,6 +23,9 @@ tasks:
   build:
     deps:
       - embedfe
+      - builddry
+
+  builddry:
     cmds:
       - go build
           -o {{.BIN}}
@@ -30,7 +33,7 @@ tasks:
 
   run:
     deps:
-      - build
+      - builddry
     cmds:
       - '{{.BIN}}
           -c {{.CONFIG_DIR}}

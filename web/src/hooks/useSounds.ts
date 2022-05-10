@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Sound } from '../api';
+import { useEffect } from 'react';
 import { useStore } from '../store';
 import { useApi } from './useApi';
 
 export const useSounds = () => {
   const fetch = useApi();
 
-  const [order] = useStore((s) => [s.order]);
-  const [sounds, setSounds] = useState<Sound[]>();
+  const [sounds, setSounds, order] = useStore((s) => [s.sounds, s.setSounds, s.order]);
 
   useEffect(() => {
     fetch((c) => c.sounds(order))

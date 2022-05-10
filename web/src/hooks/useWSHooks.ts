@@ -9,16 +9,20 @@ import {
   EventVoiceJoinPayload,
   GuildFilters,
   SetVolumeRequest,
+  Sound,
 } from '../api';
 
 export const useWSHooks = () => {
-  const [setConnected, setJoined, setPlaying, setVolume, setFilters] = useStore((s) => [
-    s.setConnected,
-    s.setJoined,
-    s.setPlaying,
-    s.setVolume,
-    s.setFilters,
-  ]);
+  const [setConnected, setJoined, setPlaying, setVolume, setFilters, addSound, removeSound] =
+    useStore((s) => [
+      s.setConnected,
+      s.setJoined,
+      s.setPlaying,
+      s.setVolume,
+      s.setFilters,
+      s.addSound,
+      s.removeSound,
+    ]);
 
   const _eventHandler = (e: Event<any>) => {
     console.log('WS Event', e);
@@ -77,6 +81,18 @@ export const useWSHooks = () => {
       case EventType.VolumeUpdated: {
         const pl = e.payload as SetVolumeRequest;
         setVolume(pl.volume);
+        break;
+      }
+
+      case EventType.SoundCreated: {
+        const pl = e.payload as Sound;
+        addSound(pl);
+        break;
+      }
+
+      case EventType.SoundDeleted: {
+        const pl = e.payload as Sound;
+        removeSound(pl);
         break;
       }
     }

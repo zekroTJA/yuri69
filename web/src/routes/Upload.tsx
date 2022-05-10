@@ -27,6 +27,7 @@ export const UploadRoute: React.FC<Props> = ({}) => {
       const res = await fetch((c) => c.soundsUpload(file));
       req.upload_id = res.upload_id;
       await fetch((c) => c.soundsCreate(req));
+      nav(-1);
     } catch {}
   };
 

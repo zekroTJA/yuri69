@@ -1,27 +1,28 @@
 import { Sound } from '../../api';
-import { Button } from '../Button';
-import { Disableable } from '../props';
+import { Button, ButtonVariant } from '../Button';
 
-type Props = Disableable & {
+type Props = {
   sound: Sound;
   active: boolean;
+  playable?: boolean;
   activate: (sound: Sound) => void;
   openContext?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, sound: Sound) => void;
 };
 
 export const SoundButton: React.FC<Props> = ({
   sound,
-  disabled = false,
+  playable = false,
   active,
   activate,
   openContext = () => {},
 }) => {
+  const _variant: ButtonVariant = active ? 'pink' : playable ? 'default' : 'gray';
+
   return (
     <Button
-      disabled={disabled}
-      onClick={() => activate(sound)}
+      onClick={() => playable && activate(sound)}
       onContextMenu={(e) => openContext(e, sound)}
-      variant={active ? 'pink' : 'default'}>
+      variant={_variant}>
       {sound.display_name || sound.uid}
     </Button>
   );
