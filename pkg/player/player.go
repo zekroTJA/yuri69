@@ -188,6 +188,7 @@ func (t *Player) handleGetFile(ctx *routing.Context) error {
 		logrus.WithError(err).Error("Writing file to response body failed")
 		return ctx.WriteWithStatus("", http.StatusInternalServerError)
 	}
+	defer r.Close()
 
 	ctx.Response.WriteHeader(http.StatusOK)
 	return nil
