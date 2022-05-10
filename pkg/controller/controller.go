@@ -168,6 +168,7 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 		return Sound{}, err
 	}
 	defer func() {
+		r.Close()
 		t.st.DeleteObject(static.BucketTemp, req.UploadId)
 		t.pendingCrations.Remove(req.UploadId)
 	}()
@@ -519,6 +520,10 @@ func (t *Controller) GetCurrentState(userID string) (EventStatePayload, error) {
 	}
 
 	return res, nil
+}
+
+func (t *Controller) GetSelfUser() discordgo.User {
+	return *t.dg.Session().State.User
 }
 
 // --- Helpers ---
