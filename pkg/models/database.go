@@ -1,11 +1,16 @@
 package models
 
 import (
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/util"
+)
+
+var (
+	uidRx = regexp.MustCompile(`^[a-z0-9_.-]{1,20}$`)
 )
 
 type Sound struct {
@@ -26,6 +31,10 @@ func (t Sound) String() string {
 func (t Sound) Check() error {
 	if t.Uid == "" {
 		return errs.WrapUserError("uid must be specified")
+	}
+
+	if !uidRx.MatchString(t.Uid) {
+		return errs.WrapUserError("malformed uid")
 	}
 
 	if util.HasDuplicates(t.Tags) {
