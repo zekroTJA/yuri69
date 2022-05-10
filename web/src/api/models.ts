@@ -42,8 +42,8 @@ export type AccessToken = {
 
 export type CreateSoundRequest = Sound & {
   upload_id: string;
-  normalize: string;
-  overdrive: string;
+  normalize: boolean;
+  overdrive: boolean;
 };
 
 export type UpdateSoundRequest = Sound;

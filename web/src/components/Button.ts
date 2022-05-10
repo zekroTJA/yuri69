@@ -26,6 +26,7 @@ export const Button = styled.button<Props>`
   cursor: pointer;
   transition: all 0.2s ease;
   justify-content: center;
+  height: fit-content;
 
   ${(p) => {
     switch (p.variant ?? 'default') {
@@ -61,3 +62,4 @@ export const Button = styled.button<Props>`
     filter: brightness(1.2);
   }
 `;
+

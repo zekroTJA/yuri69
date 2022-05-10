@@ -1,5 +1,13 @@
 import { HttpClient } from './httpclient';
-import { Event, FastTrigger, GuildFilters, Sound, Status, UploadSoundResponse } from './models';
+import {
+  CreateSoundRequest,
+  Event,
+  FastTrigger,
+  GuildFilters,
+  Sound,
+  Status,
+  UploadSoundResponse,
+} from './models';
 
 export class APIClient extends HttpClient {
   private _onWsEvent: (e: Event<any>) => void = () => {};
@@ -27,7 +35,7 @@ export class APIClient extends HttpClient {
     return this.req('PUT', 'sounds/upload', file);
   }
 
-  soundsCreate(sound: Sound): Promise<Sound> {
+  soundsCreate(sound: CreateSoundRequest): Promise<Sound> {
     return this.req('POST', 'sounds/create', sound);
   }
 

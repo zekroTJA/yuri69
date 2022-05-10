@@ -1,9 +1,9 @@
-import styled from "styled-components";
-import ImgAvatar from "../../assets/avatar.jpg";
-import { Button } from "../components/Button";
-import { ReactComponent as DcLogo } from "../../assets/dc-logo.svg";
-import { Small } from "../components/Small";
-import { ApiClientInstance } from "../instances";
+import styled from 'styled-components';
+import ImgAvatar from '../../assets/avatar.jpg';
+import { Button } from '../components/Button';
+import { ReactComponent as DcLogo } from '../../assets/dc-logo.svg';
+import { Smol } from '../components/Smol';
+import { ApiClientInstance } from '../instances';
 
 type Props = {};
 
@@ -37,10 +37,9 @@ export const LoginRoute: React.FC<Props> = ({}) => {
       <Button onClick={_onLogin}>
         <DcLogo /> Login with Discord
       </Button>
-      <Small>
-        No worries! Yuri will only rip off all your data from your Discord
-        account by logging in. 😉
-      </Small>
+      <Smol>
+        No worries! Yuri will only rip off all your data from your Discord account by logging in. 😉
+      </Smol>
     </LoginContainer>
   );
 };

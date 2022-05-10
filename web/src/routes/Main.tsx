@@ -10,6 +10,7 @@ const MainContainer = styled.div`
 
   > main {
     margin-left: 5.5em;
+    width: 100%;
   }
 `;
 
@@ -23,3 +24,4 @@ export const MainRoute: React.FC<Props> = ({}) => {
     </MainContainer>
   );
 };
+

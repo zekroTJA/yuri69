@@ -8,6 +8,7 @@ import { useWSHooks } from './hooks/useWSHooks';
 import './fonts.css';
 import { SettingsRoute } from './routes/Settings';
 import { UploadRoute } from './routes/Upload';
+import 'react-contexify/dist/ReactContexify.css';
 
 const GlobalStyle = createGlobalStyle`
   body {

@@ -21,6 +21,7 @@ const SidebarContainer = styled.div`
   width: 100%;
   height: 100%;
   pointer-events: none;
+  z-index: 10;
 `;
 
 const SidebarBackground = styled.div`
@@ -29,7 +30,7 @@ const SidebarBackground = styled.div`
   width: 100%;
   height: 100%;
   background-color: rgba(0 0 0 / 0);
-  transition: all 0.2s ease;
+  transition: all 0.2s ease 0.15s;
 `;
 
 const EntryContainer = styled.nav`
@@ -39,7 +40,7 @@ const EntryContainer = styled.nav`
   width: 4em;
   overflow: hidden;
   pointer-events: all;
-  transition: all 0.2s ease;
+  transition: all 0.2s ease 0.15s;
 
   &:hover {
     width: 20em;

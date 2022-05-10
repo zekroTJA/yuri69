@@ -33,7 +33,9 @@ export class HttpClient {
     let _body = null;
     if (!!body) {
       if (body instanceof File) {
-        _body = body;
+        const formData = new FormData();
+        formData.append('file', body);
+        _body = formData;
       } else {
         _headers.set('Content-Type', 'application/json');
         _body = JSON.stringify(body);
