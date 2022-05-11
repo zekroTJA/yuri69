@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import { CreateSoundRequest, Sound } from '../api';
+import { Embed } from '../components/Embed';
 import { FileDrop } from '../components/FileDrop';
 import { RouteContainer } from '../components/RouteContainer';
 import { SoundEditor } from '../components/SoundEditor';
 import { useApi } from '../hooks/useApi';
+import { useSnackBar } from '../hooks/useSnackBar';
 
 type Props = {};
 
@@ -19,6 +21,7 @@ export const UploadRoute: React.FC<Props> = ({}) => {
   const [sound, setSound] = useState({ normalize: true } as CreateSoundRequest);
   const fetch = useApi();
   const nav = useNavigate();
+  const { show } = useSnackBar();
 
   const _create = async () => {
     if (!file || !sound) return;
@@ -28,12 +31,17 @@ export const UploadRoute: React.FC<Props> = ({}) => {
       req.upload_id = res.upload_id;
       await fetch((c) => c.soundsCreate(req));
       nav(-1);
+      show(
+        <span>
+          Sound <Embed>{req.uid}</Embed> has successfully been created.
+        </span>,
+        'success',
+      );
     } catch {}
   };
 
   useEffect(() => {
     if (!!file && !sound.uid) setSound({ ...sound, uid: fileName(file.name) });
-    console.log(file?.type);
   }, [file]);
 
   return (

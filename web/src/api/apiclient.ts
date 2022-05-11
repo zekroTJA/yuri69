@@ -27,6 +27,10 @@ export class APIClient extends HttpClient {
     return this.basePath('auth/login');
   }
 
+  sound(id: string): Promise<Sound> {
+    return this.req('GET', `sounds/${id}`);
+  }
+
   sounds(order: string = 'created'): Promise<Sound[]> {
     return this.req('GET', `sounds?order=${order}`);
   }

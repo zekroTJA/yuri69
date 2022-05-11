@@ -9,6 +9,8 @@ import './fonts.css';
 import { SettingsRoute } from './routes/Settings';
 import { UploadRoute } from './routes/Upload';
 import 'react-contexify/dist/ReactContexify.css';
+import { SnackBar } from './components/SnackBar';
+import { EditRoute } from './routes/Edit';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -43,6 +45,7 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<MainRoute />}>
               <Route index element={<SoundsRoute />} />
+              <Route path="sounds/:uid" element={<EditRoute />} />
               <Route path="upload" element={<UploadRoute />} />
               <Route path="settings" element={<SettingsRoute />} />
             </Route>
@@ -50,6 +53,7 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </BrowserRouter>
+        <SnackBar />
       </Outlet>
       <GlobalStyle />
     </ThemeProvider>

@@ -14,15 +14,16 @@ type soundsController struct {
 
 func NewSoundsController(r *routing.RouteGroup, ct *controller.Controller) {
 	t := soundsController{ct: ct}
-	r.Get("", t.handleSoundsList)
-	r.Put("/upload", t.handleSoundsUpload)
-	r.Post("/create", t.handleSoundsCreate)
-	r.Post("/<id>", t.handleSoundsUpdate)
-	r.Delete("/<id>", t.handleSoundsDelete)
+	r.Get("", t.handleList)
+	r.Put("/upload", t.handleUpload)
+	r.Post("/create", t.handleCreate)
+	r.Get("/<id>", t.handleGet)
+	r.Post("/<id>", t.handleUpdate)
+	r.Delete("/<id>", t.handleDelete)
 	return
 }
 
-func (t *soundsController) handleSoundsList(ctx *routing.Context) error {
+func (t *soundsController) handleList(ctx *routing.Context) error {
 	sortOrder := ctx.Query("order")
 	filterMust := util.SplitAndClean(ctx.Query("include"), ",")
 	filterNot := util.SplitAndClean(ctx.Query("exclude"), ",")
@@ -35,7 +36,16 @@ func (t *soundsController) handleSoundsList(ctx *routing.Context) error {
 	return ctx.Write(sounds)
 }
 
-func (t *soundsController) handleSoundsUpload(ctx *routing.Context) error {
+func (t *soundsController) handleGet(ctx *routing.Context) error {
+	uid := ctx.Param("id")
+	sound, err := t.ct.GetSound(uid)
+	if err != nil {
+		return err
+	}
+	return ctx.Write(sound)
+}
+
+func (t *soundsController) handleUpload(ctx *routing.Context) error {
 	f, fh, err := ctx.Request.FormFile("file")
 	if err != nil {
 		return errs.WrapUserError(err)
@@ -57,7 +67,7 @@ func (t *soundsController) handleSoundsUpload(ctx *routing.Context) error {
 	})
 }
 
-func (t *soundsController) handleSoundsCreate(ctx *routing.Context) error {
+func (t *soundsController) handleCreate(ctx *routing.Context) error {
 	var req CreateSoundRequest
 	err := ctx.Read(&req)
 	if err != nil {
@@ -73,7 +83,7 @@ func (t *soundsController) handleSoundsCreate(ctx *routing.Context) error {
 	return ctx.Write(sound)
 }
 
-func (t *soundsController) handleSoundsUpdate(ctx *routing.Context) error {
+func (t *soundsController) handleUpdate(ctx *routing.Context) error {
 	userid, _ := ctx.Get("userid").(string)
 	id := ctx.Param("id")
 
@@ -92,7 +102,7 @@ func (t *soundsController) handleSoundsUpdate(ctx *routing.Context) error {
 	return ctx.Write(newSound)
 }
 
-func (t *soundsController) handleSoundsDelete(ctx *routing.Context) error {
+func (t *soundsController) handleDelete(ctx *routing.Context) error {
 	userid, _ := ctx.Get("userid").(string)
 	id := ctx.Param("id")
 

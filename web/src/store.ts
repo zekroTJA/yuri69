@@ -1,11 +1,16 @@
 import create from 'zustand';
 import { GuildFilters, Sound } from './api';
+import { SnackBarModel } from './components/SnackBar';
 
 type Store = {
+  snackBar: SnackBarModel;
+  setSnackBar: (snackBar: Partial<SnackBarModel>) => void;
+
   sounds: Sound[];
   setSounds: (sounds: Sound[]) => void;
   addSound: (sound: Sound) => void;
   removeSound: (sound: Sound) => void;
+  updateSound: (sound: Sound) => void;
 
   order: string;
   setOrder: (order: string) => void;
@@ -27,10 +32,15 @@ type Store = {
 };
 
 export const useStore = create<Store>((set, get) => ({
+  snackBar: { show: false } as SnackBarModel,
+  setSnackBar: (snackBar) => set({ snackBar: { ...get().snackBar, ...snackBar } }),
+
   sounds: [],
   setSounds: (sounds) => set({ sounds }),
   addSound: (sound) => set({ sounds: [sound, ...get().sounds] }),
   removeSound: (sound) => set({ sounds: [...get().sounds.filter((s) => s.uid !== sound.uid)] }),
+  updateSound: (sound) =>
+    set({ sounds: [sound, ...get().sounds.filter((s) => s.uid !== sound.uid)] }),
 
   order: 'created',
   setOrder: (order) => set({ order }),

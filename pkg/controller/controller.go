@@ -214,6 +214,11 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 	return req.Sound, err
 }
 
+func (t *Controller) GetSound(uid string) (Sound, error) {
+	sound, err := t.db.GetSound(uid)
+	return sound, err
+}
+
 func (t *Controller) ListSounds(
 	order string,
 	tagsMust []string,

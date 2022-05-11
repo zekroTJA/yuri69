@@ -13,16 +13,25 @@ import {
 } from '../api';
 
 export const useWSHooks = () => {
-  const [setConnected, setJoined, setPlaying, setVolume, setFilters, addSound, removeSound] =
-    useStore((s) => [
-      s.setConnected,
-      s.setJoined,
-      s.setPlaying,
-      s.setVolume,
-      s.setFilters,
-      s.addSound,
-      s.removeSound,
-    ]);
+  const [
+    setConnected,
+    setJoined,
+    setPlaying,
+    setVolume,
+    setFilters,
+    addSound,
+    removeSound,
+    updateSound,
+  ] = useStore((s) => [
+    s.setConnected,
+    s.setJoined,
+    s.setPlaying,
+    s.setVolume,
+    s.setFilters,
+    s.addSound,
+    s.removeSound,
+    s.updateSound,
+  ]);
 
   const _eventHandler = (e: Event<any>) => {
     console.log('WS Event', e);
@@ -93,6 +102,12 @@ export const useWSHooks = () => {
       case EventType.SoundDeleted: {
         const pl = e.payload as Sound;
         removeSound(pl);
+        break;
+      }
+
+      case EventType.SoundUpdated: {
+        const pl = e.payload as Sound;
+        updateSound(pl);
         break;
       }
     }

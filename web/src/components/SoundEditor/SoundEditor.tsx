@@ -78,10 +78,11 @@ export const SoundEditor: React.FC<Props> = ({
   return (
     <SoundEditorContainer>
       <label htmlFor="uid">
-        Unique ID <Smol>(required)</Smol>
+        Unique ID <Smol>{(isNew && <>(required)</>) || <>(can not be changed)</>}</Smol>
       </label>
       <Input
         id="uid"
+        disabled={!isNew}
         value={sound.uid ?? ''}
         onInput={(e) => _update({ uid: e.currentTarget.value })}
       />

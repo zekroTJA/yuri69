@@ -14,6 +14,7 @@ import { Modal } from '../components/Modal';
 import { useState } from 'react';
 import { Embed } from '../components/Embed';
 import { Button } from '../components/Button';
+import { useSnackBar } from '../hooks/useSnackBar';
 
 const SOUNDS_MENU_ID = 'sounds-menu';
 
@@ -47,8 +48,9 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
   const fetch = useApi();
   const { sounds } = useSounds();
   const [connected, playing] = useStore((s) => [s.connected, s.playing]);
-  const { show } = useContextMenu({ id: SOUNDS_MENU_ID });
+  const { show: showCtx } = useContextMenu({ id: SOUNDS_MENU_ID });
   const nav = useNavigate();
+  const { show } = useSnackBar();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [toDelete, setToDelete] = useState<Sound>();
 
@@ -58,7 +60,7 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
 
   const _openSoundOptions = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, sound: Sound) => {
     e.preventDefault();
-    show(e, {
+    showCtx(e, {
       props: { sound },
     });
   };
@@ -74,7 +76,14 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
 
   const _deleteSound = () => {
     if (!toDelete) return;
-    fetch((c) => c.soundsDelete(toDelete));
+    fetch((c) => c.soundsDelete(toDelete)).then(() =>
+      show(
+        <span>
+          Sound <Embed>{toDelete.uid}</Embed> has successfully been deleted.
+        </span>,
+        'success',
+      ),
+    );
     setShowDeleteModal(false);
   };
 
