@@ -22,7 +22,9 @@ type Props = {};
 
 const ButtonsContainer = styled(RouteContainer)`
   display: flex;
+  flex-wrap: wrap;
   gap: 0.7em;
+  height: fit-content;
 `;
 
 const StyledItem = styled(Item)<{ delete?: boolean }>`
