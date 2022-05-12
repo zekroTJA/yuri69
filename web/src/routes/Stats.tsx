@@ -43,7 +43,7 @@ export const StatsRoute: React.FC<Props> = ({}) => {
   const fetch = useApi();
   const [state, setState] = useState<StateStats>();
   const [log, setLog] = useState<PlaybackLogEntry[]>();
-  const [limitLog, setLimitLog] = useState(20);
+  const [limitLog, setLimitLog] = useState(10);
   const [counts, setCounts] = useState<PlaybackStats[]>();
   const [limitCounts, setLimitCounts] = useState(5);
 
@@ -82,6 +82,29 @@ export const StatsRoute: React.FC<Props> = ({}) => {
         </Card>
       )}
       <SplitContainer>
+        {log && (
+          <Card>
+            <Table fw>
+              <tbody>
+                <tr>
+                  <th>Sound UID</th>
+                  <th>Count</th>
+                </tr>
+                {log.map((c) => (
+                  <tr key={uid(c)}>
+                    <td>{c.ident}</td>
+                    <td>{formatDate(c.timestamp)}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <LinkButton onClick={() => setLimitLog(limitLog === 10 ? 100 : 10)}>
+                    Show {limitLog === 10 ? 'more' : 'less'} ...
+                  </LinkButton>
+                </tr>
+              </tbody>
+            </Table>
+          </Card>
+        )}
         {counts && (
           <Card>
             <Table fw>
@@ -99,29 +122,6 @@ export const StatsRoute: React.FC<Props> = ({}) => {
                 <tr>
                   <LinkButton onClick={() => setLimitCounts(limitCounts === 5 ? 50 : 5)}>
                     Show {limitCounts === 5 ? 'more' : 'less'} ...
-                  </LinkButton>
-                </tr>
-              </tbody>
-            </Table>
-          </Card>
-        )}
-        {log && (
-          <Card>
-            <Table fw>
-              <tbody>
-                <tr>
-                  <th>Sound UID</th>
-                  <th>Count</th>
-                </tr>
-                {log.map((c) => (
-                  <tr key={uid(c)}>
-                    <td>{c.ident}</td>
-                    <td>{formatDate(c.timestamp)}</td>
-                  </tr>
-                ))}
-                <tr>
-                  <LinkButton onClick={() => setLimitLog(limitLog === 20 ? 100 : 20)}>
-                    Show {limitLog === 20 ? 'more' : 'less'} ...
                   </LinkButton>
                 </tr>
               </tbody>
