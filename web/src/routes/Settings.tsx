@@ -9,6 +9,7 @@ import { InfoPanel } from '../components/InfoPanel';
 import { RouteContainer } from '../components/RouteContainer';
 import { Select } from '../components/Select';
 import { Smol } from '../components/Smol';
+import { SplitContainer } from '../components/SplitContainer';
 import { TagsInput } from '../components/TagsInput';
 import { useApi } from '../hooks/useApi';
 import { useSnackBar } from '../hooks/useSnackBar';
@@ -36,7 +37,7 @@ const Controls = styled.div`
 `;
 
 const SettingsRouteContainer = styled(RouteContainer)`
-  > div {
+  /* > div {
     display: flex;
     gap: 1em;
     > ${Card} {
@@ -48,7 +49,7 @@ const SettingsRouteContainer = styled(RouteContainer)`
     > div {
       flex-direction: column;
     }
-  }
+  } */
 `;
 
 export const SettingsRoute: React.FC<Props> = ({}) => {
@@ -102,7 +103,7 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
   return (
     <SettingsRouteContainer>
       <h1>Settings</h1>
-      <div>
+      <SplitContainer>
         <Card>
           <h2>Guild Preferences</h2>
           {(connected && guild && (
@@ -152,7 +153,7 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
             </Button>
           </Controls>
         </Card>
-      </div>
+      </SplitContainer>
     </SettingsRouteContainer>
   );
 };

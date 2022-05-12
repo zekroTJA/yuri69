@@ -4,10 +4,14 @@ import {
   Event,
   FastTrigger,
   GuildFilters,
+  PlaybackLogEntry,
+  PlaybackStats,
   Sound,
+  StateStats,
   Status,
   UploadSoundResponse,
 } from './models';
+import { buildQueryParams } from './util';
 
 export class APIClient extends HttpClient {
   private _onWsEvent: (e: Event<any>) => void = () => {};
@@ -32,7 +36,7 @@ export class APIClient extends HttpClient {
   }
 
   sounds(order: string = 'created'): Promise<Sound[]> {
-    return this.req('GET', `sounds?order=${order}`);
+    return this.req('GET', `sounds${buildQueryParams({ order })}`);
   }
 
   soundsUpload(file: File): Promise<UploadSoundResponse> {
@@ -85,5 +89,26 @@ export class APIClient extends HttpClient {
 
   usersSetFasttrigger(fast_trigger: string): Promise<Status> {
     return this.req('POST', 'users/settings/fasttrigger', { fast_trigger });
+  }
+
+  statsLog(
+    guildid: string = '',
+    userid: string = '',
+    ident: string = '',
+    limit: number = 50,
+    offset: number = 0,
+  ): Promise<PlaybackLogEntry[]> {
+    return this.req(
+      'GET',
+      `stats/log${buildQueryParams({ guildid, userid, ident, limit, offset })}`,
+    );
+  }
+
+  statsCount(guildid: string = '', userid: string = ''): Promise<PlaybackStats[]> {
+    return this.req('GET', `stats/count${buildQueryParams({ guildid, userid })}`);
+  }
+
+  statsState(): Promise<StateStats> {
+    return this.req('GET', 'stats/state');
   }
 }

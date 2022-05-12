@@ -107,3 +107,21 @@ export type EventPlayer = {
   user_id?: string;
   error?: string;
 };
+
+export type PlaybackLogEntry = {
+  id: string;
+  ident: string;
+  guild_id: string;
+  user_id: string;
+  timestamp: string;
+};
+
+export type PlaybackStats = {
+  ident: string;
+  count: number;
+};
+
+export type StateStats = {
+  n_sounds: number;
+  n_plays: number;
+};

@@ -12,6 +12,7 @@ import 'react-contexify/dist/ReactContexify.css';
 import { SnackBar } from './components/SnackBar';
 import { EditRoute } from './routes/Edit';
 import { WsDisconnectScreen } from './components/WsDisconnectScreen';
+import { StatsRoute } from './routes/Stats';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -49,6 +50,7 @@ const App: React.FC = () => {
               <Route path="sounds/:uid" element={<EditRoute />} />
               <Route path="upload" element={<UploadRoute />} />
               <Route path="settings" element={<SettingsRoute />} />
+              <Route path="stats" element={<StatsRoute />} />
             </Route>
             <Route path="/login" element={<LoginRoute />} />
             <Route path="*" element={<Navigate to="/" />} />
