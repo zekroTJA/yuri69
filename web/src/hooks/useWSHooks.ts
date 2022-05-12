@@ -23,6 +23,7 @@ export const useWSHooks = () => {
     removeSound,
     updateSound,
     setGuild,
+    setWsDisconnected,
   ] = useStore((s) => [
     s.setConnected,
     s.setJoined,
@@ -33,14 +34,20 @@ export const useWSHooks = () => {
     s.removeSound,
     s.updateSound,
     s.setGuild,
+    s.setWsDisconnected,
   ]);
 
   const _eventHandler = (e: Event<any>) => {
     console.log('WS Event', e);
 
     switch (e.type) {
+      case EventType._Disconnected:
+        setWsDisconnected(true);
+        break;
+
       case EventType.AuthOK: {
         const pl = e.payload as EventStatePayload;
+        setWsDisconnected(false);
         setConnected(pl.connected);
         setJoined(pl.joined);
         setVolume(pl.volume);

@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
 
 	"github.com/xujiajun/nutsdb"
@@ -12,6 +13,7 @@ const (
 	bucketSounds = "sounds"
 	bucketGuilds = "guilds"
 	bucketUsers  = "users"
+	bucketStats  = "stats"
 
 	keySeparator = ":"
 )
@@ -113,6 +115,62 @@ func (t *Nuts) GetGuildFilters(guildID string) (GuildFilters, error) {
 
 func (t *Nuts) SetGuildFilters(guildID string, f GuildFilters) error {
 	return setValue(t, bucketGuilds, key(guildID, "filters"), f)
+}
+
+func (t *Nuts) PutPlaybackLog(e PlaybackLogEntry) error {
+	return setValue(t, bucketStats, key(e.Id), e)
+}
+
+func (t *Nuts) GetPlaybackLog(
+	guildID, ident, userID string,
+	limit, offset int,
+) ([]PlaybackLogEntry, error) {
+
+	var entries nutsdb.Entries
+	err := t.db.View(func(tx *nutsdb.Tx) error {
+		var err error
+		entries, err = tx.GetAll(bucketStats)
+		return t.wrapErr(err)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if offset >= len(entries) {
+		return []PlaybackLogEntry{}, nil
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Meta.Timestamp > entries[j].Meta.Timestamp
+	})
+
+	size := limit
+	if limit == 0 {
+		size = len(entries)
+	}
+	logs := make([]PlaybackLogEntry, 0, size)
+	n := 0
+	for i, e := range entries {
+		if i < offset {
+			continue
+		}
+		if limit != 0 && n == limit {
+			break
+		}
+		log, err := unmarshal[PlaybackLogEntry](e.Value)
+		if err != nil {
+			return nil, err
+		}
+		if guildID != "" && guildID != log.GuildID ||
+			ident != "" && ident != log.Ident ||
+			userID != "" && userID != log.UserID {
+			continue
+		}
+		logs = append(logs, log)
+		n++
+	}
+
+	return logs, nil
 }
 
 // --- Internal ---

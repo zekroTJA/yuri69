@@ -363,7 +363,9 @@ func (t *Controller) PlayRandom(userID string, tagsMust []string, tagsNot []stri
 	)
 	if len(tagsMust) == 0 || len(tagsNot) == 0 {
 		guildFilters, err = t.db.GetGuildFilters(vs.GuildID)
-		fmt.Print(guildFilters, err)
+		if err != nil && err != database.ErrNotFound {
+			return err
+		}
 	}
 
 	if len(tagsMust) == 0 {
@@ -373,7 +375,6 @@ func (t *Controller) PlayRandom(userID string, tagsMust []string, tagsNot []stri
 		tagsNot = guildFilters.Exclude
 	}
 
-	fmt.Println(tagsMust, tagsNot)
 	sounds, err := t.listSoundsFiltered(tagsMust, tagsNot)
 	if err != nil {
 		return err
@@ -529,6 +530,42 @@ func (t *Controller) GetSelfUser() discordgo.User {
 	return *t.dg.Session().State.User
 }
 
+func (t *Controller) GetPlaybackLog(
+	guildID, ident, userID string,
+	limit, offset int,
+) ([]PlaybackLogEntry, error) {
+	logs, err := t.db.GetPlaybackLog(guildID, ident, userID, limit, offset)
+	if err == database.ErrNotFound {
+		err = nil
+	}
+
+	return logs, err
+}
+
+func (t *Controller) GetPlaybackStats(
+	guildID, userID string,
+) ([]PlaybackStats, error) {
+	logs, err := t.db.GetPlaybackLog(guildID, "", userID, 0, 0)
+	if err != nil && err != database.ErrNotFound {
+		return nil, err
+	}
+
+	statsMap := make(map[string]int)
+	for _, log := range logs {
+		statsMap[log.Ident]++
+	}
+
+	counts := make([]PlaybackStats, 0, len(statsMap))
+	for ident, count := range statsMap {
+		counts = append(counts, PlaybackStats{
+			Ident: ident,
+			Count: count,
+		})
+	}
+
+	return counts, nil
+}
+
 // --- Helpers ---
 
 func (t *Controller) ffmpeg(
@@ -621,10 +658,22 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 		strings.HasPrefix(identLower, "https://youtube.com/watch?=v") ||
 		strings.HasPrefix(identLower, "https://www.youtube.com/watch?=v") {
 
-		return t.pl.Play(vs.GuildID, vs.ChannelID, ident, ident)
+		err = t.pl.Play(vs.GuildID, vs.ChannelID, ident, ident)
+	} else {
+		err = t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
 	}
 
-	return t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
+	if err != nil {
+		return err
+	}
+
+	return t.db.PutPlaybackLog(PlaybackLogEntry{
+		Id:        xid.New().String(),
+		Ident:     ident,
+		GuildID:   vs.GuildID,
+		UserID:    vs.UserID,
+		Timestamp: time.Now(),
+	})
 }
 
 func (t *Controller) execFastTrigger(guildID, userID string) {

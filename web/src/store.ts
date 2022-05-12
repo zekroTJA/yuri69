@@ -3,6 +3,9 @@ import { GuildFilters, GuildInfo, Sound } from './api';
 import { SnackBarModel } from './components/SnackBar';
 
 type Store = {
+  wsDisconnected: boolean;
+  setWsDisconnected: (wsDisconnected: boolean) => void;
+
   snackBar: SnackBarModel;
   setSnackBar: (snackBar: Partial<SnackBarModel>) => void;
 
@@ -35,6 +38,9 @@ type Store = {
 };
 
 export const useStore = create<Store>((set, get) => ({
+  wsDisconnected: false,
+  setWsDisconnected: (wsDisconnected) => set({ wsDisconnected }),
+
   snackBar: { show: false } as SnackBarModel,
   setSnackBar: (snackBar) => set({ snackBar: { ...get().snackBar, ...snackBar } }),
 

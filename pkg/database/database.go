@@ -22,6 +22,9 @@ type IDatabase interface {
 
 	GetGuildFilters(guildID string) (GuildFilters, error)
 	SetGuildFilters(guildID string, f GuildFilters) error
+
+	PutPlaybackLog(e PlaybackLogEntry) error
+	GetPlaybackLog(guildID, ident, userID string, limit, offset int) ([]PlaybackLogEntry, error)
 }
 
 type DatabaseConfig struct {

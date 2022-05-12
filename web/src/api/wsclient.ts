@@ -1,5 +1,5 @@
 import { randomNumber } from '../util/rand';
-import { Event, EventAuthRequest } from './models';
+import { Event, EventAuthRequest, EventType } from './models';
 import { WS_ENDPOINT } from './static';
 
 export class WSClient {
@@ -32,6 +32,7 @@ export class WSClient {
     this.ws.addEventListener('close', (e) => {
       if (e.wasClean && e.code === 1001) return;
       this.connected = false;
+      this.onEvent({ type: EventType._Disconnected });
       if (this.reconnectTries + 1 < 15) {
         this.reconnectTries++;
       }
@@ -52,7 +53,10 @@ export class WSClient {
   private onMessage(message: MessageEvent<any>) {
     const data = JSON.parse(message.data) as Event<any>;
 
-    if (data.type === 'authpromptfailed') {
+    switch (data.type) {
+      case EventType.AuthFailed:
+        // TODO: Handle auth promt failed
+        break;
     }
 
     this.onEvent(data);

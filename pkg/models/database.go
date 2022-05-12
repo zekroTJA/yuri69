@@ -67,3 +67,11 @@ func (t *GuildFilters) Sanitize() {
 	util.ApplyToAll(t.Include, strings.ToLower)
 	util.ApplyToAll(t.Exclude, strings.ToLower)
 }
+
+type PlaybackLogEntry struct {
+	Id        string    `json:"id"`
+	Ident     string    `json:"ident"`
+	GuildID   string    `json:"guild_id"`
+	UserID    string    `json:"user_id"`
+	Timestamp time.Time `json:"timestamp"`
+}

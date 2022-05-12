@@ -118,6 +118,7 @@ func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	controllers.NewPlayerController(gApi.Group("/players"), t.ct)
 	controllers.NewUsersController(gApi.Group("/users"), t.ct)
 	controllers.NewGuildsController(gApi.Group("/guilds"), t.ct)
+	controllers.NewStatsController(gApi.Group("/stats"), t.ct)
 }
 
 func (t *Webserver) hookFS() error {

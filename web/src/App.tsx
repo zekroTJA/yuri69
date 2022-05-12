@@ -11,6 +11,7 @@ import { UploadRoute } from './routes/Upload';
 import 'react-contexify/dist/ReactContexify.css';
 import { SnackBar } from './components/SnackBar';
 import { EditRoute } from './routes/Edit';
+import { WsDisconnectScreen } from './components/WsDisconnectScreen';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -53,6 +54,7 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </BrowserRouter>
+        <WsDisconnectScreen />
         <SnackBar />
       </Outlet>
       <GlobalStyle />

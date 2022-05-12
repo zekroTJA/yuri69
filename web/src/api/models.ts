@@ -1,5 +1,6 @@
 export enum EventType {
   AuthOK = 'authok',
+  AuthFailed = 'authpromptfailed',
   SoundCreated = 'soundcreated',
   SoundUpdated = 'soundupdated',
   SoundDeleted = 'sounddeleted',
@@ -13,6 +14,8 @@ export enum EventType {
   VoiceLeave = 'voiceleave',
   VoiceInit = 'voiceinit',
   VoiceDeinit = 'voicedeinit',
+  _Disconnected = '_disconnected',
+  _Reconnected = '_reconnected',
 }
 
 export type Sound = {

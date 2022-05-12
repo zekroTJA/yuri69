@@ -52,3 +52,8 @@ type SetVolumeRequest struct {
 type FastTrigger struct {
 	FastTrigger string `json:"fast_trigger"`
 }
+
+type PlaybackStats struct {
+	Ident string `json:"ident"`
+	Count int    `json:"count"`
+}
