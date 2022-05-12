@@ -674,11 +674,9 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 		return err
 	}
 
+	fmt.Println(ident)
 	identLower := strings.ToLower(ident)
-	if strings.HasPrefix(identLower, "https://youtu.be/") ||
-		strings.HasPrefix(identLower, "https://youtube.com/watch?=v") ||
-		strings.HasPrefix(identLower, "https://www.youtube.com/watch?=v") {
-
+	if strings.HasPrefix(identLower, "https://") {
 		err = t.pl.Play(vs.GuildID, vs.ChannelID, ident, ident)
 	} else {
 		err = t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)

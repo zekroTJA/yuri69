@@ -18,6 +18,7 @@ func NewPlayerController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Post("/join", t.handleJoin)
 	r.Post("/leave", t.handleLeave)
 	r.Post("/play/random", t.handlePlayRandom)
+	r.Post("/play/external", t.handlePlayExternal)
 	r.Post("/play/<ident>", t.handlePlay)
 	r.Post("/stop", t.handleStop)
 	r.Post("/volume", t.handleSetVolume)
@@ -53,6 +54,18 @@ func (t *playerController) handlePlayRandom(ctx *routing.Context) error {
 	filterNot := util.SplitAndClean(ctx.Query("exclude"), ",")
 
 	err := t.ct.PlayRandom(userid, filterMust, filterNot)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(StatusOK)
+}
+
+func (t *playerController) handlePlayExternal(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+	ident := ctx.Query("url")
+
+	err := t.ct.Play(userid, ident)
 	if err != nil {
 		return err
 	}
