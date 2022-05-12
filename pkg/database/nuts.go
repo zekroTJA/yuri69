@@ -173,6 +173,19 @@ func (t *Nuts) GetPlaybackLog(
 	return logs, nil
 }
 
+func (t *Nuts) GetPlaybackLogSize() (int, error) {
+	var n int
+	err := t.db.View(func(tx *nutsdb.Tx) error {
+		entries, err := tx.GetAll(bucketStats)
+		if err != nil {
+			return t.wrapErr(err)
+		}
+		n = len(entries)
+		return nil
+	})
+	return n, err
+}
+
 // --- Internal ---
 
 func getValue[TVal any](t *Nuts, bucket string, key []byte) (TVal, error) {

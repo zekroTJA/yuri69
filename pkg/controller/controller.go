@@ -563,7 +563,28 @@ func (t *Controller) GetPlaybackStats(
 		})
 	}
 
+	sort.Slice(counts, func(i, j int) bool {
+		return counts[i].Count > counts[j].Count
+	})
+
 	return counts, nil
+}
+
+func (t *Controller) GetState() (StateStats, error) {
+	var state StateStats
+
+	sounds, err := t.db.GetSounds()
+	if err != nil && err != database.ErrNotFound {
+		return StateStats{}, err
+	}
+	state.NSoudns = len(sounds)
+
+	state.NPlays, err = t.db.GetPlaybackLogSize()
+	if err != nil && err != database.ErrNotFound {
+		return StateStats{}, err
+	}
+
+	return state, nil
 }
 
 // --- Helpers ---

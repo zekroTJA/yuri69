@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"sort"
-
 	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/database"
@@ -19,6 +17,7 @@ func NewStatsController(r *routing.RouteGroup, ct *controller.Controller) {
 	t := statsController{ct: ct}
 	r.Get("/log", t.handleGetLog)
 	r.Get("/count", t.handleGetCount)
+	r.Get("/state", t.handleGetState)
 	return
 }
 
@@ -52,10 +51,6 @@ func (t *statsController) handleGetLog(ctx *routing.Context) error {
 		log = make([]models.PlaybackLogEntry, 0)
 	}
 
-	sort.Slice(log, func(i, j int) bool {
-		return log[i].Timestamp.After(log[j].Timestamp)
-	})
-
 	return ctx.Write(log)
 }
 
@@ -69,4 +64,13 @@ func (t *statsController) handleGetCount(ctx *routing.Context) error {
 	}
 
 	return ctx.Write(stats)
+}
+
+func (t *statsController) handleGetState(ctx *routing.Context) error {
+	state, err := t.ct.GetState()
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(state)
 }

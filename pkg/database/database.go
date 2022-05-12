@@ -25,6 +25,7 @@ type IDatabase interface {
 
 	PutPlaybackLog(e PlaybackLogEntry) error
 	GetPlaybackLog(guildID, ident, userID string, limit, offset int) ([]PlaybackLogEntry, error)
+	GetPlaybackLogSize() (int, error)
 }
 
 type DatabaseConfig struct {

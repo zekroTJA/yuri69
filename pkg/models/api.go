@@ -57,3 +57,8 @@ type PlaybackStats struct {
 	Ident string `json:"ident"`
 	Count int    `json:"count"`
 }
+
+type StateStats struct {
+	NSoudns int `json:"n_sounds"`
+	NPlays  int `json:"n_plays"`
+}
