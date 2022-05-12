@@ -363,18 +363,24 @@ func (t *Controller) PlayRandom(userID string, tagsMust []string, tagsNot []stri
 	)
 	if len(tagsMust) == 0 || len(tagsNot) == 0 {
 		guildFilters, err = t.db.GetGuildFilters(vs.GuildID)
+		fmt.Print(guildFilters, err)
 	}
 
+	if len(tagsMust) == 0 {
+		tagsMust = guildFilters.Include
+	}
 	if len(tagsNot) == 0 {
 		tagsNot = guildFilters.Exclude
 	}
-	if len(tagsMust) == 0 {
-		tagsNot = guildFilters.Include
-	}
 
+	fmt.Println(tagsMust, tagsNot)
 	sounds, err := t.listSoundsFiltered(tagsMust, tagsNot)
 	if err != nil {
 		return err
+	}
+
+	if len(sounds) == 0 {
+		return nil
 	}
 
 	historySnapshot := t.history.Snapshot()
@@ -507,20 +513,12 @@ func (t *Controller) GetCurrentState(userID string) (EventStatePayload, error) {
 	if !ok {
 		return res, nil
 	}
-	res.Connected = true
 
+	res.Connected = true
 	res.Joined = t.pl.HasPlayer(vs.GuildID)
 
-	res.Volume, err = t.db.GetGuildVolume(vs.GuildID)
-	if err == database.ErrNotFound {
-		err = nil
-		res.Volume = 50
-	}
+	res.EventVoiceJoinPayload, err = t.getVoiceJoinPayload(vs.GuildID)
 	if err != nil {
-		return EventStatePayload{}, err
-	}
-	res.Filters, err = t.db.GetGuildFilters(vs.GuildID)
-	if err != nil && err != database.ErrNotFound {
 		return EventStatePayload{}, err
 	}
 
@@ -720,6 +718,14 @@ func (t *Controller) getVoiceJoinPayload(guildID string) (EventVoiceJoinPayload,
 		e   EventVoiceJoinPayload
 		err error
 	)
+
+	guild, err := t.dg.GetGuild(guildID)
+	if err != nil {
+		return EventVoiceJoinPayload{}, err
+	}
+	e.Guild.ID = guild.ID
+	e.Guild.Name = guild.Name
+	e.Guild.IconUrl = guild.IconURL()
 
 	e.Volume, err = t.db.GetGuildVolume(guildID)
 	if err == database.ErrNotFound {

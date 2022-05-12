@@ -57,3 +57,13 @@ func (t *Discord) UsersInGuildVoice(guildID string) ([]string, error) {
 
 	return userIDs, nil
 }
+
+func (t *Discord) GetGuild(id string) (discordgo.Guild, error) {
+	guild, err := t.session.State.Guild(id)
+	if err == nil {
+		return *guild, nil
+	}
+
+	guild, err = t.session.Guild(id)
+	return *guild, err
+}

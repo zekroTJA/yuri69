@@ -108,7 +108,7 @@ func (t *Nuts) SetUserFastTrigger(userID, ident string) error {
 }
 
 func (t *Nuts) GetGuildFilters(guildID string) (GuildFilters, error) {
-	return getValue[GuildFilters](t, bucketUsers, key(guildID, "filters"))
+	return getValue[GuildFilters](t, bucketGuilds, key(guildID, "filters"))
 }
 
 func (t *Nuts) SetGuildFilters(guildID string, f GuildFilters) error {

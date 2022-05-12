@@ -22,6 +22,7 @@ export const useWSHooks = () => {
     addSound,
     removeSound,
     updateSound,
+    setGuild,
   ] = useStore((s) => [
     s.setConnected,
     s.setJoined,
@@ -31,6 +32,7 @@ export const useWSHooks = () => {
     s.addSound,
     s.removeSound,
     s.updateSound,
+    s.setGuild,
   ]);
 
   const _eventHandler = (e: Event<any>) => {
@@ -43,6 +45,7 @@ export const useWSHooks = () => {
         setJoined(pl.joined);
         setVolume(pl.volume);
         setFilters(pl.filters);
+        setGuild(pl.guild);
         break;
       }
 
@@ -51,6 +54,7 @@ export const useWSHooks = () => {
         setJoined(true);
         setVolume(pl.volume);
         setFilters(pl.filters);
+        setGuild(pl.guild);
         break;
       }
 
@@ -63,6 +67,7 @@ export const useWSHooks = () => {
         setConnected(true);
         setVolume(pl.volume);
         setFilters(pl.filters);
+        setGuild(pl.guild);
         break;
       }
 

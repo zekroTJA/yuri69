@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { GuildFilters, Sound } from './api';
+import { GuildFilters, GuildInfo, Sound } from './api';
 import { SnackBarModel } from './components/SnackBar';
 
 type Store = {
@@ -17,6 +17,9 @@ type Store = {
 
   connected: boolean;
   setConnected: (connected: boolean) => void;
+
+  guild: GuildInfo | undefined;
+  setGuild: (guild: GuildInfo | undefined) => void;
 
   joined: boolean;
   setJoined: (joined: boolean) => void;
@@ -50,6 +53,9 @@ export const useStore = create<Store>((set, get) => ({
 
   connected: false,
   setConnected: (connected) => set({ connected }),
+
+  guild: undefined,
+  setGuild: (guild) => set({ guild }),
 
   playing: undefined,
   setPlaying: (playing) => set({ playing }),

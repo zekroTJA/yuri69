@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { CreateSoundRequest, Sound } from '../../api';
+import { CreateSoundRequest } from '../../api';
 import { Button } from '../Button';
 import { Input } from '../Input';
 import { Smol } from '../Smol';
+import { TagsInput } from '../TagsInput';
 
 type Props = {
   sound: CreateSoundRequest;
@@ -57,23 +57,11 @@ export const SoundEditor: React.FC<Props> = ({
   onCancel = () => {},
   onSave = () => {},
 }) => {
-  const [tagsValue, setTagsValue] = useState('');
-
   const _update = (s: Partial<CreateSoundRequest>) => {
     updateSound({ ...sound, ...s });
   };
 
-  const _valueToTags = (v: string) =>
-    v
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => !!t);
-
-  const _tagsToValue = (t: string[]) => t.join(', ');
-
-  useEffect(() => {
-    setTagsValue(_tagsToValue(sound.tags ?? []));
-  }, [sound]);
+  console.log(sound);
 
   return (
     <SoundEditorContainer>
@@ -96,12 +84,7 @@ export const SoundEditor: React.FC<Props> = ({
       <label htmlFor="tags">
         Tags <Smol>(comma separated)</Smol>
       </label>
-      <Input
-        id="tags"
-        value={tagsValue}
-        onInput={(e) => setTagsValue(e.currentTarget.value)}
-        onBlur={(e) => _update({ tags: _valueToTags(e.currentTarget.value) })}
-      />
+      <TagsInput id="tags" tags={sound.tags} onTagsChange={(tags) => _update({ tags })} />
       {isNew && (
         <CheckboxControls>
           <span>

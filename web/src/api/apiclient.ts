@@ -83,7 +83,7 @@ export class APIClient extends HttpClient {
     return this.req('GET', 'users/settings/fasttrigger');
   }
 
-  usersSetFasttrigger(fasttrigger: FastTrigger): Promise<Status> {
-    return this.req('POST', 'users/settings/fasttrigger', fasttrigger);
+  usersSetFasttrigger(fast_trigger: string): Promise<Status> {
+    return this.req('POST', 'users/settings/fasttrigger', { fast_trigger });
   }
 }

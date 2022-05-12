@@ -36,9 +36,16 @@ type EventAuthRequest struct {
 	Token string `json:"token"`
 }
 
+type GuildInfo struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	IconUrl string `json:"icon_url"`
+}
+
 type EventVoiceJoinPayload struct {
 	Volume  int          `json:"volume,omitempty"`
 	Filters GuildFilters `json:"filters,omitempty"`
+	Guild   GuildInfo    `json:"guild,omitempty"`
 }
 
 type EventStatePayload struct {

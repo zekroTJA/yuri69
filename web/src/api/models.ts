@@ -17,10 +17,10 @@ export enum EventType {
 
 export type Sound = {
   uid: string;
-  display_name: string;
-  created: string;
-  creator_id: string;
-  tags: string[];
+  display_name?: string;
+  created?: string;
+  creator_id?: string;
+  tags?: string[];
 };
 
 export type GuildFilters = {
@@ -76,9 +76,16 @@ export type EventAuthRequest = {
   token: string;
 };
 
+export type GuildInfo = {
+  id: string;
+  name: string;
+  icon_url: string;
+};
+
 export type EventVoiceJoinPayload = {
   volume: number;
   filters: GuildFilters;
+  guild: GuildInfo;
 };
 
 export type EventStatePayload = EventVoiceJoinPayload & {
