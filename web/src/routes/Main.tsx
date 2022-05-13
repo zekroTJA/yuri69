@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import styled from 'styled-components';
-import { Sidebar } from '../components/Sidebar';
+import { NavBar } from '../components/NavBar';
 
 type Props = {};
 
@@ -21,7 +21,7 @@ const MainContainer = styled.div`
 export const MainRoute: React.FC<Props> = ({}) => {
   return (
     <MainContainer>
-      <Sidebar />
+      <NavBar />
       <main>
         <Outlet />
       </main>

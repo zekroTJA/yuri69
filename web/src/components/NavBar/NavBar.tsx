@@ -17,7 +17,7 @@ import { useCallback, useState } from 'react';
 
 type Props = {};
 
-const SidebarContainer = styled.div`
+const NavBarContainer = styled.div`
   position: fixed;
   width: 100%;
   height: 100%;
@@ -92,7 +92,7 @@ const ExternalSlider = styled.div`
   }
 `;
 
-export const Sidebar: React.FC<Props> = ({}) => {
+export const NavBar: React.FC<Props> = ({}) => {
   const fetch = useApi();
   const [order, setOrder, connected, joined, playing, volume, setVolume] = useStore((s) => [
     s.order,
@@ -119,7 +119,7 @@ export const Sidebar: React.FC<Props> = ({}) => {
   );
 
   return (
-    <SidebarContainer>
+    <NavBarContainer>
       {showVolume && (
         <ExternalSlider>
           <Slider min={1} max={200} value={volume} onChange={_setVolume} disabled={!connected} />
@@ -163,6 +163,6 @@ export const Sidebar: React.FC<Props> = ({}) => {
         <Entry icon={<IconStats />} label="Stats" to="stats" color={theme.gray} />
       </EntryContainer>
       <SidebarBackground />
-    </SidebarContainer>
+    </NavBarContainer>
   );
 };
