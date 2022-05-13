@@ -13,7 +13,6 @@ COPY go.sum .
 COPY --from=build-fe /build/dist pkg/webserver/_webdist
 RUN rm -f pkg/webserver/_webdist/.keep
 RUN go build -o bin/yuri cmd/yuri/main.go
-RUN ls -la /build/bin
 
 FROM alpine:latest
 COPY --from=build-be /build/bin/yuri /var/opt/yuri
