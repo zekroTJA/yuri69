@@ -7,6 +7,7 @@ import { Flex } from '../Flex';
 import { byteFormatter } from 'byte-formatter';
 import { Smol } from '../Smol';
 import { Styled } from '../props';
+import { useClipboardEvent } from '../../hooks/useClipboardEvent';
 
 type Props = Styled & {
   file?: File;
@@ -90,10 +91,7 @@ export const FileDrop: React.FC<Props> = ({ file, onFileInput = () => {}, ...pro
     setDragging(false);
   }, [file]);
 
-  useEffect(() => {
-    document.addEventListener('paste', _onPaste);
-    return () => document.removeEventListener('paste', _onPaste);
-  }, []);
+  useClipboardEvent(_onPaste);
 
   const _info = !!error ? (
     <span>{error}</span>

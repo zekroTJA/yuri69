@@ -67,6 +67,10 @@ export class APIClient extends HttpClient {
     return this.req('POST', `players/play/${ident}`);
   }
 
+  playersPlayExternal(url: string): Promise<Status> {
+    return this.req('POST', `players/play/external${buildQueryParams({ url })}`);
+  }
+
   playersStop(): Promise<Status> {
     return this.req('POST', 'players/stop');
   }
