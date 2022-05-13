@@ -13,7 +13,7 @@ import { ReactComponent as IconUpload } from '../../../assets/upload.svg';
 import { ReactComponent as IconStats } from '../../../assets/stats.svg';
 import { Slider } from '../Slider';
 import { debounce } from 'debounce';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 type Props = {};
 
@@ -23,6 +23,11 @@ const SidebarContainer = styled.div`
   height: 100%;
   pointer-events: none;
   z-index: 10;
+
+  @media screen and (orientation: portrait) {
+    height: fit-content;
+    bottom: 0;
+  }
 `;
 
 const SidebarBackground = styled.div`
@@ -36,6 +41,8 @@ const SidebarBackground = styled.div`
 
 const EntryContainer = styled.nav`
   position: fixed;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   background-color: ${(p) => p.theme.background2};
   width: 4em;
@@ -50,15 +57,39 @@ const EntryContainer = styled.nav`
       background-color: rgba(0 0 0 / 40%);
     }
   }
+
+  @media screen and (orientation: portrait) {
+    position: relative;
+    flex-direction: row;
+    justify-content: center;
+    width: 100% !important;
+    height: fit-content;
+    bottom: 0;
+  }
 `;
 
 const Avatar = styled.img`
-  width: 4em;
+  width: 100%;
 `;
 
 const Spacer = styled.div`
   width: 100%;
   height: 0.6em;
+
+  @media screen and (orientation: portrait) {
+    width: 0.6em;
+    height: 100%;
+  }
+`;
+
+const ExternalSlider = styled.div`
+  display: none;
+  background-color: ${(p) => p.theme.accent};
+  pointer-events: all;
+
+  @media screen and (orientation: portrait) {
+    display: block;
+  }
 `;
 
 export const Sidebar: React.FC<Props> = ({}) => {
@@ -73,6 +104,7 @@ export const Sidebar: React.FC<Props> = ({}) => {
     s.setVolume,
   ]);
   const theme = useTheme();
+  const [showVolume, setShowVolume] = useState(false);
 
   const _setVolume = (v: number) => {
     setVolume(v);
@@ -88,6 +120,11 @@ export const Sidebar: React.FC<Props> = ({}) => {
 
   return (
     <SidebarContainer>
+      {showVolume && (
+        <ExternalSlider>
+          <Slider min={1} max={200} value={volume} onChange={_setVolume} disabled={!connected} />
+        </ExternalSlider>
+      )}
       <EntryContainer>
         <Entry to="/" icon={<Avatar src={ImgAvatar} />} label="Yuri" />
         <Spacer />
@@ -112,6 +149,7 @@ export const Sidebar: React.FC<Props> = ({}) => {
           color={theme.pink}
         />
         <Entry
+          action={() => setShowVolume(!showVolume)}
           icon={<IconVolume />}
           label={
             <Slider min={1} max={200} value={volume} onChange={_setVolume} disabled={!connected} />

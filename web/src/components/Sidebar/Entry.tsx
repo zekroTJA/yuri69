@@ -26,6 +26,14 @@ const EntryContainer = styled(Button)<{ color?: string }>`
   &:enabled:hover {
     filter: brightness(1.2);
   }
+
+  @media screen and (orientation: portrait) {
+    width: fit-content;
+
+    > *:last-child {
+      display: none;
+    }
+  }
 `;
 
 const Icon = styled.div`
@@ -40,6 +48,13 @@ const Icon = styled.div`
   > svg {
     width: 50%;
     height: 50%;
+  }
+
+  @media screen and (orientation: portrait) {
+    min-width: 0;
+    width: 10vw;
+    height: 10vw;
+    margin-right: 0;
   }
 `;
 

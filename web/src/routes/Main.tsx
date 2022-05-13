@@ -11,6 +11,10 @@ const MainContainer = styled.div`
   > main {
     margin-left: 5.5em;
     width: 100%;
+
+    @media screen and (orientation: portrait) {
+      margin-left: 1.5em;
+    }
   }
 `;
 
@@ -24,4 +28,3 @@ export const MainRoute: React.FC<Props> = ({}) => {
     </MainContainer>
   );
 };
-
