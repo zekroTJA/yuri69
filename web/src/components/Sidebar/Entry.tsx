@@ -52,6 +52,8 @@ const Icon = styled.div`
 
   @media screen and (orientation: portrait) {
     min-width: 0;
+    max-width: 4em;
+    max-height: 4em;
     width: 10vw;
     height: 10vw;
     margin-right: 0;
