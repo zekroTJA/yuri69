@@ -13,6 +13,9 @@ import { SnackBar } from './components/SnackBar';
 import { EditRoute } from './routes/Edit';
 import { WsDisconnectScreen } from './components/WsDisconnectScreen';
 import { StatsRoute } from './routes/Stats';
+import { useStore } from './store';
+import { useEffect } from 'react';
+import { useApi } from './hooks/useApi';
 
 const GlobalStyle = createGlobalStyle`
   body {

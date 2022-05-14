@@ -27,10 +27,10 @@ const WsDisconnectScreenContainer = styled.div`
 `;
 
 export const WsDisconnectScreen: React.FC<Props> = ({}) => {
-  const [wsDisconnected] = useStore((s) => [s.wsDisconnected]);
+  const [wsDisconnected, loggedIn] = useStore((s) => [s.wsDisconnected, s.loggedIn]);
   return (
     <>
-      {wsDisconnected && (
+      {wsDisconnected && loggedIn && (
         <WsDisconnectScreenContainer>
           <img src={PepeHands} />
           <span>

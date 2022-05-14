@@ -5,6 +5,7 @@ import { WS_ENDPOINT } from './static';
 export class WSClient {
   private ws: WebSocket | undefined;
   private reconnectTries = 1;
+  private tryReconnect: boolean = true;
   private connected: boolean = false;
 
   constructor(
@@ -30,7 +31,7 @@ export class WSClient {
     this.ws.addEventListener('message', (m) => this.onMessage(m));
 
     this.ws.addEventListener('close', (e) => {
-      if (e.wasClean && e.code === 1001) return;
+      if (!this.tryReconnect || (e.wasClean && e.code === 1001)) return;
       this.connected = false;
       this.onEvent({ type: EventType._Disconnected });
       if (this.reconnectTries + 1 < 15) {
@@ -55,7 +56,8 @@ export class WSClient {
 
     switch (data.type) {
       case EventType.AuthFailed:
-        // TODO: Handle auth promt failed
+        this.tryReconnect = false;
+        console.log('AUTH ERROR');
         break;
     }
 

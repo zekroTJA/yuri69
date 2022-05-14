@@ -4,6 +4,7 @@ import {
   Event,
   FastTrigger,
   GuildFilters,
+  OTAToken,
   PlaybackLogEntry,
   PlaybackStats,
   Sound,
@@ -29,6 +30,18 @@ export class APIClient extends HttpClient {
 
   loginUrl(): string {
     return this.basePath('auth/login');
+  }
+
+  logoutUrl(): string {
+    return this.basePath('auth/logout');
+  }
+
+  checkAuth(): Promise<Status> {
+    return this.req('GET', 'auth/check');
+  }
+
+  getOTAToken(): Promise<OTAToken> {
+    return this.req('GET', 'auth/ota/token');
   }
 
   sound(id: string): Promise<Sound> {

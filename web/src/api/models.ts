@@ -125,3 +125,9 @@ export type StateStats = {
   n_sounds: number;
   n_plays: number;
 };
+
+export type OTAToken = {
+  deadline: string;
+  token: string;
+  qrcode_data: string;
+};

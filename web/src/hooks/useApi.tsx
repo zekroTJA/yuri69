@@ -2,9 +2,11 @@ import { useNavigate } from 'react-router';
 import { APIClient, APIError } from '../api';
 import { Embed } from '../components/Embed';
 import { ApiClientInstance } from '../instances';
+import { useStore } from '../store';
 import { useSnackBar } from './useSnackBar';
 
 export const useApi = () => {
+  const [setLoggedIn] = useStore((s) => [s.setLoggedIn]);
   const nav = useNavigate();
   const { show } = useSnackBar();
 
@@ -19,6 +21,7 @@ export const useApi = () => {
         if (e instanceof APIError) {
           if (e.code === 401) {
             nav('/login');
+            setLoggedIn(false);
           } else {
             show(
               <span>

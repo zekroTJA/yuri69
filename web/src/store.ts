@@ -6,6 +6,9 @@ type Store = {
   wsDisconnected: boolean;
   setWsDisconnected: (wsDisconnected: boolean) => void;
 
+  loggedIn: boolean;
+  setLoggedIn: (loggedIn: boolean) => void;
+
   snackBar: SnackBarModel;
   setSnackBar: (snackBar: Partial<SnackBarModel>) => void;
 
@@ -40,6 +43,9 @@ type Store = {
 export const useStore = create<Store>((set, get) => ({
   wsDisconnected: false,
   setWsDisconnected: (wsDisconnected) => set({ wsDisconnected }),
+
+  loggedIn: false,
+  setLoggedIn: (loggedIn) => set({ loggedIn }),
 
   snackBar: { show: false } as SnackBarModel,
   setSnackBar: (snackBar) => set({ snackBar: { ...get().snackBar, ...snackBar } }),
