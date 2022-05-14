@@ -262,11 +262,16 @@ func (t *Controller) UpdateSound(newSound UpdateSoundRequest, userID string) (So
 		return Sound{}, err
 	}
 
-	// if oldSound.CreatorId != userID {
-	// 	return errs.WrapUserError(
-	// 		"you need to be either the creator of the sound or an admin to update it",
-	// 		http.StatusForbidden)
-	// }
+	if oldSound.CreatorId != userID {
+		ok, err := t.isAdmin(userID)
+		if err != nil {
+			return Sound{}, err
+		}
+		if !ok {
+			return Sound{}, errs.WrapUserError(
+				"you need admin privileges to edit a sound created by another user")
+		}
+	}
 
 	newSound.Created = oldSound.Created
 	newSound.CreatorId = oldSound.CreatorId
@@ -296,9 +301,14 @@ func (t *Controller) RemoveSound(id, userID string) error {
 	}
 
 	if sound.CreatorId != userID {
-		return errs.WrapUserError(
-			"you need to be either the creator of the sound or an admin to delete it",
-			http.StatusForbidden)
+		ok, err := t.isAdmin(userID)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return errs.WrapUserError(
+				"you need admin privileges to remove a sound created by another user")
+		}
 	}
 
 	err = t.db.RemoveSound(id)
@@ -625,21 +635,25 @@ func (t *Controller) GetAdmins(executorID string) ([]User, error) {
 	return admins, nil
 }
 
-func (t *Controller) SetAdmin(executorID, userID string) error {
+func (t *Controller) SetAdmin(executorID, userID string) (User, error) {
 	if err := t.CheckAdmin(executorID); err != nil {
-		return err
+		return User{}, err
 	}
 
-	if userID == t.ownerID {
-		return nil
-	}
-
-	_, err := t.dg.Session().User(userID)
+	user, err := t.dg.Session().User(userID)
 	if err != nil {
-		return errs.WrapUserError("user with this ID does not exist", http.StatusBadRequest)
+		return User{}, errs.WrapUserError("user with this ID does not exist", http.StatusBadRequest)
 	}
 
-	return t.db.AddAdmin(userID)
+	if userID != t.ownerID {
+		err = t.db.AddAdmin(userID)
+		if err != nil {
+			return User{}, err
+		}
+	}
+
+	uUser := UserFromUser(*user)
+	return uUser, nil
 }
 
 func (t *Controller) RemoveAdmin(executorID, userID string) error {
@@ -672,6 +686,14 @@ func (t *Controller) CheckAdmin(userID string) error {
 }
 
 // --- Helpers ---
+
+func (t *Controller) isAdmin(userID string) (bool, error) {
+	if userID == t.ownerID {
+		return true, nil
+	}
+
+	return t.db.IsAdmin(userID)
+}
 
 func (t *Controller) ffmpeg(
 	in io.Reader,

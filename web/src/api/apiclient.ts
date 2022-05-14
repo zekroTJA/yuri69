@@ -134,7 +134,7 @@ export class APIClient extends HttpClient {
     return this.req('GET', 'admins');
   }
 
-  setAdmin(id: string): Promise<User[]> {
+  setAdmin(id: string): Promise<User> {
     return this.req('PUT', `admins/${id}`);
   }
 

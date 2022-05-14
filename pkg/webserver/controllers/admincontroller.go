@@ -50,11 +50,12 @@ func (t *adminController) putAdmin(ctx *routing.Context) error {
 		return errs.WrapUserError("invalid admin user id")
 	}
 
-	if err := t.ct.SetAdmin(userid, adminid); err != nil {
+	user, err := t.ct.SetAdmin(userid, adminid)
+	if err != nil {
 		return err
 	}
 
-	return ctx.Write(models.StatusOK)
+	return ctx.Write(user)
 }
 
 func (t *adminController) deleteAdmin(ctx *routing.Context) error {
