@@ -94,6 +94,7 @@ export type EventVoiceJoinPayload = {
 export type EventStatePayload = EventVoiceJoinPayload & {
   connected: boolean;
   joined: boolean;
+  is_admin: boolean;
 };
 
 export type EventErrorPlayload = {
@@ -130,4 +131,12 @@ export type OTAToken = {
   deadline: string;
   token: string;
   qrcode_data: string;
+};
+
+export type User = {
+  id: string;
+  username: string;
+  discriminator: string;
+  avatar_url: string;
+  is_owner: boolean;
 };

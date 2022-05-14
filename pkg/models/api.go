@@ -3,6 +3,8 @@ package models
 import (
 	"net/http"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 var (
@@ -67,4 +69,18 @@ type OTAResponse struct {
 	Deadline   time.Time `json:"deadline"`
 	Token      string    `json:"token"`
 	QRCodeData string    `json:"qrcode_data"`
+}
+
+type User struct {
+	discordgo.User
+
+	AvatarURL string `json:"avatar_url"`
+	IsOwner   bool   `json:"is_owner"`
+}
+
+func UserFromUser(u discordgo.User) User {
+	return User{
+		User:      u,
+		AvatarURL: u.AvatarURL(""),
+	}
 }

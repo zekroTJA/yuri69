@@ -15,6 +15,7 @@ import {
 export const useWSHooks = () => {
   const [
     setConnected,
+    setIsAdmin,
     setJoined,
     setPlaying,
     setVolume,
@@ -26,6 +27,7 @@ export const useWSHooks = () => {
     setWsDisconnected,
   ] = useStore((s) => [
     s.setConnected,
+    s.setIsAdmin,
     s.setJoined,
     s.setPlaying,
     s.setVolume,
@@ -49,6 +51,7 @@ export const useWSHooks = () => {
         const pl = e.payload as EventStatePayload;
         setWsDisconnected(false);
         setConnected(pl.connected);
+        setIsAdmin(pl.is_admin);
         setJoined(pl.joined);
         setVolume(pl.volume);
         setFilters(pl.filters);

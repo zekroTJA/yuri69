@@ -11,6 +11,7 @@ import { ReactComponent as IconVolume } from '../../../assets/volume.svg';
 import { ReactComponent as IconSettings } from '../../../assets/settings.svg';
 import { ReactComponent as IconUpload } from '../../../assets/upload.svg';
 import { ReactComponent as IconStats } from '../../../assets/stats.svg';
+import { ReactComponent as IconAdmin } from '../../../assets/admin.svg';
 import { Slider } from '../Slider';
 import { debounce } from 'debounce';
 import { useCallback, useState } from 'react';
@@ -94,15 +95,18 @@ const ExternalSlider = styled.div`
 
 export const NavBar: React.FC<Props> = ({}) => {
   const fetch = useApi();
-  const [order, setOrder, connected, joined, playing, volume, setVolume] = useStore((s) => [
-    s.order,
-    s.setOrder,
-    s.connected,
-    s.joined,
-    s.playing,
-    s.volume,
-    s.setVolume,
-  ]);
+  const [order, setOrder, connected, joined, playing, volume, setVolume, isAdmin] = useStore(
+    (s) => [
+      s.order,
+      s.setOrder,
+      s.connected,
+      s.joined,
+      s.playing,
+      s.volume,
+      s.setVolume,
+      s.isAdmin,
+    ],
+  );
   const theme = useTheme();
   const [showVolume, setShowVolume] = useState(false);
 
@@ -161,6 +165,7 @@ export const NavBar: React.FC<Props> = ({}) => {
         <Entry icon={<IconUpload />} label="Upload" to="upload" color={theme.gray} />
         <Entry icon={<IconSettings />} label="Settings" to="settings" color={theme.gray} />
         <Entry icon={<IconStats />} label="Stats" to="stats" color={theme.gray} />
+        {isAdmin && <Entry icon={<IconAdmin />} label="Admin Area" to="admin" color={theme.gray} />}
       </EntryContainer>
       <SidebarBackground />
     </NavBarContainer>

@@ -24,6 +24,9 @@ type Store = {
   connected: boolean;
   setConnected: (connected: boolean) => void;
 
+  isAdmin: boolean;
+  setIsAdmin: (isAdmin: boolean) => void;
+
   guild: GuildInfo | undefined;
   setGuild: (guild: GuildInfo | undefined) => void;
 
@@ -65,6 +68,9 @@ export const useStore = create<Store>((set, get) => ({
 
   connected: false,
   setConnected: (connected) => set({ connected }),
+
+  isAdmin: false,
+  setIsAdmin: (isAdmin) => set({ isAdmin }),
 
   guild: undefined,
   setGuild: (guild) => set({ guild }),

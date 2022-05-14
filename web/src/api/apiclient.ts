@@ -11,6 +11,7 @@ import {
   StateStats,
   Status,
   UploadSoundResponse,
+  User,
 } from './models';
 import { buildQueryParams } from './util';
 
@@ -127,5 +128,17 @@ export class APIClient extends HttpClient {
 
   statsState(): Promise<StateStats> {
     return this.req('GET', 'stats/state');
+  }
+
+  admins(): Promise<User[]> {
+    return this.req('GET', 'admins');
+  }
+
+  setAdmin(id: string): Promise<User[]> {
+    return this.req('PUT', `admins/${id}`);
+  }
+
+  removeAdmin(id: string): Promise<User[]> {
+    return this.req('DELETE', `admins/${id}`);
   }
 }

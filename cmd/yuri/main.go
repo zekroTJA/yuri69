@@ -99,7 +99,7 @@ func main() {
 	}()
 
 	// --- Setup Controller ---
-	ct, err := controller.New(db, st, pl, dc)
+	ct, err := controller.New(db, st, pl, dc, cfg.Discord.OwnerID)
 	if err != nil {
 		logrus.WithError(err).Fatal("Controller initialization failed")
 	}

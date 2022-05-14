@@ -41,10 +41,11 @@ type ControllerEvent struct {
 type Controller struct {
 	*util.EventBus[ControllerEvent]
 
-	db database.IDatabase
-	st storage.IStorage
-	pl *player.Player
-	dg *discord.Discord
+	ownerID string
+	db      database.IDatabase
+	st      storage.IStorage
+	pl      *player.Player
+	dg      *discord.Discord
 
 	ffmpegExec string
 
@@ -57,6 +58,7 @@ func New(
 	st storage.IStorage,
 	pl *player.Player,
 	dg *discord.Discord,
+	ownerID string,
 ) (*Controller, error) {
 
 	var (
@@ -68,6 +70,7 @@ func New(
 
 	t.EventBus = util.NewEventBus[ControllerEvent]()
 
+	t.ownerID = ownerID
 	t.db = db
 	t.st = st
 	t.pl = pl
@@ -510,6 +513,8 @@ func (t *Controller) GetCurrentState(userID string) (EventStatePayload, error) {
 		err error
 	)
 
+	res.IsAdmin = t.CheckAdmin(userID) == nil
+
 	vs, ok := t.dg.FindUserVS(userID)
 	if !ok {
 		return res, nil
@@ -585,6 +590,85 @@ func (t *Controller) GetState() (StateStats, error) {
 	}
 
 	return state, nil
+}
+
+func (t *Controller) GetAdmins(executorID string) ([]User, error) {
+	if err := t.CheckAdmin(executorID); err != nil {
+		return nil, err
+	}
+
+	adminIDs, err := t.db.GetAdmins()
+	if err != nil && err != database.ErrNotFound {
+		return nil, err
+	}
+
+	admins := make([]User, 0, len(adminIDs)+1)
+
+	owner, err := t.dg.Session().User(t.ownerID)
+	if err != nil {
+		return nil, err
+	}
+	uOwner := UserFromUser(*owner)
+	uOwner.IsOwner = true
+	admins = append(admins, uOwner)
+
+	for _, id := range adminIDs {
+		u, err := t.dg.Session().User(id)
+		if err != nil {
+			u = &discordgo.User{
+				ID: id,
+			}
+		}
+		admins = append(admins, UserFromUser(*u))
+	}
+
+	return admins, nil
+}
+
+func (t *Controller) SetAdmin(executorID, userID string) error {
+	if err := t.CheckAdmin(executorID); err != nil {
+		return err
+	}
+
+	if userID == t.ownerID {
+		return nil
+	}
+
+	_, err := t.dg.Session().User(userID)
+	if err != nil {
+		return errs.WrapUserError("user with this ID does not exist", http.StatusBadRequest)
+	}
+
+	return t.db.AddAdmin(userID)
+}
+
+func (t *Controller) RemoveAdmin(executorID, userID string) error {
+	if err := t.CheckAdmin(executorID); err != nil {
+		return err
+	}
+
+	if userID == t.ownerID {
+		return errs.WrapUserError("owner can not be removed from admins")
+	}
+
+	return t.db.RemoveAdmin(userID)
+}
+
+func (t *Controller) CheckAdmin(userID string) error {
+	if userID == t.ownerID {
+		return nil
+	}
+
+	ok, err := t.db.IsAdmin(userID)
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return errs.WrapUserError("admin privileges required", http.StatusForbidden)
+	}
+
+	return nil
 }
 
 // --- Helpers ---

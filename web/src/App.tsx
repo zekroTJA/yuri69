@@ -16,6 +16,7 @@ import { StatsRoute } from './routes/Stats';
 import { useStore } from './store';
 import { useEffect } from 'react';
 import { useApi } from './hooks/useApi';
+import { AdminRoute } from './routes/Admin';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -54,6 +55,7 @@ const App: React.FC = () => {
               <Route path="upload" element={<UploadRoute />} />
               <Route path="settings" element={<SettingsRoute />} />
               <Route path="stats" element={<StatsRoute />} />
+              <Route path="admin" element={<AdminRoute />} />
             </Route>
             <Route path="/login" element={<LoginRoute />} />
             <Route path="*" element={<Navigate to="/" />} />

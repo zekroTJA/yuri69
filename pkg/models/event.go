@@ -53,6 +53,7 @@ type EventStatePayload struct {
 
 	Connected bool `json:"connected"`
 	Joined    bool `json:"joined"`
+	IsAdmin   bool `json:"is_admin"`
 }
 
 type EventErrorPayload struct {

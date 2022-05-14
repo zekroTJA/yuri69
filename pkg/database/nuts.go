@@ -14,7 +14,7 @@ const (
 	bucketGuilds = "guilds"
 	bucketUsers  = "users"
 	bucketStats  = "stats"
-
+	bucketAdmins = "admins"
 	keySeparator = ":"
 )
 
@@ -49,44 +49,15 @@ func (t *Nuts) Close() error {
 }
 
 func (t *Nuts) PutSound(sound Sound) error {
-	data, err := marshal(sound)
-	if err != nil {
-		return err
-	}
-
-	return t.db.Update(func(tx *nutsdb.Tx) error {
-		return tx.Put(bucketSounds, []byte(sound.Uid), data, 0)
-	})
+	return setValue(t, bucketSounds, key(sound.Uid), sound)
 }
 
 func (t *Nuts) RemoveSound(uid string) error {
-	return t.db.Update(func(tx *nutsdb.Tx) error {
-		err := tx.Delete(bucketSounds, []byte(uid))
-		return t.wrapErr(err)
-	})
+	return t.remove(bucketSounds, []byte(uid))
 }
 
 func (t *Nuts) GetSounds() ([]Sound, error) {
-	var entries nutsdb.Entries
-	err := t.db.View(func(tx *nutsdb.Tx) error {
-		var err error
-		entries, err = tx.GetAll(bucketSounds)
-		return t.wrapErr(err)
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	sounds := make([]Sound, 0, len(entries))
-	for _, e := range entries {
-		sound, err := unmarshal[Sound](e.Value)
-		if err != nil {
-			return nil, err
-		}
-		sounds = append(sounds, sound)
-	}
-
-	return sounds, nil
+	return listValues[Sound](t, bucketSounds, nil, nil)
 }
 
 func (t *Nuts) GetSound(uid string) (Sound, error) {
@@ -186,6 +157,26 @@ func (t *Nuts) GetPlaybackLogSize() (int, error) {
 	return n, err
 }
 
+func (t *Nuts) GetAdmins() ([]string, error) {
+	return listValues[string](t, bucketAdmins, nil, nil)
+}
+
+func (t *Nuts) AddAdmin(userID string) error {
+	return setValue(t, bucketAdmins, key(userID), userID)
+}
+
+func (t *Nuts) RemoveAdmin(userID string) error {
+	return t.remove(bucketAdmins, key(userID))
+}
+
+func (t *Nuts) IsAdmin(userID string) (bool, error) {
+	v, err := getValue[string](t, bucketAdmins, []byte(userID))
+	if err != nil && err != ErrNotFound {
+		return false, err
+	}
+	return v == userID, nil
+}
+
 // --- Internal ---
 
 func getValue[TVal any](t *Nuts, bucket string, key []byte) (TVal, error) {
@@ -214,6 +205,54 @@ func setValue[TVal any](t *Nuts, bucket string, key []byte, val TVal) error {
 	}
 	return t.db.Update(func(tx *nutsdb.Tx) error {
 		return tx.Put(bucket, key, data, 0)
+	})
+}
+
+func listValues[TVal any](
+	t *Nuts,
+	bucket string,
+	entryFilter func(*nutsdb.Entry) bool,
+	valueFilter func(TVal) bool,
+) ([]TVal, error) {
+	var entries nutsdb.Entries
+	err := t.db.View(func(tx *nutsdb.Tx) error {
+		var err error
+		entries, err = tx.GetAll(bucket)
+		return t.wrapErr(err)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if entryFilter == nil {
+		entryFilter = func(e *nutsdb.Entry) bool { return true }
+	}
+	if valueFilter == nil {
+		valueFilter = func(t TVal) bool { return true }
+	}
+
+	vals := make([]TVal, 0, len(entries))
+	for _, e := range entries {
+		if !entryFilter(e) {
+			continue
+		}
+		v, err := unmarshal[TVal](e.Value)
+		if err != nil {
+			return nil, err
+		}
+		if !valueFilter(v) {
+			continue
+		}
+		vals = append(vals, v)
+	}
+
+	return vals, nil
+}
+
+func (t *Nuts) remove(bucket string, key []byte) error {
+	return t.db.Update(func(tx *nutsdb.Tx) error {
+		err := tx.Delete(bucket, key)
+		return t.wrapErr(err)
 	})
 }
 
