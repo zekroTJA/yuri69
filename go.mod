@@ -43,6 +43,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/radovskyb/watcher v1.0.7 // indirect
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	github.com/smartystreets/assertions v1.2.1 // indirect
 	github.com/xujiajun/mmap-go v1.0.1 // indirect
 	github.com/xujiajun/utils v0.0.0-20190123093513-8bf096c4f53b // indirect

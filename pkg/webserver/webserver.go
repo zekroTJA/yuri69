@@ -18,6 +18,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/debug"
 	"github.com/zekrotja/yuri69/pkg/discordoauth"
 	"github.com/zekrotja/yuri69/pkg/errs"
+	"github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 	"github.com/zekrotja/yuri69/pkg/webserver/controllers"
 	"github.com/zekrotja/yuri69/pkg/webserver/ws"
@@ -63,7 +64,7 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 		}))
 	}
 
-	t.authHandler, err = auth.New(cfg.Auth)
+	t.authHandler, err = auth.New(cfg.Auth, cfg.PublicAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -109,11 +110,15 @@ func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 
 	gAuth := gApi.Group("/auth")
 	gAuth.Get("/login", oauth.HandlerInit)
+	gAuth.Get("/logout", t.authHandler.HandleLogout)
 	gAuth.Get("/oauthcallback", oauth.HandlerCallback)
 	gAuth.Get("/refresh", t.authHandler.HandleRefresh)
+	gAuth.Get("/ota/login", t.authHandler.HandleOTALogin)
 
 	gApi.Use(t.authHandler.CheckAuth)
 
+	gApi.Get("/auth/ota/token", t.authHandler.HandleGetOtaQR)
+	gApi.Get("/auth/check", func(ctx *routing.Context) error { return ctx.Write(models.StatusOK) })
 	controllers.NewSoundsController(gApi.Group("/sounds"), t.ct)
 	controllers.NewPlayerController(gApi.Group("/players"), t.ct)
 	controllers.NewUsersController(gApi.Group("/users"), t.ct)

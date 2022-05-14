@@ -62,3 +62,9 @@ type StateStats struct {
 	NSoudns int `json:"n_sounds"`
 	NPlays  int `json:"n_plays"`
 }
+
+type OTAResponse struct {
+	Deadline   time.Time `json:"deadline"`
+	Token      string    `json:"token"`
+	QRCodeData string    `json:"qrcode_data"`
+}
