@@ -57,7 +57,6 @@ export class WSClient {
     switch (data.type) {
       case EventType.AuthFailed:
         this.tryReconnect = false;
-        console.log('AUTH ERROR');
         break;
     }
 

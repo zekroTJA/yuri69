@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import { uid } from 'react-uid';
 import styled, { useTheme } from 'styled-components';
-import { Sound } from '../api';
+import { OTAToken, Sound } from '../api';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { GuildTile } from '../components/GuildTile';
@@ -36,21 +36,24 @@ const Controls = styled.div`
   }
 `;
 
-const SettingsRouteContainer = styled(RouteContainer)`
-  /* > div {
-    display: flex;
-    gap: 1em;
-    > ${Card} {
-      width: 100%;
-    }
-  }
+const SettingsRouteContainer = styled(RouteContainer)``;
 
-  @media screen and (max-width: 70em) {
-    > div {
-      flex-direction: column;
-    }
-  } */
+const OTAContainer = styled.div`
+  display: flex;
+  gap: 1em;
 `;
+
+const timerReducer = (state: number, action: { type: 'decrease' | 'set'; payload?: number }) => {
+  switch (action.type) {
+    case 'decrease':
+      if (state - 1 < 0) return 0;
+      return state - 1;
+    case 'set':
+      return action.payload ?? state;
+    default:
+      return state;
+  }
+};
 
 export const SettingsRoute: React.FC<Props> = ({}) => {
   const [connected, guild, filters] = useStore((s) => [s.connected, s.guild, s.filters]);
@@ -61,6 +64,10 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
   const [tagsInclude, setTagsInclude] = useState<string[]>([]);
   const [tagsExclude, setTagsExclude] = useState<string[]>([]);
   const [fastTrigger, setFastTrigger] = useState('');
+  const [otaToken, setOtaToken] = useState<OTAToken>();
+  const [deadline, dispatchDeadline] = useReducer(timerReducer, 0);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
   const _applyGuild = async () => {
     try {
@@ -73,6 +80,19 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
     try {
       await fetch((c) => c.usersSetFasttrigger(fastTrigger));
       show('Personal preferences were sucessfully applied.', 'success');
+    } catch {}
+  };
+
+  const _fetchOtaToken = async () => {
+    try {
+      const token = await fetch((c) => c.getOTAToken());
+      setOtaToken(token);
+      const refreshIn = new Date(token.deadline).getTime() - Date.now();
+      clearTimeout(timerRef.current);
+      if (refreshIn - 1000 > 0) {
+        dispatchDeadline({ type: 'set', payload: Math.floor(refreshIn / 1000 - 1) });
+        timerRef.current = setTimeout(() => _fetchOtaToken(), refreshIn - 1000);
+      }
     } catch {}
   };
 
@@ -92,6 +112,16 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
     fetch((c) => c.usersGetFasttrigger())
       .then((res) => setFastTrigger(res.fast_trigger))
       .catch();
+
+    _fetchOtaToken();
+
+    clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => dispatchDeadline({ type: 'decrease' }), 1000);
+
+    return () => {
+      clearInterval(intervalRef.current);
+      clearTimeout(timerRef.current);
+    };
   }, []);
 
   const _soundOptions: Sound[] = [
@@ -103,6 +133,21 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
   return (
     <SettingsRouteContainer>
       <h1>Settings</h1>
+      <Card margin="0 0 1em 0">
+        <h2>Authorization</h2>
+        {otaToken && (
+          <OTAContainer>
+            <img src={otaToken.qrcode_data} />
+            <div>
+              <p>
+                You can scan this QR code with your mobile device and use the Yuri web interface
+                from there witout a login required!
+              </p>
+              <p>Code resets in {deadline} seconds.</p>
+            </div>
+          </OTAContainer>
+        )}
+      </Card>
       <SplitContainer>
         <Card>
           <h2>Guild Preferences</h2>

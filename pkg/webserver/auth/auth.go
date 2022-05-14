@@ -64,7 +64,7 @@ func New(config AuthConfig, publicAddress string) (*AuthHandler, error) {
 	}
 
 	t.otaTokenHandler, err = NewJWTHandler(
-		"", issuer, config.RefreshTokenLifetime)
+		"", issuer, otaTokenLifetime)
 	if err != nil {
 		return nil, err
 	}
