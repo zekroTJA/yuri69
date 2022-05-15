@@ -18,4 +18,5 @@ FROM alpine:latest
 COPY --from=build-be /build/bin/yuri /var/opt/yuri
 RUN apk add ffmpeg
 EXPOSE 80
+EXPOSE 6969
 ENTRYPOINT ["/var/opt/yuri"]

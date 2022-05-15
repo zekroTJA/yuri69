@@ -1,7 +1,16 @@
 services:
+  lavalink:
+    container_name: lavalink
+    image: fredboat/lavalink:master
+    volumes:
+      - "./config/lavalink/application.yml:/opt/Lavalink/application.yml:ro"
+    restart: unless-stopped
+
   yuri69:
     image: "zekro/yuri69:alpha"
     hostname: "yuri69"
+    ports:
+      - "80:80"
     environment:
       YURI_STORAGE_TYPE: "minio"
       YURI_STORAGE_MINIO_ENDPOINT: "minio.zekro.de"
@@ -15,7 +24,7 @@ services:
       YURI_WEBSERVER_DISCORDOAUTH_CLIENTID: "975377717358886923"
       YURI_WEBSERVER_DISCORDOAUTH_CLIENTSECRET: "IS2uxZPN_HJX7K58aHK9up_oRZFofShz"
       # YURI_PLAYER_HOSTNAME: "host.docker.internal"
-      YURI_PLAYER_LAVALINK_ADDRESS: "localhost:2333"
+      YURI_PLAYER_LAVALINK_ADDRESS: "lavalink:2333"
       YURI_PLAYER_LAVALINK_PASSWORD: "password"
       YURI_DATABASE_TYPE: "nuts"
       YURI_DATABASE_NUTS_LOCATION: "/var/yuri/db"
