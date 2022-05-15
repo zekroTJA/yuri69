@@ -75,7 +75,7 @@ func (t *Minio) PutObject(
 		return err
 	}
 
-	ctx, cancel := timeoutContext(5 * time.Second)
+	ctx, cancel := timeoutContext(5 * time.Minute)
 	defer cancel()
 	_, err := t.client.PutObject(ctx, bucketName, objectName, reader, objectSize,
 		minio.PutObjectOptions{
@@ -86,8 +86,7 @@ func (t *Minio) PutObject(
 }
 
 func (t *Minio) GetObject(bucketName, objectName string) (io.ReadCloser, int64, error) {
-	ctx, cancel := timeoutContext(5 * time.Second)
-	defer cancel()
+	ctx, _ := timeoutContext(5 * time.Minute)
 	obj, err := t.client.GetObject(ctx, bucketName, objectName, minio.GetObjectOptions{})
 	if err != nil {
 		return nil, 0, err
