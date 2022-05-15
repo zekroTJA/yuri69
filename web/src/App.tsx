@@ -13,9 +13,6 @@ import { SnackBar } from './components/SnackBar';
 import { EditRoute } from './routes/Edit';
 import { WsDisconnectScreen } from './components/WsDisconnectScreen';
 import { StatsRoute } from './routes/Stats';
-import { useStore } from './store';
-import { useEffect } from 'react';
-import { useApi } from './hooks/useApi';
 import { AdminRoute } from './routes/Admin';
 
 const GlobalStyle = createGlobalStyle`
@@ -37,7 +34,6 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const Outlet = styled.div`
-  width: 100vw;
   height: 100vh;
 `;
 

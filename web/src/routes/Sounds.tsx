@@ -42,6 +42,7 @@ const ButtonsContainer = styled.div`
   flex-wrap: wrap;
   gap: 0.7em;
   height: fit-content;
+  overflow-y: auto;
 `;
 
 const StyledItem = styled(Item)<{ delete?: boolean }>`

@@ -48,13 +48,11 @@ const SliderContainer = styled.div<{ backgroundWidth: string }>`
 const StyledInput = styled.input`
   width: 100%;
 
-  -webkit-appearance: none;
-  appearance: none;
   width: 100%;
   height: 4em;
   background-color: transparent;
   outline: none;
-  opacity: 0.7;
+  opacity: 0;
   -webkit-transition: 0.2s;
   transition: opacity 0.2s;
 
