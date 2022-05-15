@@ -16,5 +16,6 @@ RUN go build -o bin/yuri cmd/yuri/main.go
 
 FROM alpine:latest
 COPY --from=build-be /build/bin/yuri /var/opt/yuri
+RUN apk add ffmpeg
 EXPOSE 80
 ENTRYPOINT ["/var/opt/yuri"]

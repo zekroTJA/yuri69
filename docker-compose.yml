@@ -1,0 +1,30 @@
+services:
+  yuri69:
+    image: "zekro/yuri69:alpha"
+    hostname: "yuri69"
+    environment:
+      YURI_STORAGE_TYPE: "minio"
+      YURI_STORAGE_MINIO_ENDPOINT: "minio.zekro.de"
+      YURI_STORAGE_MINIO_ACCESSKEYID: "yuri69"
+      YURI_STORAGE_MINIO_SECRETACCESSKEY: "DCmmTBdvPmkH6QcgQJ4qZJZph9FzSs3mwMHtpvRBTr8J4wTcGrzwF4ASVRu3w3Wb"
+      YURI_STORAGE_MINIO_LOCATION: "us-east-1"
+      YURI_STORAGE_MINIO_SECURE: "true"
+      YURI_DISCORD_TOKEN: "OTc1Mzc3NzE3MzU4ODg2OTIz.GIGmY1.oket9HkEwO2cRgTr84AmPxODAv4jX5bhnHdueI"
+      YURI_DISCORD_OWNERID: "221905671296253953"
+      YURI_WEBSERVER_PUBLICADDRESS: "http://localhost"
+      YURI_WEBSERVER_DISCORDOAUTH_CLIENTID: "975377717358886923"
+      YURI_WEBSERVER_DISCORDOAUTH_CLIENTSECRET: "IS2uxZPN_HJX7K58aHK9up_oRZFofShz"
+      # YURI_PLAYER_HOSTNAME: "host.docker.internal"
+      YURI_PLAYER_LAVALINK_ADDRESS: "localhost:2333"
+      YURI_PLAYER_LAVALINK_PASSWORD: "password"
+      YURI_DATABASE_TYPE: "nuts"
+      YURI_DATABASE_NUTS_LOCATION: "/var/yuri/db"
+    volumes:
+      - "./yuri69/data/db:/var/yuri/db"
+    restart: unless-stopped
+    command: "-l 6"
+    # labels:
+    #   traefik.enable: "true"
+    #   traefik.http.routers.yuri69.entrypoints: "https"
+    #   traefik.http.routers.yuri69.tls: "true"
+    #   traefik.http.routers.yuri69.rule: "Host(`yuri69.zekro.de`)"

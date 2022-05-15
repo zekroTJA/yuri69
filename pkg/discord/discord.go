@@ -1,6 +1,8 @@
 package discord
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/bwmarrin/discordgo"
+)
 
 type Discord struct {
 	session *discordgo.Session
@@ -24,7 +26,20 @@ func (t *Discord) Session() *discordgo.Session {
 }
 
 func (t *Discord) Open() error {
-	return t.session.Open()
+	cReady := make(chan struct{})
+
+	t.session.AddHandlerOnce(func(_ *discordgo.Session, e *discordgo.Ready) {
+		cReady <- struct{}{}
+	})
+
+	err := t.session.Open()
+	if err != nil {
+		return err
+	}
+
+	<-cReady
+
+	return nil
 }
 
 func (t *Discord) Close() error {

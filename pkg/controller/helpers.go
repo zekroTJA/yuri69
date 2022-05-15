@@ -75,7 +75,7 @@ func (t *Controller) listSoundsFiltered(tagsMust []string, tagsNot []string) ([]
 
 func (t *Controller) resizeHistoryBuffer() error {
 	sounds, err := t.db.GetSounds()
-	if err != nil {
+	if err != nil && err != database.ErrNotFound {
 		return err
 	}
 
