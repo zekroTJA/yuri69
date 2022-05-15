@@ -25,7 +25,7 @@ export type Sound = {
   creator_id?: string;
   tags?: string[];
 
-  _favorite: boolean; // pseudo prop
+  _favorite?: boolean; // pseudo prop
 };
 
 export type GuildFilters = {
