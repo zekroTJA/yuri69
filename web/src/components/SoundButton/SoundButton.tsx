@@ -10,7 +10,7 @@ type Props = {
   openContext?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, sound: Sound) => void;
 };
 
-const StyledButton = styled(Button)<{ fav: boolean }>`
+const StyledButton = styled(Button)<{ fav?: boolean }>`
   border-bottom: solid 0 ${(p) => p.theme.orange};
   ${(p) => p.fav && 'border-bottom-width: 0.3em;'};
 `;
