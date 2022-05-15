@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"mime"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/database"
@@ -26,28 +26,26 @@ func (t *Controller) UploadSound(
 	var ext string
 	var d time.Time
 
-	exts, err := mime.ExtensionsByType(mimeType)
+	buff, err := io.ReadAll(r)
 	if err != nil {
 		return "", d, err
 	}
-	if len(exts) != 0 {
-		ext = exts[0][1:]
-	} else {
-		split := strings.Split(mimeType, "/")
-		if len(split) != 2 {
-			return "", d, errs.WrapUserError("the given mime type is not detectable")
-		}
-		ext = strings.ToLower(split[1])
+
+	m, err := mimetype.DetectReader(bytes.NewReader(buff))
+	if err != nil {
+		return "", d, err
 	}
+	ext = mapExt(m.Extension())
+	mimeType = m.String()
 
 	id := xid.New().String()
-	err = t.st.PutObject(static.BucketTemp, id, r, size, mimeType)
+	err = t.st.PutObject(static.BucketTemp, id, bytes.NewReader(buff), size, mimeType)
 	if err != nil {
 		return "", d, err
 	}
 
 	const lifetime = 5 * time.Minute
-	t.pendingCrations.Set(id, ext, lifetime, func(v string) {
+	t.pendingCrations.Set(id, ext[1:], lifetime, func(v string) {
 		t.st.DeleteObject(static.BucketTemp, id)
 	})
 	d = time.Now().Add(lifetime)

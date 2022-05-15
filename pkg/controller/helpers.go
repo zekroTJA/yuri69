@@ -17,6 +17,20 @@ import (
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
+var extMappings = map[string]string{
+	".oga": ".ogg",
+	".ogv": ".ogg",
+	".ogx": ".ogg",
+}
+
+func mapExt(ext string) string {
+	v := extMappings[ext]
+	if v == "" {
+		return ext
+	}
+	return v
+}
+
 func (t *Controller) isAdmin(userID string) (bool, error) {
 	if userID == t.ownerID {
 		return true, nil
