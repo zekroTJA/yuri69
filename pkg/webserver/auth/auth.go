@@ -91,7 +91,7 @@ func (t AuthHandler) HandleLogin(ctx *routing.Context, userID string) error {
 		Value:    refreshToken,
 		Domain:   ctx.Request.URL.Host,
 		Path:     "/",
-		MaxAge:   int(t.accessTokenHandler.Lifetime().Seconds()),
+		MaxAge:   int(t.refreshTokenHandler.Lifetime().Seconds()),
 		HttpOnly: true,
 		Secure:   !debug.Enabled(),
 	})
