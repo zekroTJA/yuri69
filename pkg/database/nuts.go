@@ -7,6 +7,7 @@ import (
 
 	"github.com/xujiajun/nutsdb"
 	. "github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 const (
@@ -175,6 +176,28 @@ func (t *Nuts) IsAdmin(userID string) (bool, error) {
 		return false, err
 	}
 	return v == userID, nil
+}
+
+func (t *Nuts) GetFavorites(userID string) ([]string, error) {
+	return getValue[[]string](t, bucketUsers, key(userID, "favs"))
+}
+
+func (t *Nuts) AddFavorite(userID, ident string) error {
+	favs, err := t.GetFavorites(userID)
+	if err != nil && err != ErrNotFound {
+		return err
+	}
+	favs = util.AppendIfNotContains(favs, ident)
+	return setValue(t, bucketUsers, key(userID, "favs"), favs)
+}
+
+func (t *Nuts) RemoveFavorite(userID, ident string) error {
+	favs, err := t.GetFavorites(userID)
+	if err != nil && err != ErrNotFound {
+		return err
+	}
+	favs = util.Remove(favs, ident)
+	return setValue(t, bucketUsers, key(userID, "favs"), favs)
 }
 
 // --- Internal ---

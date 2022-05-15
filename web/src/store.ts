@@ -18,6 +18,11 @@ type Store = {
   removeSound: (sound: Sound) => void;
   updateSound: (sound: Sound) => void;
 
+  favorites: string[];
+  setFavorites: (favorites: string[]) => void;
+  addFavorite: (ident: string) => void;
+  removeFavorite: (ident: string) => void;
+
   order: string;
   setOrder: (order: string) => void;
 
@@ -59,6 +64,11 @@ export const useStore = create<Store>((set, get) => ({
   removeSound: (sound) => set({ sounds: [...get().sounds.filter((s) => s.uid !== sound.uid)] }),
   updateSound: (sound) =>
     set({ sounds: [sound, ...get().sounds.filter((s) => s.uid !== sound.uid)] }),
+
+  favorites: [],
+  setFavorites: (favorites) => set({ favorites }),
+  addFavorite: (ident) => set({ favorites: [...get().favorites, ident] }),
+  removeFavorite: (ident) => set({ favorites: [...get().favorites.filter((f) => f !== ident)] }),
 
   order: 'created',
   setOrder: (order) => set({ order }),

@@ -6,9 +6,20 @@ import { useStore } from '../store';
 import { Sound } from '../api/models';
 import { useApi } from '../hooks/useApi';
 import { RouteContainer } from '../components/RouteContainer';
-import { animation, Item, ItemParams, Menu, theme, useContextMenu } from 'react-contexify';
+import {
+  animation,
+  Item,
+  ItemParams,
+  Menu,
+  PredicateParams,
+  Separator,
+  theme,
+  useContextMenu,
+} from 'react-contexify';
 import { ReactComponent as IconDelete } from '../../assets/delete.svg';
 import { ReactComponent as IconEdit } from '../../assets/edit.svg';
+import { ReactComponent as IconStar } from '../../assets/star.svg';
+import { ReactComponent as IconUnstar } from '../../assets/unstar.svg';
 import { useNavigate } from 'react-router';
 import { Modal } from '../components/Modal';
 import { useEffect, useState } from 'react';
@@ -17,6 +28,7 @@ import { Button } from '../components/Button';
 import { useSnackBar } from '../hooks/useSnackBar';
 import { UrlImport } from '../components/UrlImport';
 import { SearchBar } from '../components/SearchBar';
+import { useFavorites } from '../hooks/useFavorites';
 
 const SOUNDS_MENU_ID = 'sounds-menu';
 
@@ -62,6 +74,7 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
   const { filteredSounds: sounds } = useSounds(searchFilter);
+  const { favorites, addFavorite, removeFavorite } = useFavorites();
 
   const _activateSound = (s: Sound) => {
     fetch((c) => c.playersPlay(s.uid)).catch();
@@ -73,6 +86,12 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
       props: { sound },
     });
   };
+
+  const _onFavorize = ({ props }: ItemParams<{ sound: Sound }, any>) =>
+    addFavorite(props!.sound.uid);
+
+  const _onUnfavorize = ({ props }: ItemParams<{ sound: Sound }, any>) =>
+    removeFavorite(props!.sound.uid);
 
   const _onSoundEdit = ({ props }: ItemParams<{ sound: Sound }, any>) => {
     nav(`sounds/${props!.sound.uid}`);
@@ -110,10 +129,20 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
     }
   };
 
+  const _hideCtxFavorize = ({ props }: PredicateParams<{ sound: Sound }, any>) =>
+    !!props?.sound._favorite;
+  const _hideCtxUnavorize = ({ props }: PredicateParams<{ sound: Sound }, any>) =>
+    !props?.sound._favorite;
+
   useEffect(() => {
     window.addEventListener('keydown', _onKeyDown);
     return () => window.removeEventListener('keydown', _onKeyDown);
   }, []);
+
+  const _sounds = sounds?.map((s) => ({ ...s, _favorite: favorites.includes(s.uid) }));
+  const _favs = _sounds.filter((s) => s._favorite);
+  const _nonfavs = _sounds.filter((s) => !s._favorite);
+  const _sortedSounds = [..._favs, ..._nonfavs];
 
   return (
     <>
@@ -122,7 +151,7 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
         <SearchBar show={showSearch} value={searchFilter} onInput={setSearchFilter} />
 
         <ButtonsContainer>
-          {sounds?.map((s) => (
+          {_sortedSounds?.map((s) => (
             <SoundButton
               key={uid(s)}
               sound={s}
@@ -136,9 +165,16 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
       </SoundsRouteContainer>
 
       <Menu id={SOUNDS_MENU_ID} theme={theme.dark} animation={animation.fade}>
+        <StyledItem onClick={_onFavorize} hidden={_hideCtxFavorize}>
+          <IconStar /> <span>Favorize</span>
+        </StyledItem>
+        <StyledItem onClick={_onUnfavorize} hidden={_hideCtxUnavorize}>
+          <IconUnstar /> <span>Unfavorize</span>
+        </StyledItem>
         <StyledItem onClick={_onSoundEdit}>
           <IconEdit /> <span>Edit</span>
         </StyledItem>
+        <Separator />
         <StyledItem delete onClick={_onSoundDelete}>
           <IconDelete />
           <span>Delete</span>

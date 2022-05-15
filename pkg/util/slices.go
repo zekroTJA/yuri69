@@ -81,3 +81,18 @@ func ApplyToAll[T any](s []T, f func(v T) T) {
 		s[i] = f(v)
 	}
 }
+
+func AppendIfNotContains[T comparable](s []T, v T) []T {
+	if !Contains(s, v) {
+		s = append(s, v)
+	}
+	return s
+}
+
+func Remove[T comparable](s []T, v T) []T {
+	i := IndexOf(s, v)
+	if i != -1 {
+		s = append(s[:i], s[i+1:]...)
+	}
+	return s
+}

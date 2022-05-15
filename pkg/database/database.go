@@ -31,6 +31,10 @@ type IDatabase interface {
 	AddAdmin(userID string) error
 	RemoveAdmin(userID string) error
 	IsAdmin(userID string) (bool, error)
+
+	GetFavorites(userID string) ([]string, error)
+	AddFavorite(userID, ident string) error
+	RemoveFavorite(userID, ident string) error
 }
 
 type DatabaseConfig struct {

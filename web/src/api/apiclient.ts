@@ -109,6 +109,18 @@ export class APIClient extends HttpClient {
     return this.req('POST', 'users/settings/fasttrigger', { fast_trigger });
   }
 
+  favorites(): Promise<string[]> {
+    return this.req('GET', 'users/settings/favorites');
+  }
+
+  addFavorite(ident: string): Promise<Status> {
+    return this.req('PUT', `users/settings/favorites/${ident}`);
+  }
+
+  removeFavorite(ident: string): Promise<Status> {
+    return this.req('DELETE', `users/settings/favorites/${ident}`);
+  }
+
   statsLog(
     guildid: string = '',
     userid: string = '',
