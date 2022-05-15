@@ -4,8 +4,15 @@ type = "file"
 [Storage.File]
 basepath = "data/st"
 
+[Storage.Minio]
+endpoint = "example.com"
+accesskeyid = "*****"
+secretaccesskey = "*****"
+location = "us-east-1"
+secure = true
+
 [Discord]
-token = ""
+token = "*****"
 ownerid = "221905671296253953"
 
 [Webserver]
@@ -13,12 +20,12 @@ bindaddress = "localhost:8080"
 publicaddress = "http://localhost:8080"
 
 [Webserver.DiscordOAuth]
-clientid = ""
-clientsecret = ""
+clientid = "*****"
+clientsecret = "*****"
 
 [Webserver.Auth]
-refreshtokenkey = ""
-accesstokenkey = ""
+refreshtokenkey = "*****"
+accesstokenkey = "*****"
 accesstokenlifetime = "10m"
 
 [Player]
@@ -26,7 +33,7 @@ Hostname = "host.docker.internal"
 
 [Player.Lavalink]
 address = "localhost:2333"
-password = ""
+password = "*****"
 
 [Database]
 Type = "nuts"

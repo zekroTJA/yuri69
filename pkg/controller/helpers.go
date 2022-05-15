@@ -47,7 +47,7 @@ func (t *Controller) ffmpeg(
 	args ...string,
 ) error {
 	var cmdArgs []string
-	cmdArgs = append(cmdArgs, "-f", inTyp, "-i", "pipe:")
+	cmdArgs = append(cmdArgs, "-f", inTyp, "-i", "pipe:", "-map", "0:a:0")
 	cmdArgs = append(cmdArgs, args...)
 	cmdArgs = append(cmdArgs, "-f", outTyp, "pipe:")
 
