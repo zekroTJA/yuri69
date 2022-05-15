@@ -189,7 +189,7 @@ func (t AuthHandler) HandleGetOtaQR(ctx *routing.Context) error {
 		return err
 	}
 
-	authUrl := fmt.Sprintf("%s/auth/ota/login?token=%s", t.publicAddress, otaToken)
+	authUrl := fmt.Sprintf("%s/api/v1/auth/ota/login?token=%s", t.publicAddress, otaToken)
 
 	qrData, err := qrcode.Encode(authUrl, qrcode.Medium, 256)
 	if err != nil {
