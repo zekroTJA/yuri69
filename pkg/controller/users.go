@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/zekrotja/yuri69/pkg/cryptoutil"
 	"github.com/zekrotja/yuri69/pkg/database"
 )
 
@@ -33,4 +34,35 @@ func (t *Controller) AddFavorite(userID, ident string) error {
 
 func (t *Controller) RemoveFavorite(userID, ident string) error {
 	return t.db.RemoveFavorite(userID, ident)
+}
+
+func (t *Controller) GetApiKey(userID string) (string, error) {
+	return t.db.GetApiKey(userID)
+}
+
+func (t *Controller) GenerateApiKey(userID string) (string, error) {
+	err := t.db.RemoveApiKey(userID)
+	if err != nil && err != database.ErrNotFound {
+		return "", err
+	}
+
+	token, err := cryptoutil.GetRandBase64Str(32)
+	if err != nil {
+		return "", err
+	}
+
+	err = t.db.SetApiKey(userID, token)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+func (t *Controller) RemoveApiKey(userID string) error {
+	return t.db.RemoveApiKey(userID)
+}
+
+func (t *Controller) GetUserByApiKey(token string) (string, error) {
+	return t.db.GetUserByApiKey(token)
 }

@@ -1,5 +1,6 @@
 import { HttpClient } from './httpclient';
 import {
+  ApiKey,
   CreateSoundRequest,
   Event,
   FastTrigger,
@@ -119,6 +120,18 @@ export class APIClient extends HttpClient {
 
   removeFavorite(ident: string): Promise<Status> {
     return this.req('DELETE', `users/settings/favorites/${ident}`);
+  }
+
+  apiKey(): Promise<ApiKey> {
+    return this.req('GET', 'users/settings/apikey');
+  }
+
+  generateApiKey(): Promise<ApiKey> {
+    return this.req('POST', 'users/settings/apikey');
+  }
+
+  removeApiKey(): Promise<ApiKey> {
+    return this.req('DELETE', 'users/settings/apikey');
   }
 
   statsLog(

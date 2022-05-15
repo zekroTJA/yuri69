@@ -16,6 +16,7 @@ const (
 	bucketUsers  = "users"
 	bucketStats  = "stats"
 	bucketAdmins = "admins"
+	bucketTokens = "tokens"
 	keySeparator = ":"
 )
 
@@ -198,6 +199,36 @@ func (t *Nuts) RemoveFavorite(userID, ident string) error {
 	}
 	favs = util.Remove(favs, ident)
 	return setValue(t, bucketUsers, key(userID, "favs"), favs)
+}
+
+func (t *Nuts) GetApiKey(userID string) (string, error) {
+	return getValue[string](t, bucketUsers, key(userID, "apitoken"))
+}
+
+func (t *Nuts) GetUserByApiKey(token string) (string, error) {
+	return getValue[string](t, bucketTokens, key(token))
+}
+
+func (t *Nuts) SetApiKey(userID, token string) error {
+	err := setValue(t, bucketUsers, key(userID, "apitoken"), token)
+	if err != nil {
+		return err
+	}
+	return setValue(t, bucketTokens, key(token), userID)
+}
+
+func (t *Nuts) RemoveApiKey(userID string) error {
+	token, err := t.GetApiKey(userID)
+	if err != nil {
+		return err
+	}
+
+	err = t.remove(bucketTokens, key(token))
+	if err != nil {
+		return err
+	}
+
+	return t.remove(bucketUsers, key(userID, "apitoken"))
 }
 
 // --- Internal ---

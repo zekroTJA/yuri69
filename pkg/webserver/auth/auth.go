@@ -29,20 +29,26 @@ type AuthConfig struct {
 }
 
 type AuthHandler struct {
-	publicAddress string
+	publicAddress        string
+	checkApiTokenHandler func(string) (string, error)
 
 	accessTokenHandler  JWTHandler
 	refreshTokenHandler JWTHandler
 	otaTokenHandler     JWTHandler
 }
 
-func New(config AuthConfig, publicAddress string) (*AuthHandler, error) {
+func New(
+	config AuthConfig,
+	publicAddress string,
+	checkApiTokenHandler func(string) (string, error),
+) (*AuthHandler, error) {
 	var (
 		t   AuthHandler
 		err error
 	)
 
 	t.publicAddress = publicAddress
+	t.checkApiTokenHandler = checkApiTokenHandler
 
 	if config.AccessTokenLifetime == 0 {
 		return nil, errors.New("AccessTokenLifetime must be larger than 0")
@@ -136,18 +142,31 @@ func (t AuthHandler) CheckAuthRaw(authToken string) (Claims, error) {
 }
 
 func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
-	authHeader := ctx.Request.Header.Get("authorization")
-	if !strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
-		return errs.WrapUserError("invalid access token", http.StatusUnauthorized)
-	}
-	authToken := authHeader[len("bearer "):]
+	var (
+		claims Claims
+		err    error
+	)
 
-	claims, err := t.CheckAuthRaw(authToken)
-	if jwt.IsJWTError(err) {
+	authHeader := ctx.Request.Header.Get("authorization")
+
+	if strings.HasPrefix(strings.ToLower(authHeader), "basic ") {
+		token := authHeader[len("basic "):]
+		userid, err := t.checkApiTokenHandler(token)
+		if err != nil {
+			return errs.WrapUserError("invalid basic token", http.StatusUnauthorized)
+		}
+		claims.UserID = userid
+	} else if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
+		authToken := authHeader[len("bearer "):]
+		claims, err = t.CheckAuthRaw(authToken)
+		if jwt.IsJWTError(err) {
+			return errs.WrapUserError("invalid access token", http.StatusUnauthorized)
+		}
+		if err != nil {
+			return err
+		}
+	} else {
 		return errs.WrapUserError("invalid access token", http.StatusUnauthorized)
-	}
-	if err != nil {
-		return err
 	}
 
 	ctx.Set("claims", claims)

@@ -35,6 +35,11 @@ type IDatabase interface {
 	GetFavorites(userID string) ([]string, error)
 	AddFavorite(userID, ident string) error
 	RemoveFavorite(userID, ident string) error
+
+	GetApiKey(userID string) (string, error)
+	GetUserByApiKey(token string) (string, error)
+	SetApiKey(userID, token string) error
+	RemoveApiKey(userID string) error
 }
 
 type DatabaseConfig struct {

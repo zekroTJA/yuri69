@@ -4,7 +4,9 @@ import styled, { useTheme } from 'styled-components';
 import { OTAToken, Sound } from '../api';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { Flex } from '../components/Flex';
 import { GuildTile } from '../components/GuildTile';
+import { HoverToShow } from '../components/HoverToShow';
 import { InfoPanel } from '../components/InfoPanel';
 import { RouteContainer } from '../components/RouteContainer';
 import { Select } from '../components/Select';
@@ -41,6 +43,7 @@ const SettingsRouteContainer = styled(RouteContainer)``;
 const OTAContainer = styled.div`
   display: flex;
   gap: 1em;
+  margin-bottom: 1.5em;
 `;
 
 const timerReducer = (state: number, action: { type: 'decrease' | 'set'; payload?: number }) => {
@@ -68,6 +71,7 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
   const [deadline, dispatchDeadline] = useReducer(timerReducer, 0);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const [apiKey, setApiKey] = useState('');
 
   const _applyGuild = async () => {
     try {
@@ -96,6 +100,31 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
     } catch {}
   };
 
+  const _generateApiKey = () => {
+    fetch((c) => c.generateApiKey())
+      .then((res) => {
+        setApiKey(res.api_key);
+        show('API key has been generated.', 'success');
+      })
+      .catch();
+  };
+
+  const _removeApiKey = () => {
+    fetch((c) => c.removeApiKey())
+      .then(() => {
+        setApiKey('');
+        show('API key has been removed.', 'success');
+      })
+      .catch();
+  };
+
+  const _copyApikeyToClipboard = () => {
+    navigator.clipboard
+      .writeText(apiKey)
+      .then(() => show('API key has been copied to you clipboard.', 'success'))
+      .catch((err) => show(`Failed copying API key to clipboard: ${err}`, 'error'));
+  };
+
   useEffect(() => {
     if (filters?.include) setTagsInclude(filters.include);
     if (filters?.exclude) setTagsExclude(filters.exclude);
@@ -111,6 +140,10 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
   useEffect(() => {
     fetch((c) => c.usersGetFasttrigger())
       .then((res) => setFastTrigger(res.fast_trigger))
+      .catch();
+
+    fetch((c) => c.apiKey(), 404)
+      .then((res) => setApiKey(res.api_key))
       .catch();
 
     _fetchOtaToken();
@@ -147,7 +180,21 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
             </div>
           </OTAContainer>
         )}
+        <h2>API Key</h2>
+        {(apiKey && <HoverToShow>{apiKey}</HoverToShow>) || <p>No API key generated.</p>}
+        <Flex gap="1em">
+          <Button onClick={_generateApiKey}>{(apiKey && 'Regenerate') || 'Generate'}</Button>
+          {apiKey && (
+            <>
+              <Button onClick={_copyApikeyToClipboard}>Copy to Clipboard</Button>
+              <Button variant="red" onClick={_removeApiKey}>
+                Delete
+              </Button>
+            </>
+          )}
+        </Flex>
       </Card>
+
       <SplitContainer>
         <Card>
           <h2>Guild Preferences</h2>

@@ -64,7 +64,7 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 		}))
 	}
 
-	t.authHandler, err = auth.New(cfg.Auth, cfg.PublicAddress)
+	t.authHandler, err = auth.New(cfg.Auth, cfg.PublicAddress, ct.GetUserByApiKey)
 	if err != nil {
 		return nil, err
 	}

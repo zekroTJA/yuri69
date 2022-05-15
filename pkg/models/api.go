@@ -84,3 +84,7 @@ func UserFromUser(u discordgo.User) User {
 		AvatarURL: u.AvatarURL(""),
 	}
 }
+
+type ApiKey struct {
+	ApiKey string `json:"api_key"`
+}

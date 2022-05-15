@@ -12,34 +12,35 @@ export const useApi = () => {
 
   async function fetch<T>(
     req: (c: APIClient) => Promise<T>,
-    silenceErrors: boolean = false,
+    silenceErrors?: boolean | number | number[],
   ): Promise<T> {
+    if (typeof silenceErrors === 'number') silenceErrors = [silenceErrors];
     try {
       return await req(ApiClientInstance);
     } catch (e) {
-      if (!silenceErrors) {
-        if (e instanceof APIError) {
-          if (e.code === 401) {
-            nav('/login');
-            setLoggedIn(false);
-          } else {
-            show(
-              <span>
-                <strong>API Error:</strong>&nbsp;{e.message} <Embed>({e.code})</Embed>
-              </span>,
-              'error',
-              6000,
-            );
-          }
+      if (typeof silenceErrors === 'boolean' && silenceErrors) throw e;
+      if (e instanceof APIError) {
+        if (silenceErrors && silenceErrors.includes(e.code)) throw e;
+        if (e.code === 401) {
+          nav('/login');
+          setLoggedIn(false);
         } else {
           show(
             <span>
-              <strong>Error:</strong>&nbsp;Unknown Request Error: <Embed>{`${e}`}</Embed>
+              <strong>API Error:</strong>&nbsp;{e.message} <Embed>({e.code})</Embed>
             </span>,
             'error',
             6000,
           );
         }
+      } else {
+        show(
+          <span>
+            <strong>Error:</strong>&nbsp;Unknown Request Error: <Embed>{`${e}`}</Embed>
+          </span>,
+          'error',
+          6000,
+        );
       }
       throw e;
     }

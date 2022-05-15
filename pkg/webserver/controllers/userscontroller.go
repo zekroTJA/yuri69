@@ -18,6 +18,9 @@ func NewUsersController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Get("/settings/favorites", t.handleGetFavorites)
 	r.Put("/settings/favorites/<ident>", t.handlePutFavorite)
 	r.Delete("/settings/favorites/<ident>", t.handleDeleteFavorite)
+	r.Get("/settings/apikey", t.handleGetApiKey)
+	r.Post("/settings/apikey", t.handlePostApiKey)
+	r.Delete("/settings/apikey", t.handleDeleteApiKey)
 	return
 }
 
@@ -84,6 +87,39 @@ func (t *usersController) handleDeleteFavorite(ctx *routing.Context) error {
 	}
 
 	err := t.ct.RemoveFavorite(userid, ident)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(StatusOK)
+}
+
+func (t *usersController) handleGetApiKey(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	token, err := t.ct.GetApiKey(userid)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(ApiKey{ApiKey: token})
+}
+
+func (t *usersController) handlePostApiKey(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	token, err := t.ct.GenerateApiKey(userid)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(ApiKey{ApiKey: token})
+}
+
+func (t *usersController) handleDeleteApiKey(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	err := t.ct.RemoveApiKey(userid)
 	if err != nil {
 		return err
 	}

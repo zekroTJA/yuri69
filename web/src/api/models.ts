@@ -142,3 +142,7 @@ export type User = {
   avatar_url: string;
   is_owner: boolean;
 };
+
+export type ApiKey = {
+  api_key: string;
+};
