@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	uidRx = regexp.MustCompile(`^[a-z0-9_.-]{1,20}$`)
+	uidRx = regexp.MustCompile(`^[a-z0-9_.-]{1,30}$`)
 )
 
 type Sound struct {

@@ -66,8 +66,8 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 			fmt.Sprintf("UID '%s' is reserved and can not be used", req.Uid))
 	}
 
-	_, err = t.db.GetSound(req.Uid)
-	if err == nil {
+	s, err := t.db.GetSound(req.Uid)
+	if s.Uid == req.Uid {
 		return Sound{}, errs.WrapUserError("sound with specified ID already exists")
 	}
 	if err != nil && err != database.ErrNotFound {

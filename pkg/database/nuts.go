@@ -51,7 +51,7 @@ func (t *Nuts) Close() error {
 }
 
 func (t *Nuts) PutSound(sound Sound) error {
-	return setValue(t, bucketSounds, key(sound.Uid), sound)
+	return nuts_setValue(t, bucketSounds, nuts_key(sound.Uid), sound)
 }
 
 func (t *Nuts) RemoveSound(uid string) error {
@@ -59,39 +59,39 @@ func (t *Nuts) RemoveSound(uid string) error {
 }
 
 func (t *Nuts) GetSounds() ([]Sound, error) {
-	return listValues[Sound](t, bucketSounds, nil, nil)
+	return nuts_listValues[Sound](t, bucketSounds, nil, nil)
 }
 
 func (t *Nuts) GetSound(uid string) (Sound, error) {
-	return getValue[Sound](t, bucketSounds, key(uid))
+	return nuts_getValue[Sound](t, bucketSounds, nuts_key(uid))
 }
 
 func (t *Nuts) GetGuildVolume(guildID string) (int, error) {
-	return getValue[int](t, bucketGuilds, key(guildID, "volume"))
+	return nuts_getValue[int](t, bucketGuilds, nuts_key(guildID, "volume"))
 }
 
 func (t *Nuts) SetGuildVolume(guildID string, volume int) error {
-	return setValue(t, bucketGuilds, key(guildID, "volume"), volume)
+	return nuts_setValue(t, bucketGuilds, nuts_key(guildID, "volume"), volume)
 }
 
 func (t *Nuts) GetUserFastTrigger(userID string) (string, error) {
-	return getValue[string](t, bucketUsers, key(userID, "fasttrigger"))
+	return nuts_getValue[string](t, bucketUsers, nuts_key(userID, "fasttrigger"))
 }
 
 func (t *Nuts) SetUserFastTrigger(userID, ident string) error {
-	return setValue(t, bucketUsers, key(userID, "fasttrigger"), ident)
+	return nuts_setValue(t, bucketUsers, nuts_key(userID, "fasttrigger"), ident)
 }
 
 func (t *Nuts) GetGuildFilters(guildID string) (GuildFilters, error) {
-	return getValue[GuildFilters](t, bucketGuilds, key(guildID, "filters"))
+	return nuts_getValue[GuildFilters](t, bucketGuilds, nuts_key(guildID, "filters"))
 }
 
 func (t *Nuts) SetGuildFilters(guildID string, f GuildFilters) error {
-	return setValue(t, bucketGuilds, key(guildID, "filters"), f)
+	return nuts_setValue(t, bucketGuilds, nuts_key(guildID, "filters"), f)
 }
 
 func (t *Nuts) PutPlaybackLog(e PlaybackLogEntry) error {
-	return setValue(t, bucketStats, key(e.Id), e)
+	return nuts_setValue(t, bucketStats, nuts_key(e.Id), e)
 }
 
 func (t *Nuts) GetPlaybackLog(
@@ -130,7 +130,7 @@ func (t *Nuts) GetPlaybackLog(
 		if limit != 0 && n == limit {
 			break
 		}
-		log, err := unmarshal[PlaybackLogEntry](e.Value)
+		log, err := nuts_unmarshal[PlaybackLogEntry](e.Value)
 		if err != nil {
 			return nil, err
 		}
@@ -159,20 +159,46 @@ func (t *Nuts) GetPlaybackLogSize() (int, error) {
 	return n, err
 }
 
+func (t *Nuts) GetPlaybackStats(guildID, userID string) ([]PlaybackStats, error) {
+	logs, err := t.GetPlaybackLog(guildID, "", userID, 0, 0)
+	if err != nil && err != ErrNotFound {
+		return nil, err
+	}
+
+	statsMap := make(map[string]int)
+	for _, log := range logs {
+		statsMap[log.Ident]++
+	}
+
+	counts := make([]PlaybackStats, 0, len(statsMap))
+	for ident, count := range statsMap {
+		counts = append(counts, PlaybackStats{
+			Ident: ident,
+			Count: count,
+		})
+	}
+
+	sort.Slice(counts, func(i, j int) bool {
+		return counts[i].Count > counts[j].Count
+	})
+
+	return counts, nil
+}
+
 func (t *Nuts) GetAdmins() ([]string, error) {
-	return listValues[string](t, bucketAdmins, nil, nil)
+	return nuts_listValues[string](t, bucketAdmins, nil, nil)
 }
 
 func (t *Nuts) AddAdmin(userID string) error {
-	return setValue(t, bucketAdmins, key(userID), userID)
+	return nuts_setValue(t, bucketAdmins, nuts_key(userID), userID)
 }
 
 func (t *Nuts) RemoveAdmin(userID string) error {
-	return t.remove(bucketAdmins, key(userID))
+	return t.remove(bucketAdmins, nuts_key(userID))
 }
 
 func (t *Nuts) IsAdmin(userID string) (bool, error) {
-	v, err := getValue[string](t, bucketAdmins, []byte(userID))
+	v, err := nuts_getValue[string](t, bucketAdmins, []byte(userID))
 	if err != nil && err != ErrNotFound {
 		return false, err
 	}
@@ -180,7 +206,7 @@ func (t *Nuts) IsAdmin(userID string) (bool, error) {
 }
 
 func (t *Nuts) GetFavorites(userID string) ([]string, error) {
-	return getValue[[]string](t, bucketUsers, key(userID, "favs"))
+	return nuts_getValue[[]string](t, bucketUsers, nuts_key(userID, "favs"))
 }
 
 func (t *Nuts) AddFavorite(userID, ident string) error {
@@ -189,7 +215,7 @@ func (t *Nuts) AddFavorite(userID, ident string) error {
 		return err
 	}
 	favs = util.AppendIfNotContains(favs, ident)
-	return setValue(t, bucketUsers, key(userID, "favs"), favs)
+	return nuts_setValue(t, bucketUsers, nuts_key(userID, "favs"), favs)
 }
 
 func (t *Nuts) RemoveFavorite(userID, ident string) error {
@@ -198,23 +224,23 @@ func (t *Nuts) RemoveFavorite(userID, ident string) error {
 		return err
 	}
 	favs = util.Remove(favs, ident)
-	return setValue(t, bucketUsers, key(userID, "favs"), favs)
+	return nuts_setValue(t, bucketUsers, nuts_key(userID, "favs"), favs)
 }
 
 func (t *Nuts) GetApiKey(userID string) (string, error) {
-	return getValue[string](t, bucketUsers, key(userID, "apitoken"))
+	return nuts_getValue[string](t, bucketUsers, nuts_key(userID, "apitoken"))
 }
 
 func (t *Nuts) GetUserByApiKey(token string) (string, error) {
-	return getValue[string](t, bucketTokens, key(token))
+	return nuts_getValue[string](t, bucketTokens, nuts_key(token))
 }
 
 func (t *Nuts) SetApiKey(userID, token string) error {
-	err := setValue(t, bucketUsers, key(userID, "apitoken"), token)
+	err := nuts_setValue(t, bucketUsers, nuts_key(userID, "apitoken"), token)
 	if err != nil {
 		return err
 	}
-	return setValue(t, bucketTokens, key(token), userID)
+	return nuts_setValue(t, bucketTokens, nuts_key(token), userID)
 }
 
 func (t *Nuts) RemoveApiKey(userID string) error {
@@ -223,17 +249,17 @@ func (t *Nuts) RemoveApiKey(userID string) error {
 		return err
 	}
 
-	err = t.remove(bucketTokens, key(token))
+	err = t.remove(bucketTokens, nuts_key(token))
 	if err != nil {
 		return err
 	}
 
-	return t.remove(bucketUsers, key(userID, "apitoken"))
+	return t.remove(bucketUsers, nuts_key(userID, "apitoken"))
 }
 
 // --- Internal ---
 
-func getValue[TVal any](t *Nuts, bucket string, key []byte) (TVal, error) {
+func nuts_getValue[TVal any](t *Nuts, bucket string, key []byte) (TVal, error) {
 	var (
 		def TVal
 		e   *nutsdb.Entry
@@ -248,12 +274,12 @@ func getValue[TVal any](t *Nuts, bucket string, key []byte) (TVal, error) {
 		return def, err
 	}
 
-	v, err := unmarshal[TVal](e.Value)
+	v, err := nuts_unmarshal[TVal](e.Value)
 	return v, err
 }
 
-func setValue[TVal any](t *Nuts, bucket string, key []byte, val TVal) error {
-	data, err := marshal(val)
+func nuts_setValue[TVal any](t *Nuts, bucket string, key []byte, val TVal) error {
+	data, err := nuts_marshal(val)
 	if err != nil {
 		return err
 	}
@@ -262,7 +288,7 @@ func setValue[TVal any](t *Nuts, bucket string, key []byte, val TVal) error {
 	})
 }
 
-func listValues[TVal any](
+func nuts_listValues[TVal any](
 	t *Nuts,
 	bucket string,
 	entryFilter func(*nutsdb.Entry) bool,
@@ -290,7 +316,7 @@ func listValues[TVal any](
 		if !entryFilter(e) {
 			continue
 		}
-		v, err := unmarshal[TVal](e.Value)
+		v, err := nuts_unmarshal[TVal](e.Value)
 		if err != nil {
 			return nil, err
 		}
@@ -324,15 +350,15 @@ func (t *Nuts) wrapErr(err error) error {
 	return err
 }
 
-func marshal(v any) ([]byte, error) {
+func nuts_marshal(v any) ([]byte, error) {
 	return json.Marshal(v)
 }
 
-func unmarshal[T any](data []byte) (v T, err error) {
+func nuts_unmarshal[T any](data []byte) (v T, err error) {
 	err = json.Unmarshal(data, &v)
 	return v, err
 }
 
-func key(elements ...string) []byte {
+func nuts_key(elements ...string) []byte {
 	return []byte(strings.Join(elements, keySeparator))
 }

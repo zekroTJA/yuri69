@@ -18,6 +18,10 @@ var DefaultConfig = Config{
 		Nuts: database.NutsConfig{
 			Location: "data/db",
 		},
+		Postgres: database.PostgresConfig{
+			Host: "localhost",
+			Port: 5432,
+		},
 	},
 	Storage: storage.StorageConfig{
 		Type: "file",

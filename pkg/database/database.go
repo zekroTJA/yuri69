@@ -26,6 +26,7 @@ type IDatabase interface {
 	PutPlaybackLog(e PlaybackLogEntry) error
 	GetPlaybackLog(guildID, ident, userID string, limit, offset int) ([]PlaybackLogEntry, error)
 	GetPlaybackLogSize() (int, error)
+	GetPlaybackStats(guildID, userID string) ([]PlaybackStats, error)
 
 	GetAdmins() ([]string, error)
 	AddAdmin(userID string) error
@@ -43,14 +44,17 @@ type IDatabase interface {
 }
 
 type DatabaseConfig struct {
-	Type string
-	Nuts NutsConfig
+	Type     string
+	Nuts     NutsConfig
+	Postgres PostgresConfig
 }
 
 func New(c DatabaseConfig) (IDatabase, error) {
 	switch strings.ToLower(c.Type) {
 	case "nuts", "local", "file":
 		return NewNuts(c.Nuts)
+	case "postgres", "pg", "postgresql":
+		return NewPostgres(c.Postgres)
 	default:
 		return nil, ErrUnsupportedProviderType
 	}

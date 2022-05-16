@@ -38,6 +38,7 @@ require (
 	github.com/klauspost/compress v1.15.4 // indirect
 	github.com/klauspost/cpuid v1.3.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.12 // indirect
+	github.com/lib/pq v1.10.5 // indirect
 	github.com/mattn/go-zglob v0.0.3 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect

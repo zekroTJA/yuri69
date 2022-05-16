@@ -96,3 +96,18 @@ func Remove[T comparable](s []T, v T) []T {
 	}
 	return s
 }
+
+func Diff[T comparable](before, after []T) (added, removed []T) {
+	for _, b := range before {
+		if !Contains(after, b) {
+			removed = append(removed, b)
+		}
+	}
+	for _, a := range after {
+		if !Contains(before, a) {
+			added = append(added, a)
+		}
+	}
+
+	return added, removed
+}
