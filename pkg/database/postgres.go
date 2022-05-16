@@ -79,7 +79,7 @@ func (t *Postgres) init() error {
 		}
 
 		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS guilds (
-			id           CHAR(32)    NOT NULL,
+			id           VARCHAR(32)    NOT NULL,
 			volume 		 INT         NOT NULL DEFAULT '0',
 			PRIMARY KEY (id)
 		)`)
@@ -89,7 +89,7 @@ func (t *Postgres) init() error {
 
 		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS guild_filters (
 			id           INT       GENERATED ALWAYS AS IDENTITY,
-			guildid		 CHAR(32)  NOT NULL,
+			guildid		 VARCHAR(32)  NOT NULL,
 			exclude		 BOOLEAN   NOT NULL,
 			tag			 TEXT      NOT NULL,
 			PRIMARY KEY (id)
@@ -99,7 +99,7 @@ func (t *Postgres) init() error {
 		}
 
 		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS users (
-			id           CHAR(32)    NOT NULL,
+			id           VARCHAR(32)    NOT NULL,
 			fasttrigger  TEXT        NOT NULL DEFAULT '',
 			admin        BOOLEAN     NOT NULL DEFAULT 'false',
 			apikey       TEXT        NOT NULL DEFAULT '',
@@ -111,7 +111,7 @@ func (t *Postgres) init() error {
 
 		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS user_favorites (
 			id           INT          GENERATED ALWAYS AS IDENTITY,
-			userid       CHAR(32)     NOT NULL,
+			userid       VARCHAR(32)     NOT NULL,
 			sound        VARCHAR(30)  NOT NULL,
 			PRIMARY KEY (id),
 			CONSTRAINT fk_favorites
@@ -124,10 +124,10 @@ func (t *Postgres) init() error {
 		}
 
 		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS playbacklog (
-			id           CHAR(20)     NOT NULL,
+			id           VARCHAR(20)     NOT NULL,
 			sound        VARCHAR(30)  NOT NULL,
-			guildid      CHAR(32)     NOT NULL,
-			userid       CHAR(32)     NOT NULL,
+			guildid      VARCHAR(32)     NOT NULL,
+			userid       VARCHAR(32)     NOT NULL,
 			timestamp    TIMESTAMP    NOT NULL,
 			PRIMARY KEY (id),
 			CONSTRAINT fk_favorites
