@@ -1,9 +1,35 @@
+volumes:
+  postgres:
+  minio:
+
 services:
   lavalink:
     container_name: lavalink
     image: fredboat/lavalink:master
     volumes:
       - "./config/lavalink/application.yml:/opt/Lavalink/application.yml:ro"
+    restart: unless-stopped
+
+  postgres:
+    image: "postgres:alpine"
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+    environment:
+      POSTGRES_PASSWORD: "yuri69"
+      POSTGRES_USER: "yuri69"
+      POSTGRES_DB: "yuri69"
+    restart: unless-stopped
+
+  minio:
+    image: "minio/minio:latest"
+    ports:
+      - "9001:9001"
+    volumes:
+      - "minio:/data"
+    environment:
+      MINIO_ACCESS_KEY: "yuri69"
+      MINIO_SECRET_KEY: "yuri69"
+    command: server /data --console-address :9001
     restart: unless-stopped
 
   yuri69:
@@ -13,27 +39,22 @@ services:
       - "80:80"
     environment:
       YURI_STORAGE_TYPE: "minio"
-      YURI_STORAGE_MINIO_ENDPOINT: "minio.zekro.de"
+      YURI_STORAGE_MINIO_ENDPOINT: "minio"
       YURI_STORAGE_MINIO_ACCESSKEYID: "yuri69"
-      YURI_STORAGE_MINIO_SECRETACCESSKEY: "DCmmTBdvPmkH6QcgQJ4qZJZph9FzSs3mwMHtpvRBTr8J4wTcGrzwF4ASVRu3w3Wb"
+      YURI_STORAGE_MINIO_SECRETACCESSKEY: "yuri69"
       YURI_STORAGE_MINIO_LOCATION: "us-east-1"
-      YURI_STORAGE_MINIO_SECURE: "true"
-      YURI_DISCORD_TOKEN: "OTc1Mzc3NzE3MzU4ODg2OTIz.GIGmY1.oket9HkEwO2cRgTr84AmPxODAv4jX5bhnHdueI"
+      YURI_STORAGE_MINIO_SECURE: "false"
+      YURI_DATABASE_TYPE: "postgres"
+      YURI_DATABASE_POSTGRES_HOST: "postgres"
+      YURI_DATABASE_POSTGRES_DATABASE: "yuri69"
+      YURI_DATABASE_POSTGRES_USERNAME: "yuri69"
+      YURI_DATABASE_POSTGRES_PASSWORD: "yuri69"
+      YURI_DISCORD_TOKEN: "**********"
       YURI_DISCORD_OWNERID: "221905671296253953"
       YURI_WEBSERVER_PUBLICADDRESS: "http://localhost"
-      YURI_WEBSERVER_DISCORDOAUTH_CLIENTID: "975377717358886923"
-      YURI_WEBSERVER_DISCORDOAUTH_CLIENTSECRET: "IS2uxZPN_HJX7K58aHK9up_oRZFofShz"
-      # YURI_PLAYER_HOSTNAME: "host.docker.internal"
+      YURI_WEBSERVER_DISCORDOAUTH_CLIENTID: "**********"
+      YURI_WEBSERVER_DISCORDOAUTH_CLIENTSECRET: "**********"
       YURI_PLAYER_LAVALINK_ADDRESS: "lavalink:2333"
       YURI_PLAYER_LAVALINK_PASSWORD: "password"
-      YURI_DATABASE_TYPE: "nuts"
-      YURI_DATABASE_NUTS_LOCATION: "/var/yuri/db"
-    volumes:
-      - "./yuri69/data/db:/var/yuri/db"
     restart: unless-stopped
-    command: "-l 6"
-    # labels:
-    #   traefik.enable: "true"
-    #   traefik.http.routers.yuri69.entrypoints: "https"
-    #   traefik.http.routers.yuri69.tls: "true"
-    #   traefik.http.routers.yuri69.rule: "Host(`yuri69.zekro.de`)"
+    command: "-l 5"

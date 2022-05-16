@@ -5,7 +5,7 @@ type = "file"
 basepath = "data/st"
 
 [Storage.Minio]
-endpoint = "example.com"
+endpoint = "minio.example.com"
 accesskeyid = "*****"
 secretaccesskey = "*****"
 location = "us-east-1"
@@ -40,3 +40,10 @@ Type = "nuts"
 
 [Database.Nuts]
 Location = "data/db"
+
+[Database.Postgres]
+Host = "postgres"
+Port = 5432
+Database = "yuri69"
+Username = "yuri69"
+Password = "******"
