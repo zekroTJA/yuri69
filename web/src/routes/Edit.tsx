@@ -1,14 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { CreateSoundRequest } from '../api';
+import styled from 'styled-components';
+import { CreateSoundRequest, Sound } from '../api';
 import { Embed } from '../components/Embed';
 import { RouteContainer } from '../components/RouteContainer';
 import { SoundEditor } from '../components/SoundEditor';
 import { useApi } from '../hooks/useApi';
 import { useSnackBar } from '../hooks/useSnackBar';
-import { useStore } from '../store';
+import { ReactComponent as IconDelete } from '../../assets/delete.svg';
+import { Button } from '../components/Button';
+import { Modal } from '../components/Modal';
 
 type Props = {};
+
+const Heading = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const deleteReducer = (
+  state: { show: boolean; sound?: Sound },
+  action: { type: 'show' | 'hide'; payload?: Sound },
+) => {
+  switch (action.type) {
+    case 'show':
+      return { show: true, sound: action.payload };
+    case 'hide':
+      return { ...state, show: false };
+    default:
+      return state;
+  }
+};
 
 export const EditRoute: React.FC<Props> = ({}) => {
   const { uid } = useParams();
@@ -16,6 +39,7 @@ export const EditRoute: React.FC<Props> = ({}) => {
   const fetch = useApi();
   const nav = useNavigate();
   const { show } = useSnackBar();
+  const [remove, dispatchRemove] = useReducer(deleteReducer, { show: false, sound: undefined });
 
   const _update = async () => {
     if (!sound) return;
@@ -31,6 +55,20 @@ export const EditRoute: React.FC<Props> = ({}) => {
     } catch {}
   };
 
+  const _deleteSound = () => {
+    if (!remove.sound) return;
+    fetch((c) => c.soundsDelete(remove.sound!)).then(() => {
+      show(
+        <span>
+          Sound <Embed>{remove.sound!.uid}</Embed> has successfully been deleted.
+        </span>,
+        'success',
+      );
+      nav(-1);
+    });
+    dispatchRemove({ type: 'hide' });
+  };
+
   useEffect(() => {
     if (uid) {
       fetch((c) => c.sound(uid))
@@ -43,7 +81,13 @@ export const EditRoute: React.FC<Props> = ({}) => {
 
   return (
     <RouteContainer maxWidth="50em">
-      <h1>Edit Sound</h1>
+      <Heading>
+        <h1>Edit Sound</h1>
+        <Button variant="red" onClick={() => dispatchRemove({ type: 'show', payload: sound })}>
+          <IconDelete />
+        </Button>
+      </Heading>
+
       {sound && (
         <SoundEditor
           sound={sound}
@@ -52,6 +96,25 @@ export const EditRoute: React.FC<Props> = ({}) => {
           onSave={_update}
         />
       )}
+
+      <Modal
+        show={remove.show}
+        onClose={() => dispatchRemove({ type: 'hide' })}
+        heading="Delete Sound"
+        controls={
+          <>
+            <Button variant="red" onClick={_deleteSound}>
+              Delete
+            </Button>
+            <Button variant="gray" onClick={() => dispatchRemove({ type: 'hide' })}>
+              Cancel
+            </Button>
+          </>
+        }>
+        <span>
+          Do you really want to delete the sound <Embed>{remove.sound?.uid}</Embed>?
+        </span>
+      </Modal>
     </RouteContainer>
   );
 };

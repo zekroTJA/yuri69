@@ -27,6 +27,7 @@ export const Button = styled.button<Props>`
   transition: all 0.2s ease;
   justify-content: center;
   height: fit-content;
+  gap: 0.8em;
 
   ${(p) => {
     switch (p.variant ?? 'default') {
@@ -49,10 +50,6 @@ export const Button = styled.button<Props>`
     }
   }}
 
-  > svg {
-    margin-right: 0.8em;
-  }
-
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -62,4 +59,3 @@ export const Button = styled.button<Props>`
     filter: brightness(1.2);
   }
 `;
-

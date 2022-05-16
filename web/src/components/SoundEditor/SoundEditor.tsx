@@ -61,8 +61,6 @@ export const SoundEditor: React.FC<Props> = ({
     updateSound({ ...sound, ...s });
   };
 
-  console.log(sound);
-
   return (
     <SoundEditorContainer>
       <label htmlFor="uid">

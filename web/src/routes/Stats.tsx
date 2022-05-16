@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { uid } from 'react-uid';
-import styled from 'styled-components';
-import { PlaybackLogEntry, PlaybackStats, StateStats } from '../api';
+import styled, { css } from 'styled-components';
+import { PlaybackLogEntry, PlaybackStats, Sound, StateStats } from '../api';
 import { Card } from '../components/Card';
 import { LinkButton } from '../components/LinkButton';
 import { RouteContainer } from '../components/RouteContainer';
@@ -11,7 +12,7 @@ import { formatDate } from '../util/date';
 
 type Props = {};
 
-const Table = styled.table<{ fw?: boolean }>`
+const Table = styled.table<{ fw?: boolean; clickable?: boolean }>`
   text-align: left;
   cursor: default;
   border-collapse: collapse;
@@ -26,8 +27,18 @@ const Table = styled.table<{ fw?: boolean }>`
   tr {
     transition: all 0.2s ease;
 
+    ${(p) =>
+      p.clickable &&
+      css`
+        cursor: pointer;
+      `}
+
     &:hover {
-      background-color: ${(p) => p.theme.background3};
+      ${(p) =>
+        p.clickable &&
+        css`
+          background-color: ${p.theme.background3};
+        `}
     }
 
     > * {
@@ -35,6 +46,11 @@ const Table = styled.table<{ fw?: boolean }>`
       &:last-child {
         padding-right: 0.5em;
       }
+    }
+
+    &:first-child {
+      background-color: transparent !important;
+      cursor: default !important;
     }
   }
 `;
@@ -46,6 +62,9 @@ export const StatsRoute: React.FC<Props> = ({}) => {
   const [limitLog, setLimitLog] = useState(10);
   const [counts, setCounts] = useState<PlaybackStats[]>();
   const [limitCounts, setLimitCounts] = useState(5);
+  const nav = useNavigate();
+
+  const _edit = (e: { ident: string }) => nav('/sounds/' + e.ident);
 
   useEffect(() => {
     fetch((c) => c.statsState())
@@ -84,14 +103,14 @@ export const StatsRoute: React.FC<Props> = ({}) => {
       <SplitContainer>
         {log && (
           <Card>
-            <Table fw>
+            <Table fw clickable>
               <tbody>
                 <tr>
                   <th>Sound UID</th>
                   <th>Count</th>
                 </tr>
                 {log.map((c) => (
-                  <tr key={uid(c)}>
+                  <tr key={uid(c)} onClick={() => _edit(c)}>
                     <td>{c.ident}</td>
                     <td>{formatDate(c.timestamp)}</td>
                   </tr>
@@ -107,14 +126,14 @@ export const StatsRoute: React.FC<Props> = ({}) => {
         )}
         {counts && (
           <Card>
-            <Table fw>
+            <Table fw clickable>
               <tbody>
                 <tr>
                   <th>Sound UID</th>
                   <th>Count</th>
                 </tr>
                 {counts.slice(0, limitCounts).map((c) => (
-                  <tr key={uid(c)}>
+                  <tr key={uid(c)} onClick={() => _edit(c)}>
                     <td>{c.ident}</td>
                     <td>{c.count}</td>
                   </tr>

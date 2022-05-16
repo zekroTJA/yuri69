@@ -22,7 +22,7 @@ import { ReactComponent as IconStar } from '../../assets/star.svg';
 import { ReactComponent as IconUnstar } from '../../assets/unstar.svg';
 import { useNavigate } from 'react-router';
 import { Modal } from '../components/Modal';
-import { useEffect, useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { Embed } from '../components/Embed';
 import { Button } from '../components/Button';
 import { useSnackBar } from '../hooks/useSnackBar';
@@ -64,14 +64,27 @@ const StyledItem = styled(Item)<{ delete?: boolean }>`
   }
 `;
 
+const deleteReducer = (
+  state: { show: boolean; sound?: Sound },
+  action: { type: 'show' | 'hide'; payload?: Sound },
+) => {
+  switch (action.type) {
+    case 'show':
+      return { show: true, sound: action.payload };
+    case 'hide':
+      return { ...state, show: false };
+    default:
+      return state;
+  }
+};
+
 export const SoundsRoute: React.FC<Props> = ({}) => {
   const fetch = useApi();
   const [connected, playing] = useStore((s) => [s.connected, s.playing]);
   const { show: showCtx } = useContextMenu({ id: SOUNDS_MENU_ID });
   const nav = useNavigate();
   const { show } = useSnackBar();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [toDelete, setToDelete] = useState<Sound>();
+  const [remove, dispatchRemove] = useReducer(deleteReducer, { show: false, sound: undefined });
   const [showSearch, setShowSearch] = useState(false);
   const [searchFilter, setSearchFilter] = useState('');
   const { filteredSounds: sounds } = useSounds(searchFilter);
@@ -99,21 +112,20 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
   };
 
   const _onSoundDelete = ({ props }: ItemParams<{ sound: Sound }, any>) => {
-    setToDelete(props!.sound);
-    setShowDeleteModal(true);
+    dispatchRemove({ type: 'show', payload: props!.sound });
   };
 
   const _deleteSound = () => {
-    if (!toDelete) return;
-    fetch((c) => c.soundsDelete(toDelete)).then(() =>
+    if (!remove.sound) return;
+    fetch((c) => c.soundsDelete(remove.sound!)).then(() =>
       show(
         <span>
-          Sound <Embed>{toDelete.uid}</Embed> has successfully been deleted.
+          Sound <Embed>{remove.sound!.uid}</Embed> has successfully been deleted.
         </span>,
         'success',
       ),
     );
-    setShowDeleteModal(false);
+    dispatchRemove({ type: 'hide' });
   };
 
   const _hideSearch = () => {
@@ -183,21 +195,21 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
       </Menu>
 
       <Modal
-        show={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        show={remove.show}
+        onClose={() => dispatchRemove({ type: 'hide' })}
         heading="Delete Sound"
         controls={
           <>
             <Button variant="red" onClick={_deleteSound}>
               Delete
             </Button>
-            <Button variant="gray" onClick={() => setShowDeleteModal(false)}>
+            <Button variant="gray" onClick={() => dispatchRemove({ type: 'hide' })}>
               Cancel
             </Button>
           </>
         }>
         <span>
-          Do you really want to delete the sound <Embed>{toDelete?.uid}</Embed>?
+          Do you really want to delete the sound <Embed>{remove.sound?.uid}</Embed>?
         </span>
       </Modal>
     </>
