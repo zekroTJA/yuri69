@@ -6,6 +6,7 @@ API_KEY=$3
 
 [ -z $LOCATION ] || [ -z $ENDPOINT ] || [ -z $API_KEY ] && {
   echo "Usage: $(basename $0) [FILE_LOCATION] [ENDPOINT] [API_KEY]"
+  exit 1
 }
 
 function check_installed {
@@ -20,9 +21,11 @@ check_installed jq
 
 [ -d $LOCATION ] || {
   echo "ERROR : $LOCATION does not exist or is not a directory"
+  exit 1
 }
 
-for FILE in $LOCATION/*; do
+for FILE in $(ls -1tr $LOCATION); do
+  FILE=$LOCATION/$FILE
   NAME=${FILE%.*}
   BASENAME=$(basename $NAME)
 
