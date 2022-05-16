@@ -1,0 +1,45 @@
+name: Build Artifacts
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - dev
+    paths-ignore:
+      - "**.md"
+      - "config/**"
+      - "scripts/**"
+
+jobs:
+  build_artifacts:
+    name: Build Artifacts
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos:
+          - linux
+          - windows
+          - darwin
+        goarch:
+          - amd64
+          - arm64
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: "^1.18"
+      - name: Install Task
+        uses: arduino/setup-task@v1
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: task build --force
+      - name: Upload Artifcats
+        uses: actions/upload-artifact@v2
+        with:
+          name: yuri-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ./bin/

@@ -7,7 +7,7 @@ vars:
   APP_NAME: yuri
   CONFIG_DIR: ./config/private.config.toml
   BIN_DIR: ./bin
-  BIN: '{{.BIN_DIR}}/{{.APP_NAME}}{{if eq OS "windows"}}.exe{{end}}'
+  BIN: '{{.BIN_DIR}}/{{.APP_NAME}}{{exeExt}}'
 
 
 tasks:
@@ -29,6 +29,7 @@ tasks:
   builddry:
     cmds:
       - go build
+          -v
           -o {{.BIN}}
             ./cmd/{{.APP_NAME}}/main.go
 
