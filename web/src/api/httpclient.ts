@@ -84,7 +84,7 @@ export class HttpClient {
   }
 
   private isAccessTokenExpired(): boolean {
-    return !this.accessToken || Date.now() - this.accessToken.expiresDate.getTime() > 0;
+    return !this.accessToken || Date.now() - this.accessToken.deadlineDate.getTime() > 0;
   }
 
   private async getAccessToken(): Promise<AccessToken> {
@@ -96,7 +96,7 @@ export class HttpClient {
     const token = await this.getAccessToken();
     this.accessTokenRequest = undefined;
     this.accessToken = token as AccessToken;
-    this.accessToken.expiresDate = new Date(token.expires);
+    this.accessToken.deadlineDate = new Date(token.deadline);
     if (!!replay) return await replay();
     return Promise.resolve({} as T);
   }

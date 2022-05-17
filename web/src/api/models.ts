@@ -40,9 +40,9 @@ export type Status = {
 
 export type AccessToken = {
   access_token: string;
-  expires: string;
+  deadline: string;
 
-  expiresDate: Date;
+  deadlineDate: Date;
 };
 
 export type CreateSoundRequest = Sound & {
