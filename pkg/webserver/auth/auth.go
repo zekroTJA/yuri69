@@ -118,20 +118,26 @@ func (t AuthHandler) HandleLogout(ctx *routing.Context) error {
 }
 
 func (t AuthHandler) HandleRefresh(ctx *routing.Context) error {
-	cookie, err := ctx.Request.Cookie("refreshToken")
-	if err == http.ErrNoCookie {
-		return errs.WrapUserError("no refresh token provided", http.StatusUnauthorized)
-	}
-	if err != nil {
-		return err
-	}
+	var claims Claims
 
-	claims, err := t.refreshTokenHandler.Verify(cookie.Value)
-	if jwt.IsJWTError(err) {
-		return errs.WrapUserError(err, http.StatusUnauthorized)
-	}
-	if err != nil {
+	if ok, refreshToken, err := getCookie(ctx, "refreshToken"); err != nil {
 		return err
+	} else if ok {
+		claims, err = t.refreshTokenHandler.Verify(refreshToken)
+		if jwt.IsJWTError(err) {
+			return errs.WrapUserError(err, http.StatusUnauthorized)
+		}
+		if err != nil {
+			return err
+		}
+	} else if ok, token := getAuthorizationToken(ctx, "basic"); ok {
+		userid, err := t.checkApiTokenHandler(token)
+		if err != nil {
+			return errs.WrapUserError("invalid bearer token", http.StatusUnauthorized)
+		}
+		claims.UserID = userid
+	} else {
+		return errs.WrapUserError("no refresh or bearer token provided", http.StatusUnauthorized)
 	}
 
 	return t.respondAccessToken(ctx, claims)
@@ -147,18 +153,14 @@ func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
 		err    error
 	)
 
-	authHeader := ctx.Request.Header.Get("authorization")
-
-	if strings.HasPrefix(strings.ToLower(authHeader), "basic ") {
-		token := authHeader[len("basic "):]
+	if ok, token := getAuthorizationToken(ctx, "basic"); ok {
 		userid, err := t.checkApiTokenHandler(token)
 		if err != nil {
 			return errs.WrapUserError("invalid basic token", http.StatusUnauthorized)
 		}
 		claims.UserID = userid
-	} else if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
-		authToken := authHeader[len("bearer "):]
-		claims, err = t.CheckAuthRaw(authToken)
+	} else if ok, token := getAuthorizationToken(ctx, "bearer"); ok {
+		claims, err = t.CheckAuthRaw(token)
 		if jwt.IsJWTError(err) {
 			return errs.WrapUserError("invalid access token", http.StatusUnauthorized)
 		}
@@ -226,7 +228,7 @@ func (t AuthHandler) HandleOTALogin(ctx *routing.Context) error {
 // --- Helpers ---
 
 func (t AuthHandler) respondAccessToken(ctx *routing.Context, claims Claims) error {
-	accessTokenExpires := time.Now().Add(t.accessTokenHandler.Lifetime())
+	accessTokenDeadline := time.Now().Add(t.accessTokenHandler.Lifetime())
 	accessToken, err := t.accessTokenHandler.Generate(claims)
 	if err != nil {
 		return err
@@ -234,6 +236,31 @@ func (t AuthHandler) respondAccessToken(ctx *routing.Context, claims Claims) err
 
 	return ctx.Write(models.AuthLoginResponse{
 		AccessToken: accessToken,
-		Expires:     accessTokenExpires,
+		Deadline:    accessTokenDeadline,
 	})
+}
+
+func getAuthorizationToken(ctx *routing.Context, typ string) (bool, string) {
+	authHeader := ctx.Request.Header.Get("authorization")
+	typ = typ + " "
+
+	if !strings.HasPrefix(strings.ToLower(authHeader), typ) {
+		return false, ""
+	}
+
+	token := authHeader[len(typ):]
+
+	return token != "", token
+}
+
+func getCookie(ctx *routing.Context, name string) (bool, string, error) {
+	cookie, err := ctx.Request.Cookie(name)
+	if err == http.ErrNoCookie {
+		return false, "", nil
+	}
+	if err != nil {
+		return false, "", err
+	}
+
+	return cookie.Value != "", cookie.Value, nil
 }
