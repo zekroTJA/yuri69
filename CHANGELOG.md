@@ -1,0 +1,3 @@
+[VERSION]
+
+Initial release.
