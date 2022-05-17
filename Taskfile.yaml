@@ -85,3 +85,15 @@ tasks:
       - 'docker-compose
           -f ./docker-compose.dev.yml
           {{.CLI_ARGS}}'
+
+  init:
+    preconditions:
+      - sh: ls config/private.config.toml && exit 1 || exit 0
+        msg: config/private.config.toml already exists
+    cmds:
+      - '{{if eq OS "windows"}}
+          copy config\\dev.config.toml config\\private.config.toml
+        {{else}}
+          cp config/dev.config.toml config/private.config.toml
+        {{end}}'
+      - echo Please go to config/private.config.toml and enter your Discord Bot credentials!
