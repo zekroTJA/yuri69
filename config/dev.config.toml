@@ -5,36 +5,35 @@ type = "file"
 basepath = "data/st"
 
 [Storage.Minio]
-endpoint = "minio.example.com"
-accesskeyid = "*****"
-secretaccesskey = "*****"
+endpoint = "localhost:9000"
+accesskeyid = "yuri69"
+secretaccesskey = "yuri69_secret_key"
 location = "us-east-1"
-secure = true
+secure = false
 
 [Discord]
-token = "*****"
-ownerid = "221905671296253953"
+token = ""
+ownerid = ""
 
 [Webserver]
 bindaddress = "localhost:8080"
 publicaddress = "http://localhost:8080"
 
 [Webserver.DiscordOAuth]
-clientid = "*****"
-clientsecret = "*****"
+clientid = ""
+clientsecret = ""
 
 [Webserver.Auth]
-refreshtokenkey = "*****"
-refreshtokenlifetime = "720h"
-accesstokenkey = ""
-accesstokenlifetime = "10m"
+refreshtokenkey = "kekw"
+refreshtokenlifetime = "8760h"
+accesstokenkey = "kekw"
 
 [Player]
 Hostname = "host.docker.internal"
 
 [Player.Lavalink]
 address = "localhost:2333"
-password = "*****"
+password = "password"
 
 [Database]
 Type = "nuts"
@@ -43,8 +42,8 @@ Type = "nuts"
 Location = "data/db"
 
 [Database.Postgres]
-Host = "postgres"
+Host = "localhost"
 Port = 5432
 Database = "yuri69"
 Username = "yuri69"
-Password = "******"
+Password = "yuri69"
