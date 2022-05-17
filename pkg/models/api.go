@@ -26,7 +26,7 @@ type StatusModel struct {
 
 type AuthLoginResponse struct {
 	AccessToken string    `json:"access_token"`
-	Expires     time.Time `json:"expires"`
+	Deadline    time.Time `json:"deadline"`
 }
 
 type CreateSoundRequest struct {
