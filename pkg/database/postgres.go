@@ -254,9 +254,11 @@ func (t *Postgres) GetSounds() ([]Sound, error) {
 
 func (t *Postgres) GetSound(uid string) (Sound, error) {
 	rows, err := t.db.Query(`
-		SELECT "uid", "displayname", "created", "creatorid", "tag"
-		FROM sounds, sounds_tags
-		WHERE sounds."uid" = $1 AND sounds."uid" = sounds_tags."sound"
+	    SELECT "uid", "displayname", "created", "creatorid", "tag"
+	    FROM sounds
+	    LEFT JOIN sounds_tags
+	    ON sounds."uid" = sounds_tags."sound"
+		WHERE sounds."uid" = $1
 	`, uid)
 	if err != nil {
 		return Sound{}, t.wrapErr(err)
