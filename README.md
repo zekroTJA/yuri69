@@ -34,9 +34,15 @@ Things like deletings or editing sounds uploaded by other users require admin pe
 
 <img src=".github/media/ss/4.png" width="100%" />
 
-## Setup
+## Deployment
 
-*Coming soon™️*
+Yuri requires Lavalink to run. Please refer to the [Lavalink Repository](https://github.com/freyacodes/Lavalink) to download and run Lavalink. Therefore, you can use the [provided lavalink config](config/lavalink/application.yml).
+
+Yuri can be deployed either on bare metal or using the [provided docker images](https://github.com/zekroTJA/yuri69/pkgs/container/yuri69). Binaries can be downloaded from the [releases page](https://github.com/zekroTJA/yuri69/releases) or from the build artifacts from the [CI workflow](https://github.com/zekroTJA/yuri69/actions/workflows/artifacts.yml).
+
+You can also use the provided [Docker Compose Config](docker-compose.yml) to host the required services all together in a Docker Compose stack.
+
+Configuration to Yuri can be provided either via a config file (YAML, JSON or TOML) or via environment variables. See [config/config.toml](config/config.toml) for configuration documentation or [docker-compose.yml](docker-compose.yml) for environment configuration examples.
 
 ## API Documentation
 
