@@ -8,7 +8,7 @@ type Props = React.HTMLAttributes<HTMLInputElement> &
     onTagsChange?: (v: string[]) => void;
   };
 
-export const TagsInput: React.FC<Props> = ({ tags = [], onTagsChange = () => {}, ...props }) => {
+export const TagsInput: React.FC<Props> = ({ tags, onTagsChange = () => {}, ...props }) => {
   const [tagsValue, setTagsValue] = useState('');
 
   const _valueToTags = (v: string) =>
@@ -17,10 +17,10 @@ export const TagsInput: React.FC<Props> = ({ tags = [], onTagsChange = () => {},
       .map((t) => t.trim())
       .filter((t) => !!t);
 
-  const _tagsToValue = (t: string[]) => t.join(', ');
+  const _tagsToValue = (t?: string[]) => t?.join(', ') ?? '';
 
   useEffect(() => {
-    setTagsValue(_tagsToValue(tags ?? []));
+    setTagsValue(_tagsToValue(tags));
   }, [tags]);
 
   return (
