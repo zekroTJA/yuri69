@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	routing "github.com/zekrotja/ozzo-routing/v2"
@@ -21,6 +22,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 	"github.com/zekrotja/yuri69/pkg/webserver/controllers"
+	"github.com/zekrotja/yuri69/pkg/webserver/middleware"
 	"github.com/zekrotja/yuri69/pkg/webserver/ws"
 )
 
@@ -137,14 +139,17 @@ func (t *Webserver) hookFS() error {
 		logrus.Debug("Use embedded static web files")
 	}
 
-	t.router.Get("/*", file.Server(file.PathMap{
-		"/":       "",
-		"/assets": "/assets",
-	}, file.ServerOptions{
-		FS:           fsys,
-		IndexFile:    "index.html",
-		CatchAllFile: "index.html",
-	}))
+	t.router.Get("/*",
+		middleware.Cache(24*time.Hour, true, false),
+		file.Server(file.PathMap{
+			"/":       "",
+			"/assets": "/assets",
+		}, file.ServerOptions{
+			FS:           fsys,
+			IndexFile:    "index.html",
+			CatchAllFile: "index.html",
+		}),
+	)
 
 	return nil
 }
