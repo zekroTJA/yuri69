@@ -4,7 +4,7 @@ import { useStore } from '../store';
 
 type Props = {};
 
-const WsDisconnectScreenContainer = styled.div`
+const WsDisconnectScreenContainer = styled.div<{ show: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
@@ -12,6 +12,9 @@ const WsDisconnectScreenContainer = styled.div`
   height: 100vh;
   z-index: 15;
   background-color: rgba(0 0 0 / 75%);
+  opacity: ${(p) => (p.show ? 1 : 0)};
+  pointer-events: ${(p) => (p.show ? 'all' : 'none')};
+  transition: all 0.2s ease;
 
   display: flex;
   flex-direction: column;
@@ -29,18 +32,14 @@ const WsDisconnectScreenContainer = styled.div`
 export const WsDisconnectScreen: React.FC<Props> = ({}) => {
   const [wsDisconnected, loggedIn] = useStore((s) => [s.wsDisconnected, s.loggedIn]);
   return (
-    <>
-      {wsDisconnected && loggedIn && (
-        <WsDisconnectScreenContainer>
-          <img src={PepeHands} />
-          <span>
-            The web socket connection has been disconnected.
-            <br />I try my best to reconnect you as soon as possible.
-            <br />
-            Please stand by ...
-          </span>
-        </WsDisconnectScreenContainer>
-      )}
-    </>
+    <WsDisconnectScreenContainer show={wsDisconnected && loggedIn}>
+      <img src={PepeHands} />
+      <span>
+        The web socket connection has been disconnected.
+        <br />I try my best to reconnect you as soon as possible.
+        <br />
+        Please stand by ...
+      </span>
+    </WsDisconnectScreenContainer>
   );
 };
