@@ -3,18 +3,20 @@ import { Entry } from './Entry';
 import { useStore } from '../../store';
 import { useApi } from '../../hooks/useApi';
 import ImgAvatar from '../../../assets/avatar.jpg';
-import { ReactComponent as IconOrder } from '../..//assets/order.svg';
-import { ReactComponent as IconJoin } from '../..//assets/join.svg';
-import { ReactComponent as IconLeave } from '../..//assets/leave.svg';
-import { ReactComponent as IconStop } from '../..//assets/stop.svg';
-import { ReactComponent as IconVolume } from '../..//assets/volume.svg';
-import { ReactComponent as IconSettings } from '../..//assets/settings.svg';
-import { ReactComponent as IconUpload } from '../..//assets/upload.svg';
-import { ReactComponent as IconStats } from '../..//assets/stats.svg';
-import { ReactComponent as IconAdmin } from '../..//assets/admin.svg';
+import { ReactComponent as IconOrder } from '../../assets/order.svg';
+import { ReactComponent as IconJoin } from '../../assets/join.svg';
+import { ReactComponent as IconLeave } from '../../assets/leave.svg';
+import { ReactComponent as IconStop } from '../../assets/stop.svg';
+import { ReactComponent as IconVolume } from '../../assets/volume.svg';
+import { ReactComponent as IconSettings } from '../../assets/settings.svg';
+import { ReactComponent as IconUpload } from '../../assets/upload.svg';
+import { ReactComponent as IconStats } from '../../assets/stats.svg';
+import { ReactComponent as IconAdmin } from '../../assets/admin.svg';
+import { ReactComponent as IconLogout } from '../../assets/logout.svg';
 import { Slider } from '../Slider';
 import { debounce } from 'debounce';
 import { useCallback, useState } from 'react';
+import { ApiClientInstance } from '../../instances';
 
 type Props = {};
 
@@ -93,6 +95,10 @@ const ExternalSlider = styled.div`
   }
 `;
 
+const LastEntry = styled(Entry)`
+  margin-top: auto;
+`;
+
 export const NavBar: React.FC<Props> = ({}) => {
   const fetch = useApi();
   const [order, setOrder, connected, joined, playing, volume, setVolume, isAdmin] = useStore(
@@ -121,6 +127,10 @@ export const NavBar: React.FC<Props> = ({}) => {
     }, 250),
     [],
   );
+
+  const _onLogout = () => {
+    window.location.assign(ApiClientInstance.logoutUrl());
+  };
 
   return (
     <NavBarContainer>
@@ -166,6 +176,7 @@ export const NavBar: React.FC<Props> = ({}) => {
         <Entry icon={<IconSettings />} label="Settings" to="settings" color={theme.gray} />
         <Entry icon={<IconStats />} label="Stats" to="stats" color={theme.gray} />
         {isAdmin && <Entry icon={<IconAdmin />} label="Admin Area" to="admin" color={theme.gray} />}
+        <LastEntry icon={<IconLogout />} label="Logout" action={_onLogout} color={theme.red} />
       </EntryContainer>
       <SidebarBackground />
     </NavBarContainer>
