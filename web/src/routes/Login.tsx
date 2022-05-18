@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import ImgAvatar from '../../assets/avatar.jpg';
 import { Button } from '../components/Button';
-import { ReactComponent as DcLogo } from '../../assets/dc-logo.svg';
+import { ReactComponent as DcLogo } from '..//assets/dc-logo.svg';
 import { Smol } from '../components/Smol';
 import { ApiClientInstance } from '../instances';
 

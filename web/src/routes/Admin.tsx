@@ -6,7 +6,7 @@ import { Flex } from '../components/Flex';
 import { RouteContainer } from '../components/RouteContainer';
 import { UserTile } from '../components/UserTile';
 import { useApi } from '../hooks/useApi';
-import { ReactComponent as IconCross } from '../../assets/cross.svg';
+import { ReactComponent as IconCross } from '..//assets/cross.svg';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import styled from 'styled-components';
@@ -118,3 +118,4 @@ export const AdminRoute: React.FC<Props> = ({}) => {
     </RouteContainer>
   );
 };
+

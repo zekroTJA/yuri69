@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import styled, { css } from 'styled-components';
-import { ReactComponent as IconUpload } from '../../../assets/upload.svg';
-import { ReactComponent as IconFile } from '../../../assets/file.svg';
-import { ReactComponent as IconError } from '../../../assets/fileerror.svg';
+import { ReactComponent as IconUpload } from '../..//assets/upload.svg';
+import { ReactComponent as IconFile } from '../..//assets/file.svg';
+import { ReactComponent as IconError } from '../..//assets/fileerror.svg';
 import { Flex } from '../Flex';
 import { byteFormatter } from 'byte-formatter';
 import { Smol } from '../Smol';

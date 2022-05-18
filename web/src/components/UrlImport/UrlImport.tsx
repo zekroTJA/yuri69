@@ -4,7 +4,7 @@ import { NoEmbedModel, useNoEmbed } from '../../hooks/useNoEmbed';
 import { useClipboardEvent } from '../../hooks/useClipboardEvent';
 import { Button } from '../Button';
 import { Flex } from '../Flex';
-import { ReactComponent as IconLink } from '../../../assets/link.svg';
+import { ReactComponent as IconLink } from '../..//assets/link.svg';
 import { useApi } from '../../hooks/useApi';
 import { useStore } from '../../store';
 

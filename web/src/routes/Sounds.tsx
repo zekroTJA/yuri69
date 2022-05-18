@@ -16,10 +16,10 @@ import {
   theme,
   useContextMenu,
 } from 'react-contexify';
-import { ReactComponent as IconDelete } from '../../assets/delete.svg';
-import { ReactComponent as IconEdit } from '../../assets/edit.svg';
-import { ReactComponent as IconStar } from '../../assets/star.svg';
-import { ReactComponent as IconUnstar } from '../../assets/unstar.svg';
+import { ReactComponent as IconDelete } from '..//assets/delete.svg';
+import { ReactComponent as IconEdit } from '..//assets/edit.svg';
+import { ReactComponent as IconStar } from '..//assets/star.svg';
+import { ReactComponent as IconUnstar } from '..//assets/unstar.svg';
 import { useNavigate } from 'react-router';
 import { Modal } from '../components/Modal';
 import { useEffect, useReducer, useState } from 'react';

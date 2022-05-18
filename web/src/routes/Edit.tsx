@@ -7,7 +7,7 @@ import { RouteContainer } from '../components/RouteContainer';
 import { SoundEditor } from '../components/SoundEditor';
 import { useApi } from '../hooks/useApi';
 import { useSnackBar } from '../hooks/useSnackBar';
-import { ReactComponent as IconDelete } from '../../assets/delete.svg';
+import { ReactComponent as IconDelete } from '..//assets/delete.svg';
 import { Button } from '../components/Button';
 import { Modal } from '../components/Modal';
 
