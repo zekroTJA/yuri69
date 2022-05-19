@@ -3,6 +3,9 @@ package lavalink
 import (
 	"errors"
 	"fmt"
+	"math/rand"
+	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gompus/snowflake"
@@ -17,41 +20,53 @@ type Lavalink struct {
 	dc     *discord.Discord
 	client *waterlink.Client
 	conn   *waterlink.Connection
+
+	address         string
+	creds           waterlink.Credentials
+	opts            waterlink.ConnectionOptions
+	reconnectionTry int
 }
 
 func New(c LavalinkConfig, dc *discord.Discord, eventHandler func(any)) (*Lavalink, error) {
 	var t Lavalink
 	var err error
 
+	t.address = c.Address
 	t.dc = dc
 
-	creds := waterlink.Credentials{
+	t.creds = waterlink.Credentials{
 		Authorization: c.Password,
 		UserID:        snowflake.MustParse(t.dc.Session().State.User.ID),
 		ResumeKey:     "yuri69session",
 	}
-	opts := waterlink.ConnectionOptions{
-		HandleEventError: func(err error) {
-			logrus.WithError(err).Error("Lavalink error")
-		},
+	t.opts = waterlink.ConnectionOptions{
+		HandleEventError: t.handleErrors,
 	}
 	if eventHandler != nil {
-		opts.EventHandler = waterlink.EventHandlerFunc(eventHandler)
+		t.opts.EventHandler = waterlink.EventHandlerFunc(eventHandler)
 	}
 
-	t.client, err = waterlink.NewClient(fmt.Sprintf("http://%s", c.Address), creds)
+	t.client, err = waterlink.NewClient(fmt.Sprintf("http://%s", c.Address), t.creds)
 	if err != nil {
 		return nil, err
 	}
 
-	t.conn, err = waterlink.Open(fmt.Sprintf("ws://%s", c.Address), creds, opts)
-	if err != nil {
+	if err = t.Connect(); err != nil {
 		return nil, err
 	}
 
 	t.dc.Session().AddHandler(t.handleVoiceServerUpdate)
 
 	return &t, nil
+}
+
+func (t *Lavalink) Connect() error {
+	if t.conn != nil && !t.conn.Closed() {
+		return errors.New("connection already established")
+	}
+	var err error
+	t.conn, err = waterlink.Open(fmt.Sprintf("ws://%s", t.address), t.creds, t.opts)
+	return err
 }
 
 func (t *Lavalink) Close() error {
@@ -128,4 +143,39 @@ func (t *Lavalink) handleVoiceServerUpdate(s *discordgo.Session, e *discordgo.Vo
 			WithField("sessionID", s.State.SessionID).
 			Error("Voice server update failed")
 	}
+}
+
+func (t *Lavalink) handleErrors(err error) {
+	if strings.Contains(err.Error(), "waterlink: connection: websocket: close") {
+		logrus.WithError(err).Error("Lavalink connection closed")
+		t.tryReconnecting()
+		return
+	}
+
+	logrus.WithError(err).Error("Lavalink error")
+}
+
+func (t *Lavalink) tryReconnecting() {
+	timeout := time.Duration(t.reconnectionTry)*500*time.Millisecond + time.Duration(rand.Intn(900)+100)*time.Millisecond
+
+	if timeout > 30*time.Second {
+		timeout = 30 * time.Second
+	}
+
+	logrus.
+		WithField("try", t.reconnectionTry).
+		WithField("timeout", timeout).
+		Warn("Lavalink: Trying to reconnect ...")
+	time.Sleep(timeout)
+
+	t.reconnectionTry++
+	err := t.Connect()
+	if err != nil {
+		logrus.WithError(err)
+		t.tryReconnecting()
+		return
+	}
+
+	t.reconnectionTry = 0
+	logrus.Info("Lavalink connection re-established")
 }
