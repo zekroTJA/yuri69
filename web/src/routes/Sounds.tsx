@@ -162,7 +162,6 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
     _favorite: favorites.includes(s.uid),
     _exclude: _isExcluded(s),
   }));
-  console.log(_sounds);
   const _favs = _sounds.filter((s) => s._favorite);
   const _nonfavs = _sounds.filter((s) => !s._favorite);
   const _sortedSounds = [..._favs, ..._nonfavs];
