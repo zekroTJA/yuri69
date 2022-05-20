@@ -25,6 +25,7 @@ export const SearchBar: React.FC<Props> = ({ show = false, value, onInput = () =
   useEffect(() => {
     console.log(inputRef.current);
     if (show) inputRef.current?.focus();
+    else inputRef.current?.blur();
   }, [show]);
 
   return (

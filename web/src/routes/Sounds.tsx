@@ -78,6 +78,24 @@ const deleteReducer = (
   }
 };
 
+const searchReducer = (
+  state: { show: boolean; filter: string },
+  action: { type: 'show' | 'hide' | 'toggle' } | { type: 'setFilter'; payload: string },
+) => {
+  switch (action.type) {
+    case 'show':
+      return { filter: '', show: true };
+    case 'hide':
+      return { filter: '', show: false };
+    case 'toggle':
+      return { filter: '', show: !state.show };
+    case 'setFilter':
+      return { show: true, filter: action.payload };
+    default:
+      return state;
+  }
+};
+
 export const SoundsRoute: React.FC<Props> = ({}) => {
   const fetch = useApi();
   const [connected, playing, filters] = useStore((s) => [s.connected, s.playing, s.filters]);
@@ -85,9 +103,8 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
   const nav = useNavigate();
   const { show } = useSnackBar();
   const [remove, dispatchRemove] = useReducer(deleteReducer, { show: false, sound: undefined });
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchFilter, setSearchFilter] = useState('');
-  const { filteredSounds: sounds } = useSounds(searchFilter);
+  const [search, dispatchSearch] = useReducer(searchReducer, { show: false, filter: '' });
+  const { filteredSounds: sounds } = useSounds(search.filter);
   const { favorites, addFavorite, removeFavorite } = useFavorites();
 
   const _activateSound = (s: Sound) => {
@@ -128,17 +145,12 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
     dispatchRemove({ type: 'hide' });
   };
 
-  const _hideSearch = () => {
-    setShowSearch(false);
-    setSearchFilter('');
-  };
-
   const _onKeyDown = (e: KeyboardEvent) => {
     if (e.ctrlKey && e.key === 'f') {
       e.preventDefault();
-      setShowSearch(true);
+      dispatchSearch({ type: 'toggle' });
     } else if (e.key === 'Escape') {
-      _hideSearch();
+      dispatchSearch({ type: 'hide' });
     }
   };
 
@@ -170,7 +182,11 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
     <>
       <SoundsRouteContainer>
         <UrlImport />
-        <SearchBar show={showSearch} value={searchFilter} onInput={setSearchFilter} />
+        <SearchBar
+          show={search.show}
+          value={search.filter}
+          onInput={(v) => dispatchSearch({ type: 'setFilter', payload: v })}
+        />
 
         <ButtonsContainer>
           {_sortedSounds?.map((s) => (
