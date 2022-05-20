@@ -43,12 +43,10 @@ for FILE in $(ls -1tr $LOCATION); do
 
   curl -Ls \
     -X POST \
-    --data "{ \"upload_id\": \"${UPLOAD_ID}\", \"uid\": \"${BASENAME}\", \"normalize\": true }" \
+    --data "{ \"upload_id\": \"${UPLOAD_ID}\", \"uid\": \"${BASENAME}\", \"normalize\": false }" \
     -H "Content-Type: application/json" \
     -H "Authorization: basic ${API_KEY}" \
       ${ENDPOINT}/api/v1/sounds/create
-
-  echo "{ \"upload_id\": \"${UPLOAD_ID}\", \"uid\": \"${BASENAME}\", \"normalize\": true }"
 
   echo "INFO : Sound $BASENAME successfully uploaded"
 done
