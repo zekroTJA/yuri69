@@ -80,7 +80,7 @@ const deleteReducer = (
 
 export const SoundsRoute: React.FC<Props> = ({}) => {
   const fetch = useApi();
-  const [connected, playing] = useStore((s) => [s.connected, s.playing]);
+  const [connected, playing, filters] = useStore((s) => [s.connected, s.playing, s.filters]);
   const { show: showCtx } = useContextMenu({ id: SOUNDS_MENU_ID });
   const nav = useNavigate();
   const { show } = useSnackBar();
@@ -142,6 +142,11 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
     }
   };
 
+  const _isExcluded = (s: Sound) => {
+    if (!s.tags || !filters?.exclude) return false;
+    return !!filters.exclude.find((e) => s.tags!.includes(e));
+  };
+
   const _hideCtxFavorize = ({ props }: PredicateParams<{ sound: Sound }, any>) =>
     !!props?.sound._favorite;
   const _hideCtxUnavorize = ({ props }: PredicateParams<{ sound: Sound }, any>) =>
@@ -152,7 +157,12 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
     return () => window.removeEventListener('keydown', _onKeyDown);
   }, []);
 
-  const _sounds = sounds?.map((s) => ({ ...s, _favorite: favorites.includes(s.uid) }));
+  const _sounds = sounds?.map((s) => ({
+    ...s,
+    _favorite: favorites.includes(s.uid),
+    _exclude: _isExcluded(s),
+  }));
+  console.log(_sounds);
   const _favs = _sounds.filter((s) => s._favorite);
   const _nonfavs = _sounds.filter((s) => !s._favorite);
   const _sortedSounds = [..._favs, ..._nonfavs];

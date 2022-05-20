@@ -12,7 +12,7 @@ type Props = {
 
 const StyledButton = styled(Button)<{ fav?: boolean }>`
   border-bottom: solid 0 ${(p) => p.theme.orange};
-  ${(p) => p.fav && 'border-bottom-width: 0.3em;'};
+  ${(p) => p.fav && 'border-bottom-width: 0.3em'};
 `;
 
 export const SoundButton: React.FC<Props> = ({
@@ -22,7 +22,13 @@ export const SoundButton: React.FC<Props> = ({
   activate,
   openContext = () => {},
 }) => {
-  const _variant: ButtonVariant = active ? 'pink' : playable ? 'default' : 'gray';
+  const _variant: ButtonVariant = active
+    ? 'pink'
+    : playable
+    ? sound._exclude
+      ? 'red'
+      : 'default'
+    : 'gray';
 
   return (
     <StyledButton
