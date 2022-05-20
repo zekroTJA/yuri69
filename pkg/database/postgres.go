@@ -124,16 +124,12 @@ func (t *Postgres) init() error {
 		}
 
 		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS playbacklog (
-			id           VARCHAR(20)     NOT NULL,
+			id           VARCHAR(20)  NOT NULL,
 			sound        VARCHAR(30)  NOT NULL,
-			guildid      VARCHAR(32)     NOT NULL,
-			userid       VARCHAR(32)     NOT NULL,
+			guildid      VARCHAR(32)  NOT NULL,
+			userid       VARCHAR(32)  NOT NULL,
 			timestamp    TIMESTAMP    NOT NULL,
-			PRIMARY KEY (id),
-			CONSTRAINT fk_favorites
-				FOREIGN KEY(sound)
-					REFERENCES sounds(uid)
-					ON DELETE CASCADE
+			PRIMARY KEY (id)
 		)`)
 		if err != nil {
 			return err
