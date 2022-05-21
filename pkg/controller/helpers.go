@@ -109,7 +109,7 @@ func (t *Controller) resizeHistoryBuffer() error {
 
 func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 	filters, err := t.db.GetGuildFilters(vs.GuildID)
-	if err != nil {
+	if err != nil && err != database.ErrNotFound {
 		return err
 	}
 
