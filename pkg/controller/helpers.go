@@ -12,6 +12,7 @@ import (
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/util"
@@ -107,6 +108,22 @@ func (t *Controller) resizeHistoryBuffer() error {
 }
 
 func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
+	filters, err := t.db.GetGuildFilters(vs.GuildID)
+	if err != nil {
+		return err
+	}
+
+	if len(filters.Exclude) > 0 {
+		sound, err := t.db.GetSound(ident)
+		if err != nil {
+			return err
+		}
+
+		if util.ContainsAny(filters.Exclude, sound.Tags) {
+			return errs.WrapUserError("you are not allowed to paly excluded sounds")
+		}
+	}
+
 	volume, err := t.db.GetGuildVolume(vs.GuildID)
 	if err == database.ErrNotFound {
 		err = nil

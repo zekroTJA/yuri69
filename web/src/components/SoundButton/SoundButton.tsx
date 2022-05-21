@@ -22,13 +22,7 @@ export const SoundButton: React.FC<Props> = ({
   activate,
   openContext = () => {},
 }) => {
-  const _variant: ButtonVariant = active
-    ? 'pink'
-    : playable
-    ? sound._exclude
-      ? 'red'
-      : 'default'
-    : 'gray';
+  const _variant: ButtonVariant = active ? 'pink' : playable ? 'default' : 'gray';
 
   return (
     <StyledButton

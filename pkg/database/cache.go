@@ -50,6 +50,21 @@ func (t *DatabaseCache) GetSounds() ([]Sound, error) {
 	return r, nil
 }
 
+func (t *DatabaseCache) GetSound(uid string) (Sound, error) {
+	sounds, err := t.GetSounds()
+	if err != nil {
+		return Sound{}, err
+	}
+
+	for _, s := range sounds {
+		if s.Uid == uid {
+			return s, nil
+		}
+	}
+
+	return Sound{}, ErrNotFound
+}
+
 func (t *DatabaseCache) PutSound(sound Sound) error {
 	t.cache.Delete("sounds")
 	return t.IDatabase.PutSound(sound)

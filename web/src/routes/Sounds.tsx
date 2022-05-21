@@ -195,7 +195,7 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
               sound={s}
               activate={_activateSound}
               active={s.uid === playing}
-              playable={connected}
+              playable={connected && !s._exclude}
               openContext={_openSoundOptions}
             />
           ))}
