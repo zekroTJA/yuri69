@@ -13,20 +13,24 @@ vars:
 tasks:
 
   default:
+    desc: "Executes task 'release'"
     deps:
       - release
 
   release:
+    desc: "Builds the backend and frontend ready for releasing."
     deps:
       - build
 
   build:
+    desc: "Builds the backend binary and frontend assets."
     deps:
       - embedfe
     cmds:
-      - task: builddry
+      - task: buildbe
 
-  builddry:
+  buildbe:
+    desc: "Builds the backend binary."
     cmds:
       - go build
           -v
@@ -34,8 +38,16 @@ tasks:
             ./cmd/{{.APP_NAME}}/main.go
 
   run:
+    desc:
+      Builds the backend binary (if necessary) and runs it in debug mode
+      using the development config (config/private.config.toml).
+    preconditions:
+      - sh: ls config/private.config.toml
+        msg:
+          config/private.config.toml does not exist. Please run 'task init' and
+          enter your credentials into the generated config file.
     deps:
-      - builddry
+      - buildbe
     cmds:
       - '{{.BIN}}
           -c {{.CONFIG_DIR}}
@@ -43,6 +55,7 @@ tasks:
           -debug'
 
   deps:
+    desc: Installs required frontend dependencies (if required).
     dir: web/
     sources:
       - "package.json"
@@ -53,6 +66,7 @@ tasks:
       - "yarn"
 
   buildfe:
+    desc: Builds the frontend assets (if required).
     dir: web/
     sources:
       - "**"
@@ -64,6 +78,9 @@ tasks:
       - yarn build
 
   embedfe:
+    desc:
+      Builds the frontend assets (if required) and copies them to the embed
+      directory (pkg/webserver/_webdist).
     deps:
       - buildfe
     cmds:
@@ -74,6 +91,7 @@ tasks:
         {{end}}'
 
   runfe:
+    desc: Runs the frontend development server.
     dir: web/
     deps:
       - deps
@@ -81,19 +99,41 @@ tasks:
       - yarn run dev
 
   docker:
+    desc:
+      Allows you to execute Docker Compose commands on the development stack.
+      ('task docker -- up -d' for example)
+    preconditions:
+      - sh: docker version
+        msg: Docker is not installed or not accessible in PATH.
+      - sh: docker-compose version
+        msg: Docker Compose is not installed or not accessible in PATH.
+    vars:
+      CMDARGS: '{{if ne .CLI_ARGS ""}}{{.CLI_ARGS}}{{else}}{{.ARGS}}{{end}}'
     cmds:
       - 'docker-compose
           -f ./docker-compose.dev.yml
-          {{.CLI_ARGS}}'
+          {{.CMDARGS}}'
+
+  docker-init:
+    desc: "Sets up the development Docker Compose stack."
+    cmds:
+      - task: docker
+        vars:
+          ARGS: up -d
 
   init:
+    desc:
+      Setups up the Docker Compose stack as well as the development
+      configuration file (config/private.config.toml).
     preconditions:
       - sh: ls config/private.config.toml && exit 1 || exit 0
         msg: config/private.config.toml already exists
     cmds:
+      - task: docker-init
       - '{{if eq OS "windows"}}
           copy config\\dev.config.toml config\\private.config.toml
         {{else}}
           cp config/dev.config.toml config/private.config.toml
         {{end}}'
-      - echo Please go to config/private.config.toml and enter your Discord Bot credentials!
+      - cmd: echo Please go to config/private.config.toml and enter your Discord Bot credentials!
+        silent: true
