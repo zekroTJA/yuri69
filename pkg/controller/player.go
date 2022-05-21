@@ -3,7 +3,7 @@ package controller
 import (
 	"math/rand"
 
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/util"
@@ -51,7 +51,7 @@ func (t *Controller) PlayRandom(userID string, tagsMust []string, tagsNot []stri
 	)
 	if len(tagsMust) == 0 || len(tagsNot) == 0 {
 		guildFilters, err = t.db.GetGuildFilters(vs.GuildID)
-		if err != nil && err != database.ErrNotFound {
+		if err != nil && err != dberrors.ErrNotFound {
 			return err
 		}
 	}
@@ -110,7 +110,7 @@ func (t *Controller) GetVolume(userID string) (int, error) {
 	}
 
 	v, err := t.db.GetGuildVolume(vs.GuildID)
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return 0, err
 	}
 

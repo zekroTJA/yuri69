@@ -15,7 +15,7 @@ import (
 	"github.com/zekrotja/ozzo-routing/v2/fault"
 	"github.com/zekrotja/ozzo-routing/v2/file"
 	"github.com/zekrotja/yuri69/pkg/controller"
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	"github.com/zekrotja/yuri69/pkg/debug"
 	"github.com/zekrotja/yuri69/pkg/discordoauth"
 	"github.com/zekrotja/yuri69/pkg/errs"
@@ -177,7 +177,7 @@ func (t *Webserver) errorHandler(ctx *routing.Context, err error) error {
 		return httpError
 	}
 
-	if err == database.ErrNotFound {
+	if err == dberrors.ErrNotFound {
 		err = errs.StatusError{
 			Status:  http.StatusNotFound,
 			Message: "Not Found",

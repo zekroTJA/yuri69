@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	. "github.com/zekrotja/yuri69/pkg/models"
 )
 
@@ -10,7 +10,7 @@ func (t *Controller) GetPlaybackLog(
 	limit, offset int,
 ) ([]PlaybackLogEntry, error) {
 	logs, err := t.db.GetPlaybackLog(guildID, ident, userID, limit, offset)
-	if err == database.ErrNotFound {
+	if err == dberrors.ErrNotFound {
 		err = nil
 	}
 
@@ -27,13 +27,13 @@ func (t *Controller) GetState() (StateStats, error) {
 	var state StateStats
 
 	sounds, err := t.db.GetSounds()
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return StateStats{}, err
 	}
 	state.NSoudns = len(sounds)
 
 	state.NPlays, err = t.db.GetPlaybackLogSize()
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return StateStats{}, err
 	}
 

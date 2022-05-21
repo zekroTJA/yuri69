@@ -3,7 +3,7 @@ package controllers
 import (
 	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/util"
@@ -43,7 +43,7 @@ func (t *statsController) handleGetLog(ctx *routing.Context) error {
 	}
 
 	log, err := t.ct.GetPlaybackLog(guildid, ident, userid, limit, offset)
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return err
 	}
 
@@ -59,7 +59,7 @@ func (t *statsController) handleGetCount(ctx *routing.Context) error {
 	userid := ctx.Query("userid")
 
 	stats, err := t.ct.GetPlaybackStats(guildid, userid)
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return err
 	}
 

@@ -2,12 +2,12 @@ package controller
 
 import (
 	"github.com/zekrotja/yuri69/pkg/cryptoutil"
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 )
 
 func (t *Controller) GetFastTrigger(userID string) (string, error) {
 	ident, err := t.db.GetUserFastTrigger(userID)
-	if err == database.ErrNotFound {
+	if err == dberrors.ErrNotFound {
 		err = nil
 	}
 	return ident, err
@@ -19,7 +19,7 @@ func (t *Controller) SetFastTrigger(userID, ident string) error {
 
 func (t *Controller) GetFavorites(userID string) ([]string, error) {
 	favs, err := t.db.GetFavorites(userID)
-	if err == database.ErrNotFound {
+	if err == dberrors.ErrNotFound {
 		err = nil
 	}
 	if favs == nil {
@@ -42,7 +42,7 @@ func (t *Controller) GetApiKey(userID string) (string, error) {
 
 func (t *Controller) GenerateApiKey(userID string) (string, error) {
 	err := t.db.RemoveApiKey(userID)
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return "", err
 	}
 

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	. "github.com/zekrotja/yuri69/pkg/models"
 )
 
@@ -62,7 +63,7 @@ func (t *DatabaseCache) GetSound(uid string) (Sound, error) {
 		}
 	}
 
-	return Sound{}, ErrNotFound
+	return Sound{}, dberrors.ErrNotFound
 }
 
 func (t *DatabaseCache) PutSound(sound Sound) error {

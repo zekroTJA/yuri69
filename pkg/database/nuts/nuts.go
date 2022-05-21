@@ -1,4 +1,4 @@
-package database
+package nuts
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/xujiajun/nutsdb"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/util"
 )
@@ -27,8 +28,6 @@ type NutsConfig struct {
 type Nuts struct {
 	db *nutsdb.DB
 }
-
-var _ (IDatabase) = (*Nuts)(nil)
 
 func NewNuts(c NutsConfig) (*Nuts, error) {
 	var (
@@ -161,7 +160,7 @@ func (t *Nuts) GetPlaybackLogSize() (int, error) {
 
 func (t *Nuts) GetPlaybackStats(guildID, userID string) ([]PlaybackStats, error) {
 	logs, err := t.GetPlaybackLog(guildID, "", userID, 0, 0)
-	if err != nil && err != ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return nil, err
 	}
 
@@ -199,7 +198,7 @@ func (t *Nuts) RemoveAdmin(userID string) error {
 
 func (t *Nuts) IsAdmin(userID string) (bool, error) {
 	v, err := nuts_getValue[string](t, bucketAdmins, []byte(userID))
-	if err != nil && err != ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return false, err
 	}
 	return v == userID, nil
@@ -211,7 +210,7 @@ func (t *Nuts) GetFavorites(userID string) ([]string, error) {
 
 func (t *Nuts) AddFavorite(userID, ident string) error {
 	favs, err := t.GetFavorites(userID)
-	if err != nil && err != ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return err
 	}
 	favs = util.AppendIfNotContains(favs, ident)
@@ -220,7 +219,7 @@ func (t *Nuts) AddFavorite(userID, ident string) error {
 
 func (t *Nuts) RemoveFavorite(userID, ident string) error {
 	favs, err := t.GetFavorites(userID)
-	if err != nil && err != ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return err
 	}
 	favs = util.Remove(favs, ident)
@@ -345,7 +344,7 @@ func (t *Nuts) wrapErr(err error) error {
 		err == nutsdb.ErrBucketNotFound ||
 		strings.HasPrefix(err.Error(), "bucket not found:") ||
 		err == nutsdb.ErrBucketEmpty {
-		return ErrNotFound
+		return dberrors.ErrNotFound
 	}
 	return err
 }

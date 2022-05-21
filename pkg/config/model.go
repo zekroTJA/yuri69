@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/nuts"
+	"github.com/zekrotja/yuri69/pkg/database/postgres"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/lavalink"
 	"github.com/zekrotja/yuri69/pkg/player"
@@ -15,10 +17,10 @@ import (
 var DefaultConfig = Config{
 	Database: database.DatabaseConfig{
 		Type: "nuts",
-		Nuts: database.NutsConfig{
+		Nuts: nuts.NutsConfig{
 			Location: "data/db",
 		},
-		Postgres: database.PostgresConfig{
+		Postgres: postgres.PostgresConfig{
 			Host: "localhost",
 			Port: 5432,
 		},

@@ -11,7 +11,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/player"
@@ -68,7 +68,7 @@ func (t *Controller) ffmpeg(
 
 func (t *Controller) listSoundsFiltered(tagsMust []string, tagsNot []string) ([]Sound, error) {
 	sounds, err := t.db.GetSounds()
-	if err == database.ErrNotFound {
+	if err == dberrors.ErrNotFound {
 		sounds = []Sound{}
 	} else if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func (t *Controller) listSoundsFiltered(tagsMust []string, tagsNot []string) ([]
 
 func (t *Controller) resizeHistoryBuffer() error {
 	sounds, err := t.db.GetSounds()
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return err
 	}
 
@@ -109,7 +109,7 @@ func (t *Controller) resizeHistoryBuffer() error {
 
 func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 	filters, err := t.db.GetGuildFilters(vs.GuildID)
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return err
 	}
 
@@ -125,7 +125,7 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 	}
 
 	volume, err := t.db.GetGuildVolume(vs.GuildID)
-	if err == database.ErrNotFound {
+	if err == dberrors.ErrNotFound {
 		err = nil
 		volume = 50
 	}
@@ -163,7 +163,7 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 
 func (t *Controller) execFastTrigger(guildID, userID string) {
 	ident, err := t.db.GetUserFastTrigger(userID)
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		logrus.WithError(err).WithFields(logrus.Fields{
 			"guildid": guildID,
 			"userid":  userID,
@@ -262,7 +262,7 @@ func (t *Controller) getVoiceJoinPayload(guildID string) (EventVoiceJoinPayload,
 	e.Guild.IconUrl = guild.IconURL()
 
 	e.Volume, err = t.db.GetGuildVolume(guildID)
-	if err == database.ErrNotFound {
+	if err == dberrors.ErrNotFound {
 		err = nil
 		e.Volume = 50
 	}
@@ -270,7 +270,7 @@ func (t *Controller) getVoiceJoinPayload(guildID string) (EventVoiceJoinPayload,
 		return EventVoiceJoinPayload{}, err
 	}
 	e.Filters, err = t.db.GetGuildFilters(guildID)
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return EventVoiceJoinPayload{}, err
 	}
 

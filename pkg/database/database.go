@@ -3,6 +3,9 @@ package database
 import (
 	"strings"
 
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
+	"github.com/zekrotja/yuri69/pkg/database/nuts"
+	"github.com/zekrotja/yuri69/pkg/database/postgres"
 	. "github.com/zekrotja/yuri69/pkg/models"
 )
 
@@ -43,19 +46,38 @@ type IDatabase interface {
 	RemoveApiKey(userID string) error
 }
 
+type IMigrate interface {
+	Migrate() error
+}
+
 type DatabaseConfig struct {
 	Type     string
-	Nuts     NutsConfig
-	Postgres PostgresConfig
+	Nuts     nuts.NutsConfig
+	Postgres postgres.PostgresConfig
 }
 
 func New(c DatabaseConfig) (IDatabase, error) {
+	var (
+		db  IDatabase
+		err error
+	)
+
 	switch strings.ToLower(c.Type) {
 	case "nuts", "local", "file":
-		return NewNuts(c.Nuts)
+		db, err = nuts.NewNuts(c.Nuts)
 	case "postgres", "pg", "postgresql":
-		return NewPostgres(c.Postgres)
+		db, err = postgres.NewPostgres(c.Postgres)
 	default:
-		return nil, ErrUnsupportedProviderType
+		err = dberrors.ErrUnsupportedProviderType
 	}
+
+	if err != nil {
+		return db, err
+	}
+
+	if mg, ok := db.(IMigrate); ok {
+		err = mg.Migrate()
+	}
+
+	return db, err
 }

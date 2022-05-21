@@ -11,7 +11,7 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/static"
@@ -70,7 +70,7 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 	if s.Uid == req.Uid {
 		return Sound{}, errs.WrapUserError("sound with specified ID already exists")
 	}
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return Sound{}, err
 	}
 

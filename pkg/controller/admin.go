@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
 )
@@ -15,7 +15,7 @@ func (t *Controller) GetAdmins(executorID string) ([]User, error) {
 	}
 
 	adminIDs, err := t.db.GetAdmins()
-	if err != nil && err != database.ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return nil, err
 	}
 

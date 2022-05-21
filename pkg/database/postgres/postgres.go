@@ -1,4 +1,4 @@
-package database
+package postgres
 
 import (
 	"database/sql"
@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/util"
 )
@@ -21,8 +22,6 @@ type PostgresConfig struct {
 type Postgres struct {
 	db *sql.DB
 }
-
-var _ (IDatabase) = (*Postgres)(nil)
 
 func NewPostgres(c PostgresConfig) (*Postgres, error) {
 	var (
@@ -53,6 +52,15 @@ func NewPostgres(c PostgresConfig) (*Postgres, error) {
 func (t *Postgres) init() error {
 	return t.tx(func(tx *sql.Tx) error {
 		var err error
+		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS migrations (
+			id           INT          NOT NULL,
+			timestamp    TIMESTAMP    NOT NULL,
+			PRIMARY KEY (id)
+		)`)
+		if err != nil {
+			return err
+		}
+
 		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS sounds (
 			uid          VARCHAR(30)  NOT NULL,
 			displayname  TEXT         NOT NULL DEFAULT '',
@@ -146,7 +154,7 @@ func (t *Postgres) Close() error {
 func (t *Postgres) PutSound(sound Sound) error {
 	oldSound, err := t.GetSound(sound.Uid)
 	exists := oldSound.Uid == sound.Uid
-	if err != nil && err != ErrNotFound {
+	if err != nil && err != dberrors.ErrNotFound {
 		return err
 	}
 
@@ -571,7 +579,7 @@ func (t *Postgres) tx(f func(*sql.Tx) error) error {
 
 func (t *Postgres) wrapErr(err error) error {
 	if err != nil && err == sql.ErrNoRows {
-		return ErrNotFound
+		return dberrors.ErrNotFound
 	}
 	return err
 }

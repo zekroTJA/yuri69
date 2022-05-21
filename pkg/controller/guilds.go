@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/zekrotja/yuri69/pkg/database"
+	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
 )
@@ -14,7 +14,7 @@ func (t *Controller) GetGuildFilter(userID string) (GuildFilters, error) {
 	}
 
 	f, err := t.db.GetGuildFilters(vs.GuildID)
-	if err == database.ErrNotFound {
+	if err == dberrors.ErrNotFound {
 		err = nil
 	}
 
