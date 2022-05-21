@@ -16,10 +16,11 @@ import {
   theme,
   useContextMenu,
 } from 'react-contexify';
-import { ReactComponent as IconDelete } from '..//assets/delete.svg';
-import { ReactComponent as IconEdit } from '..//assets/edit.svg';
-import { ReactComponent as IconStar } from '..//assets/star.svg';
-import { ReactComponent as IconUnstar } from '..//assets/unstar.svg';
+import { ReactComponent as IconDelete } from '../assets/delete.svg';
+import { ReactComponent as IconEdit } from '../assets/edit.svg';
+import { ReactComponent as IconStar } from '../assets/star.svg';
+import { ReactComponent as IconUnstar } from '../assets/unstar.svg';
+import { ReactComponent as IconDownload } from '../assets/download.svg';
 import { useNavigate } from 'react-router';
 import { Modal } from '../components/Modal';
 import { useEffect, useReducer, useState } from 'react';
@@ -29,6 +30,7 @@ import { useSnackBar } from '../hooks/useSnackBar';
 import { UrlImport } from '../components/UrlImport';
 import { SearchBar } from '../components/SearchBar';
 import { useFavorites } from '../hooks/useFavorites';
+import { ApiClientInstance } from '../instances';
 
 const SOUNDS_MENU_ID = 'sounds-menu';
 
@@ -128,6 +130,14 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
     nav(`sounds/${props!.sound.uid}`);
   };
 
+  const _onSoundDownload = ({ props }: ItemParams<{ sound: Sound }, any>) => {
+    const url = ApiClientInstance.soundDownloadUrl(props!.sound.uid);
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.click();
+  };
+
   const _onSoundDelete = ({ props }: ItemParams<{ sound: Sound }, any>) => {
     dispatchRemove({ type: 'show', payload: props!.sound });
   };
@@ -211,6 +221,9 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
         </StyledItem>
         <StyledItem onClick={_onSoundEdit}>
           <IconEdit /> <span>Edit</span>
+        </StyledItem>
+        <StyledItem onClick={_onSoundDownload}>
+          <IconDownload /> <span>Download</span>
         </StyledItem>
         <Separator />
         <StyledItem delete onClick={_onSoundDelete}>

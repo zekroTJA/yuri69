@@ -8,7 +8,7 @@ export type HttpMethod = 'GET' | 'PUT' | 'POST' | 'DELETE' | 'PATCH' | 'OPTIONS'
 export type HttpHeadersMap = { [key: string]: string };
 
 export class HttpClient {
-  private accessToken: AccessToken | undefined;
+  private _accessToken: AccessToken | undefined;
   private accessTokenRequest: Promise<AccessToken> | undefined;
   private ws: WSClient | undefined;
 
@@ -22,12 +22,12 @@ export class HttpClient {
     _headers.set('Accept', 'application/json');
     Object.keys(headers).forEach((k) => _headers.set(k, headers[k]));
 
-    if (this.accessToken) {
+    if (this._accessToken) {
       if (this.isAccessTokenExpired()) {
-        this.accessToken = undefined;
+        this._accessToken = undefined;
         return await this.getAndSetAccessToken(() => this.req(method, path, body, headers));
       }
-      _headers.set('Authorization', `bearer ${this.accessToken.access_token}`);
+      _headers.set('Authorization', `bearer ${this._accessToken.access_token}`);
     }
 
     let _body = null;
@@ -73,7 +73,7 @@ export class HttpClient {
       if (this.isAccessTokenExpired()) {
         await this.getAndSetAccessToken();
       }
-      return this.accessToken?.access_token!;
+      return this._accessToken?.access_token!;
     };
     this.ws = new WSClient(authTokenGetter, onEvent);
     this.ws.connect();
@@ -83,8 +83,12 @@ export class HttpClient {
     return replaceDoublePath(`${HTTP_ENDPOINT}/${path}`);
   }
 
+  protected get accessToken(): string | undefined {
+    return this._accessToken?.access_token;
+  }
+
   private isAccessTokenExpired(): boolean {
-    return !this.accessToken || Date.now() - this.accessToken.deadlineDate.getTime() > 0;
+    return !this._accessToken || Date.now() - this._accessToken.deadlineDate.getTime() > 0;
   }
 
   private async getAccessToken(): Promise<AccessToken> {
@@ -95,8 +99,8 @@ export class HttpClient {
   private async getAndSetAccessToken<T>(replay?: () => Promise<T>): Promise<T> {
     const token = await this.getAccessToken();
     this.accessTokenRequest = undefined;
-    this.accessToken = token as AccessToken;
-    this.accessToken.deadlineDate = new Date(token.deadline);
+    this._accessToken = token as AccessToken;
+    this._accessToken.deadlineDate = new Date(token.deadline);
     if (!!replay) return await replay();
     return Promise.resolve({} as T);
   }

@@ -38,6 +38,10 @@ export class APIClient extends HttpClient {
     return this.basePath('auth/logout');
   }
 
+  soundDownloadUrl(uid: string): string {
+    return this.basePath(`sounds/${uid}/download?accessToken=${this.accessToken}`);
+  }
+
   checkAuth(): Promise<Status> {
     return this.req('GET', 'auth/check');
   }
