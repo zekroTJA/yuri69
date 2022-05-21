@@ -100,7 +100,7 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 		return Sound{}, err
 	}
 
-	err = t.st.PutObject(static.BucketSounds, req.Uid, &buf, int64(buf.Len()), "audio/ogg")
+	err = t.st.PutObject(static.BucketSounds, req.Uid, &buf, int64(buf.Len()), static.SoundsMime)
 	if err != nil {
 		return Sound{}, err
 	}
@@ -133,6 +133,15 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 func (t *Controller) GetSound(uid string) (Sound, error) {
 	sound, err := t.db.GetSound(uid)
 	return sound, err
+}
+
+func (t *Controller) GetSoundReader(uid string) (io.ReadCloser, int64, error) {
+	_, err := t.GetSound(uid)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return t.st.GetObject(static.BucketSounds, uid)
 }
 
 func (t *Controller) ListSounds(

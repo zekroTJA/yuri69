@@ -1,10 +1,16 @@
 package controllers
 
 import (
+	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/gabriel-vasile/mimetype"
 	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
@@ -18,6 +24,7 @@ func NewSoundsController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Put("/upload", t.handleUpload)
 	r.Post("/create", t.handleCreate)
 	r.Get("/<id>", t.handleGet)
+	r.Get("/<id>/download", t.handleGetDownload)
 	r.Post("/<id>", t.handleUpdate)
 	r.Delete("/<id>", t.handleDelete)
 	return
@@ -43,6 +50,27 @@ func (t *soundsController) handleGet(ctx *routing.Context) error {
 		return err
 	}
 	return ctx.Write(sound)
+}
+
+func (t *soundsController) handleGetDownload(ctx *routing.Context) error {
+	uid := ctx.Param("id")
+	r, _, err := t.ct.GetSoundReader(uid)
+	if err != nil {
+		return err
+	}
+
+	ext := mimetype.Lookup(static.SoundsMime).Extension()
+	ctx.Response.Header().Set("Content-Type", static.SoundsMime)
+	ctx.Response.Header().Set("Content-Disposition",
+		fmt.Sprintf("atatchment; filename=\"%s%s\"", uid, ext))
+	ctx.Response.WriteHeader(http.StatusOK)
+
+	_, err = io.Copy(ctx.Response, r)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (t *soundsController) handleUpload(ctx *routing.Context) error {

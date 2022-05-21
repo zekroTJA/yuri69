@@ -153,7 +153,15 @@ func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
 		err    error
 	)
 
-	if ok, token := getAuthorizationToken(ctx, "basic"); ok {
+	if token := ctx.Query("accessToken"); token != "" {
+		claims, err = t.CheckAuthRaw(token)
+		if jwt.IsJWTError(err) {
+			return errs.WrapUserError("invalid access token", http.StatusUnauthorized)
+		}
+		if err != nil {
+			return err
+		}
+	} else if ok, token := getAuthorizationToken(ctx, "basic"); ok {
 		userid, err := t.checkApiTokenHandler(token)
 		if err != nil {
 			return errs.WrapUserError("invalid basic token", http.StatusUnauthorized)
