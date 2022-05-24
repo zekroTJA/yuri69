@@ -89,7 +89,7 @@ export const AdminRoute: React.FC<Props> = ({}) => {
   return (
     <RouteContainer>
       <h1>Admin Area</h1>
-      <Card>
+      <Card margin="0 0 1.5em 0">
         <h2>Admins</h2>
         <AdminControls>
           <Input
@@ -118,4 +118,3 @@ export const AdminRoute: React.FC<Props> = ({}) => {
     </RouteContainer>
   );
 };
-

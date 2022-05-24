@@ -195,7 +195,7 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
         </Flex>
       </Card>
 
-      <SplitContainer>
+      <SplitContainer margin="0 0 1.5em 0">
         <Card>
           <h2>Guild Preferences</h2>
           {(connected && guild && (

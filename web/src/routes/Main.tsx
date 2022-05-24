@@ -12,7 +12,7 @@ const MainContainer = styled.div`
   display: flex;
 
   > main {
-    margin-left: 5.5em;
+    margin-left: 4em;
     width: 100%;
 
     @media screen and (orientation: portrait) {

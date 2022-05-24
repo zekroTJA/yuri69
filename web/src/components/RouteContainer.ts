@@ -5,8 +5,7 @@ type Props = {
 };
 
 export const RouteContainer = styled.div<Props>`
-  padding-top: 1.5em;
-  padding-right: 1.5em;
+  padding: 1.5em;
   width: 100%;
   height: 100%;
 

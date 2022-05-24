@@ -100,7 +100,7 @@ export const StatsRoute: React.FC<Props> = ({}) => {
           </Table>
         </Card>
       )}
-      <SplitContainer>
+      <SplitContainer margin="0 0 1.5em 0">
         {log && (
           <Card>
             <Table fw clickable>
@@ -151,3 +151,4 @@ export const StatsRoute: React.FC<Props> = ({}) => {
     </RouteContainer>
   );
 };
+

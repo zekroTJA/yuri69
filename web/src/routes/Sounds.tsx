@@ -45,6 +45,7 @@ const ButtonsContainer = styled.div`
   gap: 0.7em;
   height: fit-content;
   overflow-y: auto;
+  margin-bottom: 1.5em;
 `;
 
 const StyledItem = styled(Item)<{ delete?: boolean }>`
