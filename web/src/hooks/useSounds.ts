@@ -21,15 +21,26 @@ export const useSounds = (filter?: string) => {
       return;
     }
 
-    const _filter = filter.toLowerCase();
-    const _filteredSounds = sounds.filter(
-      (s) =>
-        s.uid.includes(_filter) ||
-        s.display_name?.toLowerCase().includes(_filter) ||
-        s.tags?.find((t) => t.toLowerCase().includes(_filter)),
-    );
+    const _filteredSounds = sounds.filter(soundsFilter(filter));
     setFilteredSounds(_filteredSounds);
   }, [sounds, filter]);
 
   return { sounds, filteredSounds: filteredSounds ?? sounds };
+};
+
+const soundsFilter = (filter: string) => {
+  filter = filter.toLowerCase();
+
+  let check: (v: string) => boolean;
+  if (filter.includes('*')) {
+    const rx = new RegExp('^' + filter.replaceAll('*', '.*') + '$');
+    check = (v) => rx.test(v);
+  } else {
+    check = (v) => v.includes(filter);
+  }
+
+  return (sound: Sound) =>
+    (!!sound.display_name && check(sound.display_name.toLowerCase())) ||
+    check(sound.uid) ||
+    sound.tags?.find((t) => check(t.toLowerCase()));
 };
