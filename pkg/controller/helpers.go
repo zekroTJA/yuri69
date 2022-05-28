@@ -108,19 +108,23 @@ func (t *Controller) resizeHistoryBuffer() error {
 }
 
 func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
-	filters, err := t.db.GetGuildFilters(vs.GuildID)
-	if err != nil && err != dberrors.ErrNotFound {
-		return err
-	}
+	isExternal := strings.HasPrefix(strings.ToLower(ident), "https://")
 
-	if len(filters.Exclude) > 0 {
-		sound, err := t.db.GetSound(ident)
-		if err != nil {
+	if !isExternal {
+		filters, err := t.db.GetGuildFilters(vs.GuildID)
+		if err != nil && err != dberrors.ErrNotFound {
 			return err
 		}
 
-		if util.ContainsAny(filters.Exclude, sound.Tags) {
-			return errs.WrapUserError("you are not allowed to paly excluded sounds")
+		if len(filters.Exclude) > 0 {
+			sound, err := t.db.GetSound(ident)
+			if err != nil {
+				return err
+			}
+
+			if util.ContainsAny(filters.Exclude, sound.Tags) {
+				return errs.WrapUserError("you are not allowed to paly excluded sounds")
+			}
 		}
 	}
 
@@ -141,8 +145,7 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 		return err
 	}
 
-	identLower := strings.ToLower(ident)
-	if strings.HasPrefix(identLower, "https://") {
+	if isExternal {
 		err = t.pl.Play(vs.GuildID, vs.ChannelID, ident, ident)
 	} else {
 		err = t.pl.PlaySound(vs.GuildID, vs.ChannelID, ident)
