@@ -40,6 +40,8 @@ func main() {
 			"DEBUG MODE IS ENABLED! Using debug mode in production is a severe security risk!")
 	}
 
+	logrus.SetReportCaller(debug.Enabled())
+
 	// --- Load Config ---
 	cfg, err := config.Parse(*fConfigFile, "YURI_", config.DefaultConfig)
 	if err != nil {
