@@ -220,7 +220,7 @@ func (t *Controller) playerEventHandler(e player.Event) {
 		})
 
 	case player.EventVoiceInit:
-		ep, err := t.getVoiceJoinPayload(e.GuildID)
+		ep, err := t.GetCurrentState(e.UserID)
 		if err != nil {
 			return
 		}
