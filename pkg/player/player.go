@@ -286,6 +286,7 @@ func (t *Player) autoLeave(e *discordgo.VoiceState) {
 			logrus.WithField("guildID", e.GuildID).Debug("Trigger autoleave timer")
 			t.autoLeaveTimer = time.AfterFunc(5*time.Second, func() {
 				t.dc.Session().ChannelVoiceJoinManual(e.GuildID, "", false, true)
+				t.autoLeaveTimer = nil
 			})
 		}
 	}
