@@ -73,16 +73,18 @@ export const useWSHooks = () => {
         break;
 
       case EventType.VoiceInit: {
-        const pl = e.payload as EventVoiceJoinPayload;
+        const pl = e.payload as EventStatePayload;
         setConnected(true);
         setVolume(pl.volume);
         setFilters(pl.filters);
         setGuild(pl.guild);
+        setJoined(pl.joined);
         break;
       }
 
       case EventType.VoiceDeinit:
         setConnected(false);
+        setJoined(false);
         break;
 
       case EventType.PlayStart: {
