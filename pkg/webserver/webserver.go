@@ -171,10 +171,9 @@ func (t *Webserver) onAuthError(ctx *routing.Context, status int, msg string) er
 }
 
 func (t *Webserver) errorHandler(ctx *routing.Context, err error) error {
-	httpError, ok := errs.As[routing.HTTPError](err)
+	_, ok := errs.As[routing.HTTPError](err)
 	if ok {
-		ctx.Response.WriteHeader(httpError.StatusCode())
-		return httpError
+		return err
 	}
 
 	if err == dberrors.ErrNotFound {
