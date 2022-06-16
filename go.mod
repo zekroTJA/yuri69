@@ -46,7 +46,7 @@ require (
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
-	gopkg.in/yaml.v3 v3.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
@@ -55,7 +55,7 @@ require (
 	github.com/lukasl-dev/waterlink/v2 v2.0.0
 	github.com/minio/minio-go/v7 v7.0.26
 	github.com/sirupsen/logrus v1.8.1
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

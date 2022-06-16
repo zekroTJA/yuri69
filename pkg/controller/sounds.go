@@ -258,6 +258,13 @@ func (t *Controller) RemoveSound(id, userID string) error {
 }
 
 func (t *Controller) GetSoundFromYoutube(req CreateSoundRequest) (Sound, error) {
+	if req.YouTube.URL == "" {
+		return Sound{}, errs.WrapUserError("YouTube URL is empty")
+	}
+	if req.YouTube.EndTimeSeconds > 0 && req.YouTube.StartTimeSeconds > req.YouTube.EndTimeSeconds {
+		return Sound{}, errs.WrapUserError("'end_time_seconds' must be larger than 'start_time_seconds'")
+	}
+
 	req.Sanitize()
 
 	err := req.Check()
@@ -280,7 +287,7 @@ func (t *Controller) GetSoundFromYoutube(req CreateSoundRequest) (Sound, error) 
 	}
 
 	client := youtube.Client{}
-	video, err := client.GetVideo(req.YouTubeURL)
+	video, err := client.GetVideo(req.YouTube.URL)
 	if err != nil {
 		return Sound{}, err
 	}
@@ -299,6 +306,14 @@ func (t *Controller) GetSoundFromYoutube(req CreateSoundRequest) (Sound, error) 
 	var args []string
 	if req.Normalize {
 		args = append(args, "-af", "loudnorm=I=-16:TP=-0.3:LRA=11")
+	}
+
+	if req.YouTube.StartTimeSeconds > 0 || req.YouTube.EndTimeSeconds > 0 {
+		args = append(args, "-ss", fmt.Sprintf("%.4f", req.YouTube.StartTimeSeconds))
+	}
+	if req.YouTube.EndTimeSeconds > 0 {
+		args = append(args, "-t", fmt.Sprintf("%.4f",
+			req.YouTube.EndTimeSeconds-req.YouTube.StartTimeSeconds))
 	}
 
 	mtyp := mimetype.Lookup(strings.SplitN(format.MimeType, ";", 2)[0])
