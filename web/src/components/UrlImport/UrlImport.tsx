@@ -7,6 +7,7 @@ import { Flex } from '../Flex';
 import { ReactComponent as IconLink } from '../..//assets/link.svg';
 import { useApi } from '../../hooks/useApi';
 import { useStore } from '../../store';
+import { useNavigate } from 'react-router';
 
 type Props = {};
 
@@ -52,6 +53,7 @@ export const UrlImport: React.FC<Props> = ({}) => {
   const embed = useNoEmbed(url);
   const fetch = useApi();
   const [connected] = useStore((s) => [s.connected]);
+  const nav = useNavigate();
 
   // https://youtu.be/DczHdNwooY4
   useClipboardEvent((e) => {
@@ -72,6 +74,10 @@ export const UrlImport: React.FC<Props> = ({}) => {
     _close();
   };
 
+  const _import = () => {
+    nav(`/upload?youtube_url=${embed?.url}`);
+  };
+
   return (
     <UrlImportContainer show={!!url && !!embed}>
       {(embed && <img src={embed.thumbnail_url} />) || <IconLink />}
@@ -89,6 +95,11 @@ export const UrlImport: React.FC<Props> = ({}) => {
           <Button disabled={!connected} onClick={_play}>
             Play
           </Button>
+          {embed?.provider_name === 'YouTube' && (
+            <Button variant="green" onClick={_import}>
+              Import
+            </Button>
+          )}
           <Button variant="gray" onClick={_close}>
             Cancel
           </Button>

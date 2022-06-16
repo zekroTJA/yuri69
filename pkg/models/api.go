@@ -32,10 +32,17 @@ type AuthLoginResponse struct {
 type CreateSoundRequest struct {
 	Sound
 
-	UploadId string `json:"upload_id"`
+	UploadId string     `json:"upload_id"`
+	YouTube  *YouTubeDL `json:"youtube"`
 
 	Normalize bool `json:"normalize"`
 	Overdrive bool `json:"overdrive"`
+}
+
+type YouTubeDL struct {
+	URL              string  `json:"url"`
+	StartTimeSeconds float64 `json:"start_time_seconds"`
+	EndTimeSeconds   float64 `json:"end_time_seconds"`
 }
 
 type UpdateSoundRequest struct {

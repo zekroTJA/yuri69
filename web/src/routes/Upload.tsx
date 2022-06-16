@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import styled from 'styled-components';
 import { CreateSoundRequest, Sound } from '../api';
 import { Embed } from '../components/Embed';
@@ -16,6 +16,8 @@ import Loading3 from '../../assets/loading/3.gif';
 import Loading4 from '../../assets/loading/4.gif';
 import Loading5 from '../../assets/loading/5.gif';
 import { randomFrom } from '../util/rand';
+import { useSearchParams } from 'react-router-dom';
+import { YouTubePreview } from '../components/YouTubePreview';
 
 const LOADINGS = [Loading0, Loading1, Loading2, Loading3, Loading4, Loading5];
 
@@ -32,22 +34,40 @@ const LoadingContainer = styled.div`
   }
 `;
 
+const getSeconds = (v: string) => {
+  const split = v.split(':').reverse();
+  var secs = parseFloat(split[0]);
+  if (split.length > 1) secs += parseInt(split[1]) * 60;
+  if (split.length > 2) secs += parseInt(split[2]) * 3600;
+  return secs;
+};
+
 export const UploadRoute: React.FC<Props> = ({}) => {
+  const [searchParams] = useSearchParams();
   const [file, setFile] = useState<File>();
   const [sound, setSound] = useState({ normalize: true } as CreateSoundRequest);
   const fetch = useApi();
   const nav = useNavigate();
+  const [youtubeUrl, setYoutubeUrl] = useState<string | null>();
   const { show } = useSnackBar();
   const [state, setState] = useState(0);
   const randomImageRef = useRef<string>(randomFrom(LOADINGS));
 
   const _create = async () => {
-    if (!file || !sound) return;
+    if ((!youtubeUrl && !file) || !sound) return;
     try {
       const req = { ...sound };
       setState(1);
-      const res = await fetch((c) => c.soundsUpload(file));
-      req.upload_id = res.upload_id;
+      if (youtubeUrl) {
+        req.youtube = {
+          url: youtubeUrl,
+          start_time_seconds: getSeconds(sound._start_time_str ?? '0'),
+          end_time_seconds: getSeconds(sound._end_time_str ?? '0'),
+        };
+      } else {
+        const res = await fetch((c) => c.soundsUpload(file!));
+        req.upload_id = res.upload_id;
+      }
       setState(2);
       await fetch((c) => c.soundsCreate(req));
       nav(-1);
@@ -64,18 +84,25 @@ export const UploadRoute: React.FC<Props> = ({}) => {
   };
 
   useEffect(() => {
+    setYoutubeUrl(searchParams.get('youtube_url'));
+  }, [searchParams]);
+
+  useEffect(() => {
     if (!!file && !sound.uid) setSound({ ...sound, uid: fileName(file.name) });
   }, [file]);
 
   return (
     <RouteContainer maxWidth="50em">
-      <h1>Upload</h1>
+      {(youtubeUrl && <h1>Import from YouTube</h1>) || <h1>Upload</h1>}
       {(state === 0 && (
         <>
-          <StyledFileDrop file={file} onFileInput={setFile} />
+          {(youtubeUrl && <YouTubePreview url={youtubeUrl} />) || (
+            <StyledFileDrop file={file} onFileInput={setFile} />
+          )}
           <SoundEditor
             isNew
-            disabled={!file}
+            isYouTube={!!youtubeUrl}
+            disabled={!youtubeUrl && !file}
             sound={sound}
             updateSound={setSound}
             onCancel={() => nav(-1)}

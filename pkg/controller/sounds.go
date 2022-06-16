@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/kkdai/youtube/v2"
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
 	"github.com/zekrotja/yuri69/pkg/database/dberrors"
@@ -254,4 +255,104 @@ func (t *Controller) RemoveSound(id, userID string) error {
 
 	err = t.resizeHistoryBuffer()
 	return err
+}
+
+func (t *Controller) GetSoundFromYoutube(req CreateSoundRequest) (Sound, error) {
+	if req.YouTube.URL == "" {
+		return Sound{}, errs.WrapUserError("YouTube URL is empty")
+	}
+	if req.YouTube.EndTimeSeconds > 0 && req.YouTube.StartTimeSeconds > req.YouTube.EndTimeSeconds {
+		return Sound{}, errs.WrapUserError("'end_time_seconds' must be larger than 'start_time_seconds'")
+	}
+
+	req.Sanitize()
+
+	err := req.Check()
+	if err != nil {
+		return Sound{}, err
+	}
+
+	req.Uid = strings.ToLower(req.Uid)
+	if util.Contains(reservedUids, req.Uid) {
+		return Sound{}, errs.WrapUserError(
+			fmt.Sprintf("UID '%s' is reserved and can not be used", req.Uid))
+	}
+
+	s, err := t.db.GetSound(req.Uid)
+	if s.Uid == req.Uid {
+		return Sound{}, errs.WrapUserError("sound with specified ID already exists")
+	}
+	if err != nil && err != dberrors.ErrNotFound {
+		return Sound{}, err
+	}
+
+	client := youtube.Client{}
+	video, err := client.GetVideo(req.YouTube.URL)
+	if err != nil {
+		return Sound{}, err
+	}
+
+	formats := video.Formats.WithAudioChannels()
+	if len(formats) == 0 {
+		return Sound{}, errs.WrapUserError("the provided video does not have any audio streams")
+	}
+	formats.Sort()
+	format := &formats[0]
+	stream, _, err := client.GetStream(video, format)
+	if err != nil {
+		return Sound{}, err
+	}
+
+	var args []string
+	if req.Normalize {
+		args = append(args, "-af", "loudnorm=I=-16:TP=-0.3:LRA=11")
+	}
+
+	if req.YouTube.StartTimeSeconds > 0 || req.YouTube.EndTimeSeconds > 0 {
+		args = append(args, "-ss", fmt.Sprintf("%.4f", req.YouTube.StartTimeSeconds))
+	}
+	if req.YouTube.EndTimeSeconds > 0 {
+		args = append(args, "-t", fmt.Sprintf("%.4f",
+			req.YouTube.EndTimeSeconds-req.YouTube.StartTimeSeconds))
+	}
+
+	mtyp := mimetype.Lookup(strings.SplitN(format.MimeType, ";", 2)[0])
+	if len(formats) == 0 {
+		return Sound{}, errs.WrapUserError(
+			fmt.Sprintf("could not match any mime type to the extracted stream (%s)", format.MimeType))
+	}
+	var buf bytes.Buffer
+	err = t.ffmpeg(stream, mtyp.Extension()[1:], &buf, "ogg", args...)
+	if err != nil {
+		return Sound{}, err
+	}
+
+	err = t.st.PutObject(static.BucketSounds, req.Uid, &buf, int64(buf.Len()), static.SoundsMime)
+	if err != nil {
+		return Sound{}, err
+	}
+
+	req.Sound.Created = time.Now()
+	err = t.db.PutSound(req.Sound)
+	if err != nil {
+		stErr := t.st.DeleteObject(static.BucketSounds, req.Uid)
+		if stErr != nil {
+			logrus.
+				WithError(stErr).
+				WithField("id", req.Uid).Error("Failed removing temp uploaded sound")
+		}
+		return Sound{}, err
+	}
+
+	t.Publish(ControllerEvent{
+		IsBroadcast: true,
+		Event: Event[any]{
+			Type:    EventSoundCreated,
+			Origin:  EventSenderController,
+			Payload: req.Sound,
+		},
+	})
+
+	err = t.resizeHistoryBuffer()
+	return req.Sound, err
 }
