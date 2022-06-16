@@ -32,7 +32,8 @@ type AuthLoginResponse struct {
 type CreateSoundRequest struct {
 	Sound
 
-	UploadId string `json:"upload_id"`
+	UploadId   string `json:"upload_id"`
+	YouTubeURL string `json:"youtube_url"`
 
 	Normalize bool `json:"normalize"`
 	Overdrive bool `json:"overdrive"`
