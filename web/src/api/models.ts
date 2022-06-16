@@ -47,9 +47,19 @@ export type AccessToken = {
 };
 
 export type CreateSoundRequest = Sound & {
-  upload_id: string;
   normalize: boolean;
   overdrive: boolean;
+  upload_id?: string;
+  youtube?: YouTubeDL;
+
+  _start_time_str?: string; // pseudo prop
+  _end_time_str?: string; // pseudo prop
+};
+
+export type YouTubeDL = {
+  url: string;
+  start_time_seconds?: number;
+  end_time_seconds?: number;
 };
 
 export type UpdateSoundRequest = Sound;
