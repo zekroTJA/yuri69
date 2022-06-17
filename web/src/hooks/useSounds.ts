@@ -29,15 +29,23 @@ export const useSounds = (filter?: string) => {
 };
 
 const soundsFilter = (filter: string) => {
-  filter = filter.toLowerCase();
+  const filters = filter
+    .toLowerCase()
+    .split(',')
+    .filter((f) => !!f)
+    .map((f) => f.trim());
 
-  let check: (v: string) => boolean;
-  if (filter.includes('*')) {
-    const rx = new RegExp('^' + filter.replaceAll('*', '.*') + '$');
-    check = (v) => rx.test(v);
-  } else {
-    check = (v) => v.includes(filter);
-  }
+  const checkFuncs = filters.map((filter) => {
+    if (filter.includes('*')) {
+      const rx = new RegExp('^' + filter.replaceAll('*', '.*') + '$');
+      return (v: string) => rx.test(v);
+    }
+    return (v: string) => v.includes(filter);
+  });
+
+  console.log(checkFuncs);
+
+  const check = (v: string) => !!checkFuncs.find((filter) => filter(v));
 
   return (sound: Sound) =>
     (!!sound.display_name && check(sound.display_name.toLowerCase())) ||
