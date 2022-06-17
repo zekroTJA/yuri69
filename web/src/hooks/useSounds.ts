@@ -32,8 +32,8 @@ const soundsFilter = (filter: string) => {
   const filters = filter
     .toLowerCase()
     .split(',')
-    .filter((f) => !!f)
-    .map((f) => f.trim());
+    .map((f) => f.trim())
+    .filter((f) => !!f);
 
   const checkFuncs = filters.map((filter) => {
     if (filter.includes('*')) {
