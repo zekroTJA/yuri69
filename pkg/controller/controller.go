@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	reservedUids = []string{"random", "upload", "create"}
+	reservedUids = []string{"random", "upload", "create", "downloadall"}
 )
 
 type ControllerEvent struct {

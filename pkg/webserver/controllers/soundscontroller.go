@@ -23,6 +23,7 @@ func NewSoundsController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Get("", t.handleList)
 	r.Put("/upload", t.handleUpload)
 	r.Post("/create", t.handleCreate)
+	r.Get("/downloadall", t.handleGetDownloadAll)
 	r.Get("/<id>", t.handleGet)
 	r.Get("/<id>/download", t.handleGetDownload)
 	r.Post("/<id>", t.handleUpdate)
@@ -146,4 +147,24 @@ func (t *soundsController) handleDelete(ctx *routing.Context) error {
 	}
 
 	return ctx.Write(StatusOK)
+}
+
+func (t *soundsController) handleGetDownloadAll(ctx *routing.Context) error {
+	r, err := t.ct.DownloadAllSounds()
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	ctx.Response.Header().Set("Content-Type", "application/tar+gzip")
+	ctx.Response.Header().Set("Content-Disposition",
+		fmt.Sprintf("atatchment; filename=\"%s%s\"", "sounds-package", ".tar.gz"))
+	ctx.Response.WriteHeader(http.StatusOK)
+
+	_, err = io.Copy(ctx.Response, r)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
