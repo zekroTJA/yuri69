@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/gabriel-vasile/mimetype"
 	routing "github.com/zekrotja/ozzo-routing/v2"
@@ -12,6 +13,7 @@ import (
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/util"
+	"github.com/zekrotja/yuri69/pkg/webserver/middleware"
 )
 
 type soundsController struct {
@@ -23,7 +25,9 @@ func NewSoundsController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Get("", t.handleList)
 	r.Put("/upload", t.handleUpload)
 	r.Post("/create", t.handleCreate)
-	r.Get("/downloadall", t.handleGetDownloadAll)
+	r.Get("/downloadall",
+		middleware.RateLimit(1, 5*time.Minute, middleware.IdentityLookup("userid")),
+		t.handleGetDownloadAll)
 	r.Get("/<id>", t.handleGet)
 	r.Get("/<id>/download", t.handleGetDownload)
 	r.Post("/<id>", t.handleUpdate)
