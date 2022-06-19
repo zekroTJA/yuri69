@@ -52,7 +52,8 @@ tasks:
       - '{{.BIN}}
           -c {{.CONFIG_DIR}}
           -l 5
-          -debug'
+          -debug
+          {{.CLI_ARGS}}'
 
   deps:
     desc: Installs required frontend dependencies (if required).
