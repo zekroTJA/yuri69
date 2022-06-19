@@ -20,6 +20,7 @@ var (
 	fConfigFile = flag.String("c", "config.yml", "The location of the config file.")
 	fLogLevel   = flag.Int("l", int(logrus.InfoLevel), "The log level (0 - 6)")
 	fDebug      = flag.Bool("debug", false, "Enable debug mode")
+	fVerbose    = flag.Bool("verbose", false, "Show code files in logs")
 )
 
 func main() {
@@ -40,7 +41,7 @@ func main() {
 			"DEBUG MODE IS ENABLED! Using debug mode in production is a severe security risk!")
 	}
 
-	logrus.SetReportCaller(debug.Enabled())
+	logrus.SetReportCaller(*fVerbose)
 
 	// --- Load Config ---
 	cfg, err := config.Parse(*fConfigFile, "YURI_", config.DefaultConfig)
