@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"fmt"
 	"io"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -355,4 +358,70 @@ func (t *Controller) GetSoundFromYoutube(req CreateSoundRequest) (Sound, error) 
 
 	err = t.resizeHistoryBuffer()
 	return req.Sound, err
+}
+
+func (t *Controller) DownloadAllSounds() (rc io.ReadCloser, err error) {
+	defer func() {
+		if err != nil {
+			rc.Close()
+		}
+	}()
+
+	sounds, err := t.db.GetSounds()
+	if err != nil {
+		return nil, err
+	}
+
+	f, err := os.CreateTemp(".", "soundspkg-")
+	if err != nil {
+		return nil, err
+	}
+
+	rc = util.WrapReadCloser(f, func(err error) error {
+		return os.Remove(f.Name())
+	})
+
+	gzipWriter := gzip.NewWriter(f)
+	tarWriter := tar.NewWriter(gzipWriter)
+
+	fileExt := static.SoundsMimeType.Extension()
+
+	for _, sound := range sounds {
+		sRc, size, err := t.st.GetObject(static.BucketSounds, sound.Uid)
+		if err != nil {
+			return nil, err
+		}
+		err = tarWriter.WriteHeader(&tar.Header{
+			Name: sound.Uid + fileExt,
+			Size: size,
+			Mode: 0644,
+		})
+		if err != nil {
+			sRc.Close()
+			return nil, err
+		}
+		_, err = io.CopyN(tarWriter, sRc, size)
+		if err != nil {
+			sRc.Close()
+			return nil, err
+		}
+		sRc.Close()
+	}
+
+	err = tarWriter.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	err = gzipWriter.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = f.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	return rc, nil
 }

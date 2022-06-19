@@ -143,6 +143,8 @@ github.com/xujiajun/nutsdb v0.8.0 h1:BkXjifwlF3akHVoTQ8B3gdF183oq4QI0JQywazEZXkM
 github.com/xujiajun/nutsdb v0.8.0/go.mod h1:KOdR/RLPELQ6611VTMsSOUBSO2s7kXPINOiA/+1dlgc=
 github.com/xujiajun/utils v0.0.0-20190123093513-8bf096c4f53b h1:jKG9OiL4T4xQN3IUrhUpc1tG+HfDXppkgVcrAiiaI/0=
 github.com/xujiajun/utils v0.0.0-20190123093513-8bf096c4f53b/go.mod h1:AZd87GYJlUzl82Yab2kTjx1EyXSQCAfZDhpTo1SQC4k=
+github.com/zekroTJA/ratelimit v1.0.0 h1:n8Zhu1+E1m6FrxqKx7B/4kDQGGU2uC4ILaGA5MJH4ac=
+github.com/zekroTJA/ratelimit v1.0.0/go.mod h1:vMj8LMv+KSN8vQASf1Y7f5Lxz12XTMXFhNVghnzOIgI=
 github.com/zekroTJA/timedmap v1.4.1-0.20220429084118-b915da1846e3 h1:HX4d6gVLddiABQcQ37DtktgFOxLfUS+Y1lFfts5H4oA=
 github.com/zekroTJA/timedmap v1.4.1-0.20220429084118-b915da1846e3/go.mod h1:ltvd4WQGCd1YsI+Haq++TPbKW78I34ehksV+fGMws7Q=
 github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9 h1:9l6wL2Ed+ViHVfC5GiwsI2XH6f+c5HnAdLPpPEcKESA=

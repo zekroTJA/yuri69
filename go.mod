@@ -56,6 +56,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.26
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.2
+	github.com/zekroTJA/ratelimit v1.0.0
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

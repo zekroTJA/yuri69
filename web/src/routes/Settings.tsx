@@ -14,8 +14,10 @@ import { Smol } from '../components/Smol';
 import { SplitContainer } from '../components/SplitContainer';
 import { TagsInput } from '../components/TagsInput';
 import { useApi } from '../hooks/useApi';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useSnackBar } from '../hooks/useSnackBar';
 import { useSounds } from '../hooks/useSounds';
+import { ApiClientInstance } from '../instances';
 import { useStore } from '../store';
 
 type Props = {};
@@ -72,6 +74,7 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const [apiKey, setApiKey] = useState('');
+  const [downloadLock, setDownloadLock] = useLocalStorage<number>('yuri_downloadlock');
 
   const _applyGuild = async () => {
     try {
@@ -125,6 +128,15 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
       .catch((err) => show(`Failed copying API key to clipboard: ${err}`, 'error'));
   };
 
+  const _onDownloadAll = () => {
+    const url = ApiClientInstance.allSoundsDownloadUrl();
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.click();
+    setDownloadLock(Date.now() + 5 * 60 * 1000);
+  };
+
   useEffect(() => {
     if (filters?.include) setTagsInclude(filters.include);
     if (filters?.exclude) setTagsExclude(filters.exclude);
@@ -162,6 +174,8 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
     { uid: 'random', display_name: '< random >' },
     ...sounds,
   ];
+
+  const _downloadDisabled = (downloadLock ?? 0) > Date.now();
 
   return (
     <SettingsRouteContainer>
@@ -244,6 +258,20 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
               Apply
             </Button>
           </Controls>
+        </Card>
+
+        <Card>
+          <h2>Sounds</h2>
+          {_downloadDisabled && (
+            <Smol>
+              Sounds download can only be requested every 5 minutes.
+              <br />
+              <br />
+            </Smol>
+          )}
+          <Button onClick={_onDownloadAll} disabled={_downloadDisabled}>
+            Download all Sounds
+          </Button>
         </Card>
       </SplitContainer>
     </SettingsRouteContainer>
