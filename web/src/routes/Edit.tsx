@@ -10,6 +10,8 @@ import { useSnackBar } from '../hooks/useSnackBar';
 import { ReactComponent as IconDelete } from '..//assets/delete.svg';
 import { Button } from '../components/Button';
 import { Modal } from '../components/Modal';
+import { DiscordImage } from '../components/DiscordImage';
+import { Smol } from '../components/Smol';
 
 type Props = {};
 
@@ -17,6 +19,30 @@ const Heading = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+`;
+
+const CreatorContainer = styled.div`
+  margin-bottom: 1.5em;
+
+  > h4 {
+    margin-bottom: 1em;
+  }
+
+  > div {
+    display: flex;
+    gap: 1em;
+
+    > img {
+      height: 3em;
+    }
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2em;
+      justify-content: center;
+    }
+  }
 `;
 
 const deleteReducer = (
@@ -89,12 +115,28 @@ export const EditRoute: React.FC<Props> = ({}) => {
       </Heading>
 
       {sound && (
-        <SoundEditor
-          sound={sound}
-          updateSound={setSound}
-          onCancel={() => nav(-1)}
-          onSave={_update}
-        />
+        <>
+          {sound.creator && (
+            <CreatorContainer>
+              <h4>Original Creator</h4>
+              <div>
+                <DiscordImage src={sound.creator.avatar_url} round />
+                <div>
+                  <span>
+                    {sound.creator.username}#{sound.creator.discriminator}
+                  </span>
+                  <Smol>{sound.creator.id}</Smol>
+                </div>
+              </div>
+            </CreatorContainer>
+          )}
+          <SoundEditor
+            sound={sound}
+            updateSound={setSound}
+            onCancel={() => nav(-1)}
+            onSave={_update}
+          />
+        </>
       )}
 
       <Modal

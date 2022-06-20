@@ -193,7 +193,7 @@ func (t *Postgres) PutSound(sound Sound) error {
 		_, err := tx.Exec(`
 			INSERT INTO sounds ("uid", "displayname", "created", "creatorid")
 			VALUES ($1, $2, $3, $4)
-		`, sound.Uid, sound.DisplayName, sound.Created, sound.CreatorId)
+		`, sound.Uid, sound.DisplayName, sound.Created, sound.Creator.ID)
 		if err != nil {
 			return err
 		}
@@ -233,7 +233,7 @@ func (t *Postgres) GetSounds() ([]Sound, error) {
 	for rows.Next() {
 		var s Sound
 		var tag sql.NullString
-		err = rows.Scan(&s.Uid, &s.DisplayName, &s.Created, &s.CreatorId, &tag)
+		err = rows.Scan(&s.Uid, &s.DisplayName, &s.Created, &s.Creator.ID, &tag)
 		if err != nil {
 			return nil, err
 		}
@@ -271,7 +271,7 @@ func (t *Postgres) GetSound(uid string) (Sound, error) {
 	var s Sound
 	for rows.Next() {
 		var tag sql.NullString
-		err = rows.Scan(&s.Uid, &s.DisplayName, &s.Created, &s.CreatorId, &tag)
+		err = rows.Scan(&s.Uid, &s.DisplayName, &s.Created, &s.Creator.ID, &tag)
 		if err != nil {
 			return Sound{}, err
 		}

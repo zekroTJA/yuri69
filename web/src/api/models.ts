@@ -22,7 +22,7 @@ export type Sound = {
   uid: string;
   display_name?: string;
   created?: string;
-  creator_id?: string;
+  creator?: User;
   tags?: string[];
 
   _favorite?: boolean; // pseudo prop
