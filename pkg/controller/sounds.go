@@ -136,6 +136,17 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 
 func (t *Controller) GetSound(uid string) (Sound, error) {
 	sound, err := t.db.GetSound(uid)
+	if err != nil {
+		return Sound{}, err
+	}
+
+	user, err := t.dg.GetUser(sound.Creator.ID)
+	if err != nil {
+		return Sound{}, err
+	}
+
+	sound.Creator = UserSlimFromUser(*user)
+
 	return sound, err
 }
 
@@ -188,7 +199,7 @@ func (t *Controller) UpdateSound(newSound UpdateSoundRequest, userID string) (So
 		return Sound{}, err
 	}
 
-	if oldSound.CreatorId != userID {
+	if oldSound.Creator.ID != userID {
 		ok, err := t.isAdmin(userID)
 		if err != nil {
 			return Sound{}, err
@@ -200,7 +211,7 @@ func (t *Controller) UpdateSound(newSound UpdateSoundRequest, userID string) (So
 	}
 
 	newSound.Created = oldSound.Created
-	newSound.CreatorId = oldSound.CreatorId
+	newSound.Creator.ID = oldSound.Creator.ID
 	newSound.Uid = oldSound.Uid
 
 	err = t.db.PutSound(newSound.Sound)
@@ -226,7 +237,7 @@ func (t *Controller) RemoveSound(id, userID string) error {
 		return err
 	}
 
-	if sound.CreatorId != userID {
+	if sound.Creator.ID != userID {
 		ok, err := t.isAdmin(userID)
 		if err != nil {
 			return err

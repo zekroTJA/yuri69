@@ -107,7 +107,7 @@ func (t *soundsController) handleCreate(ctx *routing.Context) error {
 		return errs.WrapUserError(err)
 	}
 
-	req.CreatorId, _ = ctx.Get("userid").(string)
+	req.Creator.ID, _ = ctx.Get("userid").(string)
 
 	var sound Sound
 	if req.YouTube != nil {

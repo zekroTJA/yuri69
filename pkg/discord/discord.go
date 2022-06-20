@@ -82,3 +82,7 @@ func (t *Discord) GetGuild(id string) (discordgo.Guild, error) {
 	guild, err = t.session.Guild(id)
 	return *guild, err
 }
+
+func (t *Discord) GetUser(id string) (*discordgo.User, error) {
+	return t.session.User(id)
+}
