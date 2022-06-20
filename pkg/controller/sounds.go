@@ -4,9 +4,11 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"sort"
 	"strings"
 	"time"
@@ -372,6 +374,11 @@ func (t *Controller) DownloadAllSounds() (rc io.ReadCloser, err error) {
 		return nil, err
 	}
 
+	metaData, err := json.MarshalIndent(sounds, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
 	f, err := os.CreateTemp(".", "soundspkg-")
 	if err != nil {
 		return nil, err
@@ -384,6 +391,19 @@ func (t *Controller) DownloadAllSounds() (rc io.ReadCloser, err error) {
 	gzipWriter := gzip.NewWriter(f)
 	tarWriter := tar.NewWriter(gzipWriter)
 
+	err = tarWriter.WriteHeader(&tar.Header{
+		Name: "meta.json",
+		Size: int64(len(metaData)),
+		Mode: 0644,
+	})
+	if err != nil {
+		return nil, err
+	}
+	_, err = tarWriter.Write(metaData)
+	if err != nil {
+		return nil, err
+	}
+
 	fileExt := static.SoundsMimeType.Extension()
 
 	for _, sound := range sounds {
@@ -392,7 +412,7 @@ func (t *Controller) DownloadAllSounds() (rc io.ReadCloser, err error) {
 			return nil, err
 		}
 		err = tarWriter.WriteHeader(&tar.Header{
-			Name: sound.Uid + fileExt,
+			Name: path.Join("sounds", sound.Uid+fileExt),
 			Size: size,
 			Mode: 0644,
 		})
