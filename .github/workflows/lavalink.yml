@@ -1,0 +1,34 @@
+name: Lavalink Docker
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 3 12 * * *
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Log in to ghcr
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: Lavalink.Dockerfile
+          push: true
+          no-cache: true
+          tags: |
+            ghcr.io/zekrotja/lavalink-preconfigured:latest
+
