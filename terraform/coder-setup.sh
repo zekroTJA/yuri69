@@ -10,3 +10,6 @@ sudo apt install -y nodejs
 # Install Corepack / Yarn
 sudo corepack enable
 sudo npm i -g corepack
+
+# Install Taskfile
+sudo env GOBIN=/bin go install github.com/go-task/task/v3/cmd/task@latest
