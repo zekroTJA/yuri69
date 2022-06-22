@@ -1,3 +1,5 @@
+sudo apt clean
+
 # Install Golang
 sudo add-apt-repository ppa:longsleep/golang-backports
 sudo apt update -y
@@ -13,3 +15,6 @@ sudo npm i -g corepack
 
 # Install Taskfile
 sudo env GOBIN=/bin go install github.com/go-task/task/v3/cmd/task@latest
+
+# Install ffmpeg
+sudo apt install -y ffmpeg

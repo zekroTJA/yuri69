@@ -143,7 +143,7 @@ resource "docker_volume" "minio_volume" {
 resource "docker_container" "lavalink" {
   name = "coder-lavalink-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
   count = 1
-  image = "fredboat/lavalink:master"
+  image = "ghcr.io/zekrotja/lavalink-preconfigured:latest"
   hostname = "lavalink"
   networks_advanced {
     name = docker_network.internal_network.name
