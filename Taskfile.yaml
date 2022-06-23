@@ -1,17 +1,14 @@
 # https://taskfile.dev
 
-version: '3'
-
+version: "3"
 
 vars:
   APP_NAME: yuri
   CONFIG_DIR: ./config/private.config.toml
   BIN_DIR: ./bin
-  BIN: '{{.BIN_DIR}}/{{.APP_NAME}}{{exeExt}}'
-
+  BIN: "{{.BIN_DIR}}/{{.APP_NAME}}{{exeExt}}"
 
 tasks:
-
   default:
     desc: "Executes task 'release'"
     deps:
@@ -33,13 +30,12 @@ tasks:
     desc: "Builds the backend binary."
     cmds:
       - go build
-          -v
-          -o {{.BIN}}
-            ./cmd/{{.APP_NAME}}/main.go
+        -v
+        -o {{.BIN}}
+        ./cmd/{{.APP_NAME}}/main.go
 
   run:
-    desc:
-      Builds the backend binary (if necessary) and runs it in debug mode
+    desc: Builds the backend binary (if necessary) and runs it in debug mode
       using the development config (config/private.config.toml).
     preconditions:
       - sh: ls config/private.config.toml
@@ -49,11 +45,11 @@ tasks:
     deps:
       - buildbe
     cmds:
-      - '{{.BIN}}
-          -c {{.CONFIG_DIR}}
-          -l 5
-          -debug
-          {{.CLI_ARGS}}'
+      - "{{.BIN}}
+        -c {{.CONFIG_DIR}}
+        -l 5
+        -debug
+        {{.CLI_ARGS}}"
 
   deps:
     desc: Installs required frontend dependencies (if required).
@@ -79,16 +75,15 @@ tasks:
       - yarn build
 
   embedfe:
-    desc:
-      Builds the frontend assets (if required) and copies them to the embed
+    desc: Builds the frontend assets (if required) and copies them to the embed
       directory (pkg/webserver/_webdist).
     deps:
       - buildfe
     cmds:
       - '{{if eq OS "windows"}}
-          xcopy web\\dist pkg\\webserver\\_webdist /E /H /Y
+        xcopy web\\dist pkg\\webserver\\_webdist /E /H /Y
         {{else}}
-          cp -r web/dist/* pkg/webserver/_webdist
+        cp -r web/dist/* pkg/webserver/_webdist
         {{end}}'
 
   runfe:
@@ -111,9 +106,9 @@ tasks:
     vars:
       CMDARGS: '{{if ne .CLI_ARGS ""}}{{.CLI_ARGS}}{{else}}{{.ARGS}}{{end}}'
     cmds:
-      - 'docker-compose
-          -f ./docker-compose.dev.yml
-          {{.CMDARGS}}'
+      - "docker-compose
+        -f ./docker-compose.dev.yml
+        {{.CMDARGS}}"
 
   docker-init:
     desc: "Sets up the development Docker Compose stack."
@@ -123,18 +118,16 @@ tasks:
           ARGS: up -d
 
   init:
-    desc:
-      Setups up the Docker Compose stack as well as the development
+    desc: Setups up the Docker Compose stack as well as the development
       configuration file (config/private.config.toml).
     preconditions:
       - sh: ls config/private.config.toml && exit 1 || exit 0
         msg: config/private.config.toml already exists
     cmds:
-      - task: docker-init
       - '{{if eq OS "windows"}}
-          copy config\\dev.config.toml config\\private.config.toml
+        copy config\\dev.config.toml config\\private.config.toml
         {{else}}
-          cp config/dev.config.toml config/private.config.toml
+        cp config/dev.config.toml config/private.config.toml
         {{end}}'
       - cmd: echo Please go to config/private.config.toml and enter your Discord Bot credentials!
         silent: true
