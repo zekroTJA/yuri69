@@ -122,14 +122,6 @@ resource "docker_container" "workspace" {
   networks_advanced {
     name = docker_network.internal_network.name
   }
-  ports {
-      external = 8080
-      internal = 8080
-  }
-  ports {
-      external = 3000
-      internal = 3000
-  }
 }
 
 resource "docker_volume" "postgres_volume" {

@@ -13,8 +13,8 @@ sudo apt install -y nodejs
 sudo corepack enable
 sudo npm i -g corepack
 
-# Install Taskfile
-sudo env GOBIN=/bin go install github.com/go-task/task/v3/cmd/task@latest
-
 # Install ffmpeg
 sudo apt install -y ffmpeg
+
+# Install Taskfile
+sudo env GOBIN=/bin go install github.com/go-task/task/v3/cmd/task@latest
