@@ -28,6 +28,7 @@ func NewSoundsController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Get("/downloadall",
 		middleware.RateLimit(1, 5*time.Minute, middleware.IdentityLookup("userid")),
 		t.handleGetDownloadAll)
+	r.Post("/import", t.handleImport)
 	r.Get("/<id>", t.handleGet)
 	r.Get("/<id>/download", t.handleGetDownload)
 	r.Post("/<id>", t.handleUpdate)
@@ -171,4 +172,25 @@ func (t *soundsController) handleGetDownloadAll(ctx *routing.Context) error {
 	}
 
 	return nil
+}
+
+func (t *soundsController) handleImport(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	f, fh, err := ctx.Request.FormFile("file")
+	if err != nil {
+		return errs.WrapUserError(err)
+	}
+
+	ct := ctx.Query("type", fh.Header.Get("Content-Type"))
+	if ct == "" {
+		return errs.WrapUserError("no content type was specified")
+	}
+
+	res, err := t.ct.ImportSounds(userid, f, ct)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(res)
 }

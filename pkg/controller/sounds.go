@@ -106,31 +106,10 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 		return Sound{}, err
 	}
 
-	err = t.st.PutObject(static.BucketSounds, req.Uid, &buf, int64(buf.Len()), static.SoundsMime)
+	err = t.createSound(req.Sound, &buf, int64(buf.Len()))
 	if err != nil {
 		return Sound{}, err
 	}
-
-	req.Sound.Created = time.Now()
-	err = t.db.PutSound(req.Sound)
-	if err != nil {
-		stErr := t.st.DeleteObject(static.BucketSounds, req.Uid)
-		if stErr != nil {
-			logrus.
-				WithError(stErr).
-				WithField("id", req.Uid).Error("Failed removing temp uploaded sound")
-		}
-		return Sound{}, err
-	}
-
-	t.Publish(ControllerEvent{
-		IsBroadcast: true,
-		Event: Event[any]{
-			Type:    EventSoundCreated,
-			Origin:  EventSenderController,
-			Payload: req.Sound,
-		},
-	})
 
 	err = t.resizeHistoryBuffer()
 	return req.Sound, err
@@ -455,4 +434,149 @@ func (t *Controller) DownloadAllSounds() (rc io.ReadCloser, err error) {
 	}
 
 	return rc, nil
+}
+
+func (t *Controller) ImportSounds(userID string, f io.ReadCloser, mimeType string) (ImportResult, error) {
+	ok, err := t.isAdmin(userID)
+	if err != nil {
+		return ImportResult{}, err
+	}
+	if !ok {
+		return ImportResult{}, errs.WrapUserError(
+			"you need admin privileges import sounds")
+	}
+
+	if !strings.HasPrefix(mimeType, "application/tar+gzip") &&
+		!strings.HasPrefix(mimeType, "application/gzip") {
+		return ImportResult{}, errs.WrapUserError(
+			"currently, only archives of type 'application/tar+gzip' are supported")
+	}
+
+	gzr, err := gzip.NewReader(f)
+	if err != nil {
+		return ImportResult{}, err
+	}
+
+	tarr := tar.NewReader(gzr)
+	res := ImportResult{}
+	var metaMap map[string]Sound
+	var inBuff, outBuff bytes.Buffer
+	copyBuf := make([]byte, 16*1024)
+
+	for {
+		header, err := tarr.Next()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return ImportResult{}, err
+		}
+
+		if header.Name == "meta.json" {
+			var meta []Sound
+			err = json.NewDecoder(tarr).Decode(&meta)
+			if err != nil {
+				return ImportResult{}, errs.WrapUserError(err)
+			}
+			metaMap = make(map[string]Sound)
+			for _, sound := range meta {
+				metaMap[sound.Uid] = sound
+			}
+			continue
+		}
+
+		if path.Dir(header.Name) == "sounds" {
+			if metaMap == nil {
+				return ImportResult{}, errs.WrapUserError("no metadata found")
+			}
+
+			uid := util.CleanBase(header.Name)
+			meta, ok := metaMap[uid]
+			if !ok {
+				continue
+			}
+
+			_, err = t.db.GetSound(uid)
+			if err == nil {
+				res.Failed = append(res.Failed, SoundImportError{
+					Uid:   uid,
+					Error: "sound with uid already exists",
+				})
+				continue
+			}
+
+			inBuff.Reset()
+			_, err := io.CopyBuffer(&inBuff, tarr, copyBuf)
+			if err != nil {
+				res.Failed = append(res.Failed, SoundImportError{
+					Uid:   uid,
+					Error: err.Error(),
+				})
+				continue
+			}
+
+			typ := mimetype.Detect(inBuff.Bytes())
+			if typ == nil {
+				res.Failed = append(res.Failed, SoundImportError{
+					Uid:   uid,
+					Error: "could not detect mime type from file stream",
+				})
+				continue
+			}
+
+			outBuff.Reset()
+			err = t.ffmpeg(&inBuff, mapExt(typ.Extension())[1:], &outBuff, "ogg")
+			if err != nil {
+				res.Failed = append(res.Failed, SoundImportError{
+					Uid:   uid,
+					Error: err.Error(),
+				})
+				continue
+			}
+
+			err = t.createSound(meta, &outBuff, int64(outBuff.Len()))
+			if err != nil {
+				res.Failed = append(res.Failed, SoundImportError{
+					Uid:   uid,
+					Error: err.Error(),
+				})
+				continue
+			}
+
+			res.Successful = append(res.Successful, uid)
+		}
+	}
+
+	return res, nil
+}
+
+// --- helpers ---
+
+func (t *Controller) createSound(sound Sound, r io.Reader, size int64) (err error) {
+	err = t.st.PutObject(static.BucketSounds, sound.Uid, r, size, static.SoundsMime)
+	if err != nil {
+		return err
+	}
+
+	sound.Created = time.Now()
+	err = t.db.PutSound(sound)
+	if err != nil {
+		stErr := t.st.DeleteObject(static.BucketSounds, sound.Uid)
+		if stErr != nil {
+			logrus.
+				WithError(stErr).
+				WithField("id", sound.Uid).Error("Failed removing temp uploaded sound")
+		}
+		return err
+	}
+
+	t.Publish(ControllerEvent{
+		IsBroadcast: true,
+		Event: Event[any]{
+			Type:    EventSoundCreated,
+			Origin:  EventSenderController,
+			Payload: sound,
+		},
+	})
+
+	return nil
 }

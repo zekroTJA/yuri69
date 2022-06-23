@@ -157,3 +157,11 @@ export type User = {
 export type ApiKey = {
   api_key: string;
 };
+
+export type ImportSoundsResult = {
+  successful?: string[];
+  failed?: {
+    uid: string;
+    error: string;
+  }[];
+};

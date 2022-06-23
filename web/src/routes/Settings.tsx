@@ -1,9 +1,10 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { uid } from 'react-uid';
 import styled, { useTheme } from 'styled-components';
-import { OTAToken, Sound } from '../api';
+import { ImportSoundsResult, OTAToken, Sound } from '../api';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { FileDrop } from '../components/FileDrop';
 import { Flex } from '../components/Flex';
 import { GuildTile } from '../components/GuildTile';
 import { HoverToShow } from '../components/HoverToShow';
@@ -11,6 +12,7 @@ import { InfoPanel } from '../components/InfoPanel';
 import { RouteContainer } from '../components/RouteContainer';
 import { Select } from '../components/Select';
 import { Smol } from '../components/Smol';
+import { Spinner } from '../components/Spinner';
 import { SplitContainer } from '../components/SplitContainer';
 import { TagsInput } from '../components/TagsInput';
 import { useApi } from '../hooks/useApi';
@@ -48,6 +50,25 @@ const OTAContainer = styled.div`
   margin-bottom: 1.5em;
 `;
 
+const ImportContainer = styled.div`
+  margin-top: 2em;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+
+  > h4 {
+    margin: 0;
+  }
+
+  > div > button {
+    margin-top: 1em;
+  }
+`;
+
+const ErrContainer = styled.div`
+  color: ${(p) => p.theme.red};
+`;
+
 const timerReducer = (state: number, action: { type: 'decrease' | 'set'; payload?: number }) => {
   switch (action.type) {
     case 'decrease':
@@ -61,7 +82,12 @@ const timerReducer = (state: number, action: { type: 'decrease' | 'set'; payload
 };
 
 export const SettingsRoute: React.FC<Props> = ({}) => {
-  const [connected, guild, filters] = useStore((s) => [s.connected, s.guild, s.filters]);
+  const [connected, guild, filters, isAdmin] = useStore((s) => [
+    s.connected,
+    s.guild,
+    s.filters,
+    s.isAdmin,
+  ]);
   const { sounds } = useSounds();
   const theme = useTheme();
   const fetch = useApi();
@@ -75,6 +101,9 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
   const [apiKey, setApiKey] = useState('');
   const [downloadLock, setDownloadLock] = useLocalStorage<number>('yuri_downloadlock');
+  const [importFile, setImportFile] = useState<File>();
+  const [importProcessing, setImportProcessing] = useState(false);
+  const [importResult, setImportResult] = useState<ImportSoundsResult>();
 
   const _applyGuild = async () => {
     try {
@@ -135,6 +164,18 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
     a.target = '_blank';
     a.click();
     setDownloadLock(Date.now() + 5 * 60 * 1000);
+  };
+
+  const _onImport = () => {
+    if (!importFile) return;
+
+    setImportFile(undefined);
+    setImportProcessing(true);
+    setImportResult(undefined);
+    fetch((c) => c.soundsImport(importFile))
+      .then(setImportResult)
+      .catch()
+      .finally(() => setImportProcessing(false));
   };
 
   useEffect(() => {
@@ -261,17 +302,52 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
         </Card>
 
         <Card>
-          <h2>Sounds</h2>
-          {_downloadDisabled && (
-            <Smol>
-              Sounds download can only be requested every 5 minutes.
-              <br />
-              <br />
-            </Smol>
+          <div>
+            <h2>Sounds</h2>
+            {_downloadDisabled && (
+              <Smol>
+                Sounds download can only be requested every 5 minutes.
+                <br />
+                <br />
+              </Smol>
+            )}
+            <Button onClick={_onDownloadAll} disabled={_downloadDisabled}>
+              Download all Sounds
+            </Button>
+          </div>
+          {isAdmin && (
+            <ImportContainer>
+              <h4>Import Sounds</h4>
+              {importProcessing || (
+                <div>
+                  <FileDrop file={importFile} onFileInput={setImportFile} />
+                  <Button disabled={!importFile} onClick={_onImport}>
+                    Import
+                  </Button>
+                </div>
+              )}
+              {importProcessing && (
+                <Flex gap="1em" vCenter>
+                  <Spinner />
+                  <span>Importing ...</span>
+                </Flex>
+              )}
+              {importResult && (
+                <div>
+                  <p>Successful Imports: {importResult.successful?.length ?? 0}</p>
+                  <ErrContainer>
+                    {importResult.failed?.map((err) => (
+                      <p>
+                        <strong>{err.uid}</strong>
+                        <br />
+                        <span>{err.error}</span>
+                      </p>
+                    ))}
+                  </ErrContainer>
+                </div>
+              )}
+            </ImportContainer>
           )}
-          <Button onClick={_onDownloadAll} disabled={_downloadDisabled}>
-            Download all Sounds
-          </Button>
         </Card>
       </SplitContainer>
     </SettingsRouteContainer>

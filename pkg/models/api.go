@@ -111,3 +111,13 @@ func UserSlimFromUser(u discordgo.User) UserSlim {
 		AvatarURL:     u.AvatarURL(""),
 	}
 }
+
+type SoundImportError struct {
+	Uid   string `json:"uid"`
+	Error string `json:"error"`
+}
+
+type ImportResult struct {
+	Successful []string           `json:"successful"`
+	Failed     []SoundImportError `json:"failed"`
+}

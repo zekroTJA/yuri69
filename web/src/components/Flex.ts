@@ -5,6 +5,7 @@ type Props = {
   gap?: string;
   direction?: 'row' | 'column';
   vCenter?: boolean;
+  margin?: string;
 };
 
 export const Flex = styled.div<Props>`
@@ -12,6 +13,7 @@ export const Flex = styled.div<Props>`
   flex-wrap: ${(p) => (p.wrap ? 'wrap' : 'nowrap')};
   gap: ${(p) => p.gap};
   flex-direction: ${(p) => p.direction};
+  margin: ${(p) => p.margin};
 
   ${(p) => p.vCenter && 'align-items: center;'}
 `;

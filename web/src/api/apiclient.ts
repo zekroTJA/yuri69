@@ -5,6 +5,7 @@ import {
   Event,
   FastTrigger,
   GuildFilters,
+  ImportSoundsResult,
   OTAToken,
   PlaybackLogEntry,
   PlaybackStats,
@@ -173,5 +174,9 @@ export class APIClient extends HttpClient {
 
   removeAdmin(id: string): Promise<User[]> {
     return this.req('DELETE', `admins/${id}`);
+  }
+
+  soundsImport(file: File): Promise<ImportSoundsResult> {
+    return this.req('POST', 'sounds/import', file);
   }
 }
