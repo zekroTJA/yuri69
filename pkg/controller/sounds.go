@@ -106,6 +106,7 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 		return Sound{}, err
 	}
 
+	req.Created = time.Now()
 	err = t.createSound(req.Sound, &buf, int64(buf.Len()))
 	if err != nil {
 		return Sound{}, err
@@ -447,7 +448,8 @@ func (t *Controller) ImportSounds(userID string, f io.ReadCloser, mimeType strin
 	}
 
 	if !strings.HasPrefix(mimeType, "application/tar+gzip") &&
-		!strings.HasPrefix(mimeType, "application/gzip") {
+		!strings.HasPrefix(mimeType, "application/gzip") &&
+		!strings.HasPrefix(mimeType, "application/x-gzip") {
 		return ImportResult{}, errs.WrapUserError(
 			"currently, only archives of type 'application/tar+gzip' are supported")
 	}
@@ -557,7 +559,6 @@ func (t *Controller) createSound(sound Sound, r io.Reader, size int64) (err erro
 		return err
 	}
 
-	sound.Created = time.Now()
 	err = t.db.PutSound(sound)
 	if err != nil {
 		stErr := t.st.DeleteObject(static.BucketSounds, sound.Uid)
