@@ -1,18 +1,13 @@
 [VERSION]
 
-- Added sound import form YouTube.  
-  *When pasting a video URL from YouTube into the web interface, you can now import the sound of the video directly into Yuri. You can even choose a time frame from which the sound will be cut out of the video source.*
+- In the sound editor, you can now see who originally uploaded the sound!
 
-- Added wildcard search to the web interface. [#5]  
-  *You can now use wildcards (`*`) in the search bar.*  
-  *Example: `o*`, `*fart`, `*idk*`, ...*
+- Added exporting and downloading all sounds to a `.tar.gz` archive.  
+  *The archive contains all sounds as they weer stored in Yuri's storage system named by the UID of the sound. Also, the archive contains a `meta.json` summarizing all meta data of all sounds exported.*
 
-- Added combined list search to the web interface.  
-  *You can now search for multiple patterns at the same time by splitting your search terms with a comma.*  
-  *Example: `fart, b*` - Shows results for sounds containing the word `fart` and sound starting with the letter `b`.*
+- Added importing sounds from a previously generated export archive.  
+  *This is currently limited to users with admin privileges becasue it creates database entries for the new sounds one-to-one from the `meta.json` in the archive. Though, sounds are pulled through the same FFMPEG processing as by uploading sounds so that potential migration of sound files between versions can be achieved by exporting and re-importing.*
 
-- Fixed margins in route containers in the web frontend. [#6]
+- Added a `--verbose` flag which shows more versbose log infos like the code files where the log originated from.
 
-- Fixed a bug where the bot wont auto-leave a voice channel. [#10]
-
-- Fixed the behaviour of the voice join/leave button in the web interface. [#11]
+- Added a terraform template and preconfigured lavalink Docker image so that you can set up a [Coder](https://coder.com) instance using it.
