@@ -24,6 +24,7 @@ require (
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
 	github.com/dop251/goja v0.0.0-20220516123900-4418d4575a41 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/gempir/go-twitch-irc/v3 v3.2.0 // indirect
 	github.com/go-ozzo/ozzo-routing/v2 v2.4.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f // indirect

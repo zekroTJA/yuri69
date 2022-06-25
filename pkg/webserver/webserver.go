@@ -117,6 +117,8 @@ func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	gAuth.Get("/refresh", t.authHandler.HandleRefresh)
 	gAuth.Get("/ota/login", t.authHandler.HandleOTALogin)
 
+	controllers.NewPublicController(gApi.Group("/public"), t.ct)
+
 	gApi.Use(t.authHandler.CheckAuth)
 
 	gApi.Get("/auth/ota/token", t.authHandler.HandleGetOtaQR)
