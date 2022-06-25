@@ -18,3 +18,12 @@ func SplitAndClean(v string, sep string) []string {
 	}
 	return split
 }
+
+func StartsWithAny(v string, prefixes []string) (bool, string) {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(v, prefix) {
+			return true, prefix
+		}
+	}
+	return false, ""
+}

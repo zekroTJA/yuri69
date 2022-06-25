@@ -9,7 +9,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
-func Parse[T comparable](cfgFile string, envPrefix string, def ...T) (cfg T, err error) {
+func Parse[T any](cfgFile string, envPrefix string, def ...T) (cfg T, err error) {
 	cfg = util.Opt(def)
 
 	if err = file.Decode(cfgFile, &cfg); err != nil && !os.IsNotExist(err) {

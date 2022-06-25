@@ -12,6 +12,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/storage"
+	"github.com/zekrotja/yuri69/pkg/twitch"
 	"github.com/zekrotja/yuri69/pkg/util"
 	"github.com/zekrotja/yuri69/pkg/webserver"
 )
@@ -108,6 +109,15 @@ func main() {
 	}
 	defer ct.Close()
 	logrus.Info("Controller initialized")
+
+	// --- Twitch Client ---
+	if cfg.Twitch != nil {
+		_, err = twitch.New(*cfg.Twitch, ct, cfg.Webserver.PublicAddress)
+		if err != nil {
+			logrus.WithError(err).Fatal("Twitch client creation failed")
+		}
+		logrus.Info("Twitch client initialized")
+	}
 
 	// --- Setup Web Server ---
 	ws, err := webserver.New(cfg.Webserver, ct)
