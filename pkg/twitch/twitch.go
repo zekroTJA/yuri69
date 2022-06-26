@@ -7,9 +7,8 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/sirupsen/logrus"
-	"github.com/zekroTJA/ratelimit"
-	"github.com/zekroTJA/timedmap"
 	"github.com/zekrotja/yuri69/pkg/controller"
+	"github.com/zekrotja/yuri69/pkg/rlhandler"
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
@@ -26,7 +25,7 @@ type Twitch struct {
 	client *twitch.Client
 	ct     *controller.Controller
 
-	rateLimits *timedmap.TimedMap[string, *ratelimit.Limiter]
+	rlh rlhandler.RatetimitHandler
 
 	impersonatedUser string
 	publicAddress    string
@@ -35,7 +34,7 @@ type Twitch struct {
 func New(config TwitchConfig, ct *controller.Controller, publicAddress string) (Twitch, error) {
 	var t Twitch
 	t.client = twitch.NewClient(config.Username, config.OAuthToken)
-	t.rateLimits = timedmap.New[string, *ratelimit.Limiter](5 * time.Minute)
+	t.rlh = rlhandler.New(3, 30*time.Second) // TODO: make configurable
 	t.ct = ct
 	t.impersonatedUser = config.ImpersonateUser
 	t.publicAddress = publicAddress
@@ -95,13 +94,13 @@ func (t Twitch) onMessage(message twitch.PrivateMessage) {
 			t.publicAddress))
 
 	case "r", "rand", "random":
-		if !t.rateLimit(message.User.ID) {
+		if !t.rlh.Get(message.User.ID).Allow() {
 			return
 		}
 		t.ct.PlayRandom(t.impersonatedUser, nil, []string{"nsft"}) // TODO: un-hardcode filters
 
 	default:
-		if !t.rateLimit(message.User.ID) {
+		if !t.rlh.Get(message.User.ID).Allow() {
 			return
 		}
 		err := t.ct.Play(t.impersonatedUser, invoke)
@@ -109,13 +108,4 @@ func (t Twitch) onMessage(message twitch.PrivateMessage) {
 			logrus.WithError(err).WithField("invoke", invoke).Error("Failed playing sound via twitch")
 		}
 	}
-}
-
-func (t Twitch) rateLimit(userID string) bool {
-	rl := t.rateLimits.GetValue(userID)
-	if rl == nil {
-		rl = ratelimit.NewLimiter(30*time.Second, 3)
-		t.rateLimits.Set(userID, rl, 3*30*time.Second)
-	}
-	return rl.Allow()
 }
