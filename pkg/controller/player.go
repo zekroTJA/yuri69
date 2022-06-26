@@ -45,23 +45,12 @@ func (t *Controller) PlayRandom(userID string, tagsMust []string, tagsNot []stri
 		return errs.WrapUserError("you need to be in a voice channel to perform this action")
 	}
 
-	var (
-		guildFilters GuildFilters
-		err          error
-	)
-	if len(tagsMust) == 0 || len(tagsNot) == 0 {
-		guildFilters, err = t.db.GetGuildFilters(vs.GuildID)
-		if err != nil && err != dberrors.ErrNotFound {
-			return err
-		}
+	guildFilters, err := t.db.GetGuildFilters(vs.GuildID)
+	if err != nil && err != dberrors.ErrNotFound {
+		return err
 	}
-
-	if len(tagsMust) == 0 {
-		tagsMust = guildFilters.Include
-	}
-	if len(tagsNot) == 0 {
-		tagsNot = guildFilters.Exclude
-	}
+	tagsMust = append(tagsMust, guildFilters.Include...)
+	tagsNot = append(tagsNot, guildFilters.Exclude...)
 
 	sounds, err := t.listSoundsFiltered(tagsMust, tagsNot)
 	if err != nil {
