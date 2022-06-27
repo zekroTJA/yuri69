@@ -118,6 +118,7 @@ func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
 	}
 
 	instance = &Instance{
+		userID:   userid,
 		settings: s,
 		rlh:      rlhandler.New(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second),
 	}
