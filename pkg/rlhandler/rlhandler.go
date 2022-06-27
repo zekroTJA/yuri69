@@ -8,13 +8,13 @@ import (
 	"github.com/zekroTJA/timedmap"
 )
 
-type RatetimitHandler struct {
+type RatelimitHandler struct {
 	pool sync.Pool
 	tm   *timedmap.TimedMap[string, *ratelimit.Limiter]
 }
 
-func New(burst int, reset time.Duration) RatetimitHandler {
-	var t RatetimitHandler
+func New(burst int, reset time.Duration) RatelimitHandler {
+	var t RatelimitHandler
 
 	t.pool = sync.Pool{
 		New: func() any {
@@ -26,7 +26,7 @@ func New(burst int, reset time.Duration) RatetimitHandler {
 	return t
 }
 
-func (t RatetimitHandler) Get(key string) *ratelimit.Limiter {
+func (t RatelimitHandler) Get(key string) *ratelimit.Limiter {
 	rl := t.tm.GetValue(key)
 	exp := time.Duration(rl.Burst()) * rl.Limit()
 	if rl == nil {
@@ -36,4 +36,11 @@ func (t RatetimitHandler) Get(key string) *ratelimit.Limiter {
 		t.tm.SetExpires(key, exp)
 	}
 	return rl
+}
+
+func (t RatelimitHandler) Update(burst int, reset time.Duration) {
+	for _, rl := range t.tm.Snapshot() {
+		rl.SetBurst(burst)
+		rl.SetLimit(reset)
+	}
 }

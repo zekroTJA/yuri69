@@ -44,6 +44,9 @@ type IDatabase interface {
 	GetUserByApiKey(token string) (string, error)
 	SetApiKey(userID, token string) error
 	RemoveApiKey(userID string) error
+
+	SetTwitchSettings(s TwitchSettings) error
+	GetTwitchSettings(userid string) (TwitchSettings, error)
 }
 
 type IMigrate interface {

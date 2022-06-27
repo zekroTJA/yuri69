@@ -75,3 +75,15 @@ type PlaybackLogEntry struct {
 	UserID    string    `json:"user_id"`
 	Timestamp time.Time `json:"timestamp"`
 }
+
+type TwitchSettings struct {
+	TwitchUserName string `json:"twitch_user_name"`
+	Prefix         string `json:"prefix"`
+	RateLimit      struct {
+		Burst        int `json:"burst"`
+		ResetSeconds int `json:"reset_seconds"`
+	} `json:"ratelimit"`
+	Filters GuildFilters `json:"filters"`
+
+	UserID string `json:"userid,omitempty"`
+}

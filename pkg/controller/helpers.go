@@ -15,6 +15,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/player"
+	"github.com/zekrotja/yuri69/pkg/twitch"
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
@@ -278,4 +279,16 @@ func (t *Controller) getVoiceJoinPayload(guildID string) (EventVoiceJoinPayload,
 	}
 
 	return e, nil
+}
+
+func (t *Controller) twitchHandler(e twitch.PlayEvent) {
+	var err error
+	if e.Sound == "" {
+		err = t.PlayRandom(e.UserID, e.Filters.Include, e.Filters.Exclude)
+	} else {
+		err = t.Play(e.UserID, e.Sound)
+	}
+	if err != nil {
+		logrus.WithError(err).Error("Twitch sound play failed")
+	}
 }
