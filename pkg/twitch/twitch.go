@@ -40,7 +40,7 @@ type PlayEvent struct {
 }
 
 type Twitch struct {
-	util.EventBus[PlayEvent]
+	*util.EventBus[PlayEvent]
 
 	client *twitch.Client
 
@@ -52,6 +52,7 @@ type Twitch struct {
 
 func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 	var t Twitch
+	t.EventBus = util.NewEventBus[PlayEvent](100)
 	t.client = twitch.NewClient(config.Username, config.OAuthToken)
 	t.instances = timedmap.New[string, *Instance](1 * time.Hour)
 	t.eventbus = util.NewEventBus[InternalEvent](100)
