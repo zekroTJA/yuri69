@@ -631,8 +631,12 @@ func (t *Postgres) GetTwitchSettings(twitchname string) (TwitchSettings, error) 
 		return TwitchSettings{}, t.wrapErr(err)
 	}
 
-	s.Filters.Include = strings.Split(filterInclude, ",")
-	s.Filters.Exclude = strings.Split(filterExclude, ",")
+	if filterInclude != "" {
+		s.Filters.Include = strings.Split(filterInclude, ",")
+	}
+	if filterExclude != "" {
+		s.Filters.Exclude = strings.Split(filterExclude, ",")
+	}
 
 	return s, nil
 }
