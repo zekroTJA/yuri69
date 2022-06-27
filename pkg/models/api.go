@@ -121,3 +121,9 @@ type ImportResult struct {
 	Successful []string           `json:"successful"`
 	Failed     []SoundImportError `json:"failed"`
 }
+
+type TwitchState struct {
+	TwitchSettings
+
+	Connected bool `json:"connected"`
+}

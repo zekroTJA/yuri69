@@ -12,6 +12,8 @@ import {
   Sound,
   StateStats,
   Status,
+  TwitchSettings,
+  TwitchState,
   UploadSoundResponse,
   User,
 } from './models';
@@ -178,5 +180,21 @@ export class APIClient extends HttpClient {
 
   soundsImport(file: File): Promise<ImportSoundsResult> {
     return this.req('POST', 'sounds/import', file);
+  }
+
+  twitchState(): Promise<TwitchState> {
+    return this.req('GET', 'twitch/state');
+  }
+
+  setTwitchSettings(settings: TwitchSettings): Promise<Status> {
+    return this.req('POST', 'twitch/settings', settings);
+  }
+
+  joinTwitch(settings?: TwitchSettings): Promise<Status> {
+    return this.req('POST', 'twitch/join', settings);
+  }
+
+  leaveTwitch(): Promise<Status> {
+    return this.req('POST', 'twitch/leave');
   }
 }

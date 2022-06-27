@@ -16,6 +16,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/storage"
+	"github.com/zekrotja/yuri69/pkg/twitch"
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
@@ -37,6 +38,7 @@ type Controller struct {
 	st      storage.IStorage
 	pl      *player.Player
 	dg      *discord.Discord
+	tw      *twitch.Twitch
 
 	ffmpegExec string
 
@@ -49,6 +51,7 @@ func New(
 	st storage.IStorage,
 	pl *player.Player,
 	dg *discord.Discord,
+	tw *twitch.Twitch,
 	ownerID string,
 ) (*Controller, error) {
 
@@ -66,6 +69,7 @@ func New(
 	t.st = st
 	t.pl = pl
 	t.dg = dg
+	t.tw = tw
 
 	t.pendingCrations = timedmap.New[string, string](5 * time.Minute)
 
@@ -80,6 +84,7 @@ func New(
 	}
 
 	t.pl.SubscribeFunc(t.playerEventHandler)
+	t.tw.SubscribeFunc(t.twitchHandler)
 
 	return &t, nil
 }

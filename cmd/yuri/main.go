@@ -102,22 +102,23 @@ func main() {
 		pl.Close()
 	}()
 
-	// --- Setup Controller ---
-	ct, err := controller.New(db, st, pl, dc, cfg.Discord.OwnerID)
-	if err != nil {
-		logrus.WithError(err).Fatal("Controller initialization failed")
-	}
-	defer ct.Close()
-	logrus.Info("Controller initialized")
-
 	// --- Twitch Client ---
+	var tw *twitch.Twitch
 	if cfg.Twitch != nil {
-		_, err = twitch.New(*cfg.Twitch, ct, cfg.Webserver.PublicAddress)
+		tw, err = twitch.New(*cfg.Twitch, cfg.Webserver.PublicAddress)
 		if err != nil {
 			logrus.WithError(err).Fatal("Twitch client creation failed")
 		}
 		logrus.Info("Twitch client initialized")
 	}
+
+	// --- Setup Controller ---
+	ct, err := controller.New(db, st, pl, dc, tw, cfg.Discord.OwnerID)
+	if err != nil {
+		logrus.WithError(err).Fatal("Controller initialization failed")
+	}
+	defer ct.Close()
+	logrus.Info("Controller initialized")
 
 	// --- Setup Web Server ---
 	ws, err := webserver.New(cfg.Webserver, ct)

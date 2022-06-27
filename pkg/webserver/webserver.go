@@ -128,6 +128,7 @@ func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	controllers.NewUsersController(gApi.Group("/users"), t.ct)
 	controllers.NewGuildsController(gApi.Group("/guilds"), t.ct)
 	controllers.NewStatsController(gApi.Group("/stats"), t.ct)
+	controllers.NewTwitchController(gApi.Group("/twitch"), t.ct)
 	controllers.NewAdminController(gApi.Group("/admins"), t.ct)
 }
 

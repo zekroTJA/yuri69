@@ -9,7 +9,7 @@ export const SplitContainer = styled.div<{ margin?: string }>`
 
   margin: ${(p) => p.margin};
 
-  @media screen and (max-width: 70em) {
+  @media screen and (max-width: 100em) {
     flex-direction: column;
   }
 `;

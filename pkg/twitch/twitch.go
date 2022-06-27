@@ -1,49 +1,78 @@
 package twitch
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/sirupsen/logrus"
-	"github.com/zekroTJA/ratelimit"
 	"github.com/zekroTJA/timedmap"
-	"github.com/zekrotja/yuri69/pkg/controller"
+	"github.com/zekrotja/yuri69/pkg/errs"
+	"github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/rlhandler"
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 var prefixes = []string{"!yuri", "!y"}
 
 type TwitchConfig struct {
-	Username        string
-	OAuthToken      string
-	JoinChannels    []string
-	ImpersonateUser string
+	Username   string
+	OAuthToken string
+}
+
+type Instance struct {
+	settings models.TwitchSettings
+	rlh      rlhandler.RatelimitHandler
+	userID   string
+}
+
+type InternalEvent struct {
+	Type    string
+	Payload string
+}
+
+type PlayEvent struct {
+	UserID  string
+	Sound   string
+	Filters models.GuildFilters
 }
 
 type Twitch struct {
+	*util.EventBus[PlayEvent]
+
 	client *twitch.Client
-	ct     *controller.Controller
 
-	rateLimits *timedmap.TimedMap[string, *ratelimit.Limiter]
+	instances *timedmap.TimedMap[string, *Instance]
+	eventbus  *util.EventBus[InternalEvent]
 
-	impersonatedUser string
-	publicAddress    string
+	publicAddress string
 }
 
-func New(config TwitchConfig, ct *controller.Controller, publicAddress string) (Twitch, error) {
+func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 	var t Twitch
+	t.EventBus = util.NewEventBus[PlayEvent](100)
 	t.client = twitch.NewClient(config.Username, config.OAuthToken)
-	t.rateLimits = timedmap.New[string, *ratelimit.Limiter](5 * time.Minute)
-	t.ct = ct
-	t.impersonatedUser = config.ImpersonateUser
+	t.instances = timedmap.New[string, *Instance](1 * time.Hour)
+	t.eventbus = util.NewEventBus[InternalEvent](100)
 	t.publicAddress = publicAddress
-
-	t.client.Join(config.JoinChannels...)
 
 	t.client.OnSelfJoinMessage(func(message twitch.UserJoinMessage) {
 		logrus.WithField("channel", message.Channel).Info("Joined twitch channel")
+		t.eventbus.Publish(InternalEvent{
+			Type:    "join",
+			Payload: message.Channel,
+		})
+	})
+
+	t.client.OnSelfPartMessage(func(message twitch.UserPartMessage) {
+		logrus.WithField("channel", message.Channel).Info("Left twitch channel")
+		t.instances.Remove(message.Channel)
+		t.eventbus.Publish(InternalEvent{
+			Type:    "leave",
+			Payload: message.Channel,
+		})
 	})
 
 	t.client.OnPrivateMessage(t.onMessage)
@@ -60,17 +89,104 @@ func New(config TwitchConfig, ct *controller.Controller, publicAddress string) (
 	}()
 
 	if err := <-cErr; err != nil {
-		return Twitch{}, err
+		return nil, err
 	}
 
-	return t, nil
+	return &t, nil
 }
 
-func (t Twitch) onMessage(message twitch.PrivateMessage) {
+func (t *Twitch) Update(s models.TwitchSettings) {
+	instance := t.instances.GetValue(s.TwitchUserName)
+	if instance == nil {
+		return
+	}
+
+	instance.settings = s
+	instance.rlh.Update(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second)
+}
+
+func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
+	instance := t.instances.GetValue(s.TwitchUserName)
+
+	if instance != nil {
+		if instance.userID != userid {
+			return errors.New("already joined same channel by another user")
+		}
+
+		t.Update(s)
+		return nil
+	}
+
+	instance = &Instance{
+		settings: s,
+		rlh:      rlhandler.New(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second),
+	}
+
+	t.instances.Set(s.TwitchUserName, instance, 24*time.Hour, func(value *Instance) {
+		t.client.Depart(s.TwitchUserName)
+	})
+
+	ch, unsub := t.eventbus.Subscribe()
+	defer unsub()
+
+	timeout := time.NewTimer(5 * time.Second)
+	defer timeout.Stop()
+
+	t.client.Join(s.TwitchUserName)
+
+	for {
+		select {
+		case <-timeout.C:
+			return errors.New("timed out")
+		case e := <-ch:
+			if e.Type == "join" && e.Payload == s.TwitchUserName {
+				return nil
+			}
+		}
+	}
+}
+
+func (t *Twitch) Leave(twitchname string) error {
+	instance := t.instances.GetValue(twitchname)
+	if instance == nil {
+		return errs.WrapUserError("no instance initialized")
+	}
+
+	ch, unsub := t.eventbus.Subscribe()
+	defer unsub()
+
+	timeout := time.NewTimer(5 * time.Second)
+	defer timeout.Stop()
+
+	t.client.Depart(instance.settings.TwitchUserName)
+
+	for {
+		select {
+		case <-timeout.C:
+			return errors.New("timed out")
+		case e := <-ch:
+			if e.Type == "leave" && e.Payload == instance.settings.TwitchUserName {
+				return nil
+			}
+		}
+	}
+}
+
+func (t *Twitch) Joined(userid string) bool {
+	return t.instances.Contains(userid)
+}
+
+func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 	msg := strings.TrimSpace(message.Message)
 
-	ok, prefix := util.StartsWithAny(msg, prefixes)
-	if !ok {
+	instance := t.instances.GetValue(message.Channel)
+	if instance == nil {
+		return
+	}
+
+	prefix := instance.settings.Prefix
+
+	if !strings.HasPrefix(message.Message, prefix) {
 		return
 	}
 
@@ -95,27 +211,23 @@ func (t Twitch) onMessage(message twitch.PrivateMessage) {
 			t.publicAddress))
 
 	case "r", "rand", "random":
-		if !t.rateLimit(message.User.ID) {
+		if !instance.rlh.Get(message.User.ID).Allow() {
 			return
 		}
-		t.ct.PlayRandom(t.impersonatedUser, nil, []string{"nsft"}) // TODO: un-hardcode filters
+		t.Publish(PlayEvent{
+			UserID:  instance.userID,
+			Sound:   "",
+			Filters: instance.settings.Filters,
+		})
 
 	default:
-		if !t.rateLimit(message.User.ID) {
+		if !instance.rlh.Get(message.User.ID).Allow() {
 			return
 		}
-		err := t.ct.Play(t.impersonatedUser, invoke)
-		if err != nil {
-			logrus.WithError(err).WithField("invoke", invoke).Error("Failed playing sound via twitch")
-		}
+		t.Publish(PlayEvent{
+			UserID:  instance.userID,
+			Sound:   invoke,
+			Filters: instance.settings.Filters,
+		})
 	}
-}
-
-func (t Twitch) rateLimit(userID string) bool {
-	rl := t.rateLimits.GetValue(userID)
-	if rl == nil {
-		rl = ratelimit.NewLimiter(30*time.Second, 3)
-		t.rateLimits.Set(userID, rl, 3*30*time.Second)
-	}
-	return rl.Allow()
 }

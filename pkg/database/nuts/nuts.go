@@ -12,13 +12,14 @@ import (
 )
 
 const (
-	bucketSounds = "sounds"
-	bucketGuilds = "guilds"
-	bucketUsers  = "users"
-	bucketStats  = "stats"
-	bucketAdmins = "admins"
-	bucketTokens = "tokens"
-	keySeparator = ":"
+	bucketSounds         = "sounds"
+	bucketGuilds         = "guilds"
+	bucketUsers          = "users"
+	bucketStats          = "stats"
+	bucketAdmins         = "admins"
+	bucketTokens         = "tokens"
+	bucketTwitchSettings = "twitchsettings"
+	keySeparator         = ":"
 )
 
 type NutsConfig struct {
@@ -254,6 +255,14 @@ func (t *Nuts) RemoveApiKey(userID string) error {
 	}
 
 	return t.remove(bucketUsers, nuts_key(userID, "apitoken"))
+}
+
+func (t *Nuts) SetTwitchSettings(s TwitchSettings) error {
+	return nuts_setValue(t, bucketTwitchSettings, nuts_key(s.UserID), s)
+}
+
+func (t *Nuts) GetTwitchSettings(userid string) (TwitchSettings, error) {
+	return nuts_getValue[TwitchSettings](t, bucketTwitchSettings, nuts_key(userid))
 }
 
 // --- Internal ---

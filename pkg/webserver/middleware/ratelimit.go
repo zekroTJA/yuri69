@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
-	"github.com/zekroTJA/ratelimit"
-	"github.com/zekroTJA/timedmap"
 	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/errs"
+	"github.com/zekrotja/yuri69/pkg/rlhandler"
 )
 
 type IdentityGetter func(ctx *routing.Context) (string, error)
@@ -27,12 +25,7 @@ func IdentityLookup(key string) IdentityGetter {
 
 func RateLimit(burst int, reset time.Duration, identityGetter IdentityGetter) routing.Handler {
 
-	pool := sync.Pool{
-		New: func() any {
-			return ratelimit.NewLimiter(reset, burst)
-		},
-	}
-	tm := timedmap.New[string, *ratelimit.Limiter](5 * time.Minute)
+	m := rlhandler.New(burst, reset)
 
 	return func(ctx *routing.Context) error {
 		id, err := identityGetter(ctx)
@@ -40,14 +33,7 @@ func RateLimit(burst int, reset time.Duration, identityGetter IdentityGetter) ro
 			return err
 		}
 
-		rl := tm.GetValue(id)
-		if rl == nil {
-			rl = pool.Get().(*ratelimit.Limiter)
-			tm.Set(id, rl, time.Duration(burst)*reset)
-		} else {
-			tm.SetExpires(id, time.Duration(burst)*reset)
-		}
-
+		rl := m.Get(id)
 		ok, res := rl.Reserve()
 
 		ctx.Response.Header().Set("X-RateLimit-Limit", strconv.Itoa(res.Burst))

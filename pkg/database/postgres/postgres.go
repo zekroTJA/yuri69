@@ -143,6 +143,20 @@ func (t *Postgres) init() error {
 			return err
 		}
 
+		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS twitchsettings (
+			userid           VARCHAR(32)  NOT NULL,
+			twitchusername   VARCHAR(30)  NOT NULL DEFAULT '',
+			prefix           VARCHAR(20)  NOT NULL DEFAULT '',
+			ratelimitburst   INT          NOT NULL DEFAULT '0',
+			ratelimitreset   INT          NOT NULL DEFAULT '0',
+			filtersinclude   TEXT         NOT NULL DEFAULT '',
+			filtersexclude   TEXT         NOT NULL DEFAULT '',
+			PRIMARY KEY (userid)
+		)`)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 }
@@ -559,6 +573,68 @@ func (t *Postgres) SetApiKey(userID, token string) error {
 
 func (t *Postgres) RemoveApiKey(userID string) error {
 	return pg_delete(t, "users", "id", userID)
+}
+
+func (t *Postgres) SetTwitchSettings(s TwitchSettings) error {
+	filterInclude := strings.Join(s.Filters.Include, ",")
+	filterExclude := strings.Join(s.Filters.Exclude, ",")
+
+	res, err := t.db.Exec(`
+		UPDATE twitchsettings
+		SET "twitchusername" = $1,
+		    "prefix" = $2,
+			"ratelimitburst" = $3,
+			"ratelimitreset" = $4,
+			"filtersinclude" = $5,
+			"filtersexclude" = $6
+		WHERE "userid" = $7;
+	`, s.TwitchUserName, s.Prefix, s.RateLimit.Burst,
+		s.RateLimit.ResetSeconds, filterInclude, filterExclude, s.UserID)
+	if err != nil {
+		return err
+	}
+
+	ar, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if ar == 0 {
+		_, err = t.db.Exec(`
+			INSERT INTO twitchsettings (
+				"userid", "twitchusername", "prefix", "ratelimitburst", 
+				"ratelimitreset", "filtersinclude", "filtersexclude"
+			) VALUES ($1, $2, $3, $4, $5, $6, $7);
+		`, s.UserID, s.TwitchUserName, s.Prefix, s.RateLimit.Burst,
+			s.RateLimit.ResetSeconds, filterInclude, filterExclude)
+		if err == nil {
+			return err
+		}
+	}
+
+	return err
+}
+
+func (t *Postgres) GetTwitchSettings(twitchname string) (TwitchSettings, error) {
+	var (
+		s                            TwitchSettings
+		filterInclude, filterExclude string
+	)
+	err := t.db.QueryRow(`
+		SELECT "twitchusername", "prefix", "ratelimitburst", "ratelimitreset", 
+		       "filtersinclude", "filtersexclude"
+		FROM twitchsettings
+		WHERE "userid" = $1;
+	`, twitchname).Scan(&s.TwitchUserName, &s.Prefix, &s.RateLimit.Burst,
+		&s.RateLimit.ResetSeconds, &filterInclude, &filterExclude)
+	if err != nil {
+		return TwitchSettings{}, t.wrapErr(err)
+	}
+
+	s.Filters.Include = strings.Split(filterInclude, ",")
+	s.Filters.Exclude = strings.Split(filterExclude, ",")
+
+	return s, nil
 }
 
 // --- Helpers ---
