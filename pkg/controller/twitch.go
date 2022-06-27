@@ -44,6 +44,8 @@ func (t *Controller) UpdateTwitchSettings(userid string, setting *TwitchSettings
 		if err = t.tw.Join(userid, *setting); err != nil {
 			return err
 		}
+	} else {
+		t.tw.Update(*setting)
 	}
 
 	return nil

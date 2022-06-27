@@ -95,6 +95,16 @@ func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 	return &t, nil
 }
 
+func (t *Twitch) Update(s models.TwitchSettings) {
+	instance := t.instances.GetValue(s.TwitchUserName)
+	if instance == nil {
+		return
+	}
+
+	instance.settings = s
+	instance.rlh.Update(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second)
+}
+
 func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
 	instance := t.instances.GetValue(s.TwitchUserName)
 
@@ -103,8 +113,7 @@ func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
 			return errors.New("already joined same channel by another user")
 		}
 
-		instance.settings = s
-		instance.rlh.Update(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second)
+		t.Update(s)
 		return nil
 	}
 
