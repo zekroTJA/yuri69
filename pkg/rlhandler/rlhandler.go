@@ -28,12 +28,11 @@ func New(burst int, reset time.Duration) RatelimitHandler {
 
 func (t RatelimitHandler) Get(key string) *ratelimit.Limiter {
 	rl := t.tm.GetValue(key)
-	exp := time.Duration(rl.Burst()) * rl.Limit()
 	if rl == nil {
 		rl = t.pool.Get().(*ratelimit.Limiter)
-		t.tm.Set(key, rl, exp)
+		t.tm.Set(key, rl, time.Duration(rl.Burst())*rl.Limit())
 	} else {
-		t.tm.SetExpires(key, exp)
+		t.tm.SetExpires(key, time.Duration(rl.Burst())*rl.Limit())
 	}
 	return rl
 }
