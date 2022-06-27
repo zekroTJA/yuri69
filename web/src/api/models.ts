@@ -165,3 +165,17 @@ export type ImportSoundsResult = {
     error: string;
   }[];
 };
+
+export type TwitchSettings = {
+  twitch_user_name: string;
+  prefix: string;
+  ratelimit: {
+    burst: number;
+    reset_seconds: number;
+  };
+  filters: GuildFilters;
+};
+
+export type TwitchState = TwitchSettings & {
+  connected: boolean;
+};

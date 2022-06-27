@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { uid } from 'react-uid';
 import styled, { useTheme } from 'styled-components';
-import { ImportSoundsResult, OTAToken, Sound } from '../api';
+import { ImportSoundsResult, OTAToken, Sound, TwitchState } from '../api';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { FileDrop } from '../components/FileDrop';
@@ -9,6 +9,7 @@ import { Flex } from '../components/Flex';
 import { GuildTile } from '../components/GuildTile';
 import { HoverToShow } from '../components/HoverToShow';
 import { InfoPanel } from '../components/InfoPanel';
+import { Input } from '../components/Input';
 import { RouteContainer } from '../components/RouteContainer';
 import { Select } from '../components/Select';
 import { Smol } from '../components/Smol';
@@ -69,6 +70,16 @@ const ErrContainer = styled.div`
   color: ${(p) => p.theme.red};
 `;
 
+const ControlButtons = styled.div`
+  display: flex;
+  gap: 1em;
+  margin-top: 1em;
+
+  > * {
+    width: 100%;
+  }
+`;
+
 const timerReducer = (state: number, action: { type: 'decrease' | 'set'; payload?: number }) => {
   switch (action.type) {
     case 'decrease':
@@ -76,6 +87,52 @@ const timerReducer = (state: number, action: { type: 'decrease' | 'set'; payload
       return state - 1;
     case 'set':
       return action.payload ?? state;
+    default:
+      return state;
+  }
+};
+
+const twitchReducer = (
+  state: TwitchState,
+  action:
+    | {
+        type: 'set_username' | 'set_prefix';
+        payload: string;
+      }
+    | {
+        type: 'set_ratelimit_burst' | 'set_ratelimit_reset';
+        payload: number;
+      }
+    | {
+        type: 'set_filters_include' | 'set_filters_exclude';
+        payload: string[];
+      }
+    | {
+        type: 'set_connected';
+        payload: boolean;
+      }
+    | {
+        type: 'set_state';
+        payload: TwitchState;
+      },
+) => {
+  switch (action.type) {
+    case 'set_username':
+      return { ...state, twitch_user_name: action.payload };
+    case 'set_prefix':
+      return { ...state, prefix: action.payload };
+    case 'set_ratelimit_burst':
+      return { ...state, ratelimit: { ...state.ratelimit, burst: action.payload } };
+    case 'set_ratelimit_reset':
+      return { ...state, ratelimit: { ...state.ratelimit, reset_seconds: action.payload } };
+    case 'set_filters_include':
+      return { ...state, filters: { ...state.filters, include: action.payload } };
+    case 'set_filters_exclude':
+      return { ...state, filters: { ...state.filters, exclude: action.payload } };
+    case 'set_connected':
+      return { ...state, connected: action.payload };
+    case 'set_state':
+      return action.payload;
     default:
       return state;
   }
@@ -104,6 +161,10 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
   const [importFile, setImportFile] = useState<File>();
   const [importProcessing, setImportProcessing] = useState(false);
   const [importResult, setImportResult] = useState<ImportSoundsResult>();
+  const [twitchState, dispatchTwitchState] = useReducer(twitchReducer, {
+    ratelimit: {},
+    filters: {},
+  } as TwitchState);
 
   const _applyGuild = async () => {
     try {
@@ -178,6 +239,30 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
       .finally(() => setImportProcessing(false));
   };
 
+  const _onTwitchSave = () => {
+    fetch((c) => c.setTwitchSettings(twitchState))
+      .then(() => show('Twitch settings saved.', 'success'))
+      .catch();
+  };
+
+  const _onTwitchJoin = () => {
+    fetch((c) => c.joinTwitch(twitchState))
+      .then(() => {
+        dispatchTwitchState({ type: 'set_connected', payload: true });
+        show(`Joined twitch channel "${twitchState.twitch_user_name}".`, 'success');
+      })
+      .catch();
+  };
+
+  const _onTwitchLeave = () => {
+    fetch((c) => c.leaveTwitch())
+      .then(() => {
+        dispatchTwitchState({ type: 'set_connected', payload: false });
+        show(`Left twitch channel "${twitchState.twitch_user_name}".`, 'success');
+      })
+      .catch();
+  };
+
   useEffect(() => {
     if (filters?.include) setTagsInclude(filters.include);
     if (filters?.exclude) setTagsExclude(filters.exclude);
@@ -200,6 +285,10 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
       .catch();
 
     _fetchOtaToken();
+
+    fetch((c) => c.twitchState())
+      .then((res) => dispatchTwitchState({ type: 'set_state', payload: res }))
+      .catch();
 
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => dispatchDeadline({ type: 'decrease' }), 1000);
@@ -348,6 +437,81 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
               )}
             </ImportContainer>
           )}
+        </Card>
+
+        <Card>
+          <h2>Twitch</h2>
+          <Controls>
+            <label>Twitch Channel to Join</label>
+            <Input
+              disabled={twitchState.connected}
+              placeholder="zekrotja"
+              value={twitchState.twitch_user_name}
+              onInput={(e) =>
+                dispatchTwitchState({ type: 'set_username', payload: e.currentTarget.value })
+              }
+            />
+            <label>Chat Command Prefix</label>
+            <Input
+              placeholder="!yuri"
+              value={twitchState.prefix}
+              onInput={(e) =>
+                dispatchTwitchState({ type: 'set_prefix', payload: e.currentTarget.value })
+              }
+            />
+            <label>Rate Limit Burst Rate</label>
+            <Input
+              placeholder="!yuri"
+              value={twitchState.ratelimit.burst}
+              type="number"
+              min="0"
+              onInput={(e) =>
+                dispatchTwitchState({
+                  type: 'set_ratelimit_burst',
+                  payload: parseInt(e.currentTarget.value),
+                })
+              }
+            />
+            <label>
+              Rate Limit Reset <Smol>(in seconds)</Smol>
+            </label>
+            <Input
+              placeholder="!yuri"
+              value={twitchState.ratelimit.reset_seconds}
+              type="number"
+              min="0"
+              onInput={(e) =>
+                dispatchTwitchState({
+                  type: 'set_ratelimit_reset',
+                  payload: parseInt(e.currentTarget.value),
+                })
+              }
+            />
+            <label>Include Filter Tags</label>
+            <TagsInput
+              tags={twitchState.filters.include}
+              onTagsChange={(payload) =>
+                dispatchTwitchState({ type: 'set_filters_include', payload })
+              }
+            />
+            <label>Exclude Filter Tags</label>
+            <TagsInput
+              tags={twitchState.filters.exclude}
+              onTagsChange={(payload) =>
+                dispatchTwitchState({ type: 'set_filters_exclude', payload })
+              }
+            />
+            <ControlButtons>
+              <Button
+                variant={twitchState.connected ? 'orange' : 'blue'}
+                onClick={twitchState.connected ? _onTwitchLeave : _onTwitchJoin}>
+                {twitchState.connected ? 'Disconnect' : 'Connect'}
+              </Button>
+              <Button variant="green" onClick={_onTwitchSave}>
+                Save
+              </Button>
+            </ControlButtons>
+          </Controls>
         </Card>
       </SplitContainer>
     </SettingsRouteContainer>

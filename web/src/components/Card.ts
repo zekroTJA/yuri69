@@ -9,4 +9,5 @@ export const Card = styled.section<Props>`
   padding: 1em;
   height: fit-content;
   margin: ${(p) => p.margin ?? '0'};
+  min-width: 20em;
 `;
