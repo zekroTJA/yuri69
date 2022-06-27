@@ -72,18 +72,32 @@ data "coder_workspace" "me" {
 resource "coder_agent" "dev" {
   arch = var.step2_arch
   os   = "linux"
-  startup_script = "bash -c \"${file("./coder-setup.sh")}\" > .coder-init.log"
+  startup_script = ""
 }
 
-variable "docker_image" {
-  description = "Which Docker image would you like to use for your workspace?"
+variable "workspace_base_image" {
+  description = "Which base Docker image would you like to use for your workspace?"
   # The codercom/enterprise-* images are only built for amd64
   default = "codercom/enterprise-base:ubuntu"
   validation {
-    condition     = contains(["codercom/enterprise-base:ubuntu", "codercom/enterprise-node:ubuntu", "codercom/enterprise-intellij:ubuntu"], var.docker_image)
+    condition     = contains(
+      ["codercom/enterprise-base:ubuntu", "codercom/enterprise-node:ubuntu", "codercom/enterprise-intellij:ubuntu"], 
+      var.workspace_base_image)
     error_message = "Invalid Docker image!"
   }
 
+}
+
+resource "docker_image" "workspace_image" {
+  name = "coder-base-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
+  build {
+    path       = "."
+    dockerfile = "Dockerfile"
+    tag        = ["coder-base-yuri-workspace-image:latest"]
+    build_arg = {
+      BASE_IMAGE: var.workspace_base_image
+    }
+  }
 }
 
 resource "docker_volume" "home_volume" {
@@ -97,14 +111,14 @@ resource "docker_network" "internal_network" {
 
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
-  image = var.docker_image
+  image = docker_image.workspace_image.name
   # Uses lower() to avoid Docker restriction on container names.
   name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
   # Hostname makes the shell more user friendly: coder@my-workspace:~$
   hostname = lower(data.coder_workspace.me.name)
   dns      = ["1.1.1.1"]
   # Use the docker gateway if the access URL is 127.0.0.1
-  command = ["sh", "-c", replace(coder_agent.dev.init_script, "127.0.0.1", "host.docker.internal")]
+  command = ["bash", "-c", replace(coder_agent.dev.init_script, "127.0.0.1", "host.docker.internal")]
   env     = ["CODER_AGENT_TOKEN=${coder_agent.dev.token}"]
   host {
     host = "host.docker.internal"
