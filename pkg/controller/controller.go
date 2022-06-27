@@ -84,7 +84,9 @@ func New(
 	}
 
 	t.pl.SubscribeFunc(t.playerEventHandler)
-	t.tw.SubscribeFunc(t.twitchHandler)
+	if t.tw != nil {
+		t.tw.SubscribeFunc(t.twitchHandler)
+	}
 
 	return &t, nil
 }

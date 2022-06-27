@@ -7,7 +7,6 @@ import (
 	"github.com/zekrotja/yuri69/pkg/database/nuts"
 	"github.com/zekrotja/yuri69/pkg/database/postgres"
 	"github.com/zekrotja/yuri69/pkg/discord"
-	"github.com/zekrotja/yuri69/pkg/lavalink"
 	"github.com/zekrotja/yuri69/pkg/player"
 	"github.com/zekrotja/yuri69/pkg/storage"
 	"github.com/zekrotja/yuri69/pkg/twitch"
@@ -49,7 +48,6 @@ type Config struct {
 	Storage   storage.StorageConfig
 	Webserver webserver.WebserverConfig
 	Discord   discord.DiscordConfig
-	Lavalink  lavalink.LavalinkConfig
 	Player    player.PlayerConfig
 	Twitch    *twitch.TwitchConfig
 }
