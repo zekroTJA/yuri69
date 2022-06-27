@@ -1,0 +1,1007 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2022-06-27T08:57:26.016Z",
+  "__export_source": "insomnia.desktop.app:v2022.4.2",
+  "resources": [
+    {
+      "_id": "req_ff946c9566864922831a7233c174557b",
+      "parentId": "fld_530ed2905d674db5a5ff47536b113060",
+      "modified": 1656318865932,
+      "created": 1651242656771,
+      "url": "http://localhost:8080/api/v1/sounds",
+      "name": "list",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": "",
+          "disabled": false
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1651242656921,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_530ed2905d674db5a5ff47536b113060",
+      "parentId": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "modified": 1656318901645,
+      "created": 1656318279026,
+      "name": "sounds",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1656318342458,
+      "_type": "request_group"
+    },
+    {
+      "_id": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "parentId": null,
+      "modified": 1651242645974,
+      "created": 1651242645974,
+      "name": "yuri69",
+      "description": "",
+      "scope": "collection",
+      "_type": "workspace"
+    },
+    {
+      "_id": "req_f487139ea12b4ee8be178ebc621c3e46",
+      "parentId": "fld_530ed2905d674db5a5ff47536b113060",
+      "modified": 1656318873084,
+      "created": 1651243704627,
+      "url": "http://localhost:8080/api/v1/sounds/create",
+      "name": "create",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"uid\": \"insarschloch\",\n\t\"display_name\": \"\",\n\t\"normalize\": true,\n\t\"tags\": [\"sexual\"],\n\t\"upload_id\": \"c9olkds774mjvi3fso5g\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_cd8bb4ec416745978a97959dfc36283b",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_496ff19b845a4f66b39608e9e4767101"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1651242656871,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_b09458389240440ca7ff541ca969fdda",
+      "parentId": "fld_530ed2905d674db5a5ff47536b113060",
+      "modified": 1656318874917,
+      "created": 1651243649259,
+      "url": "https://yuri69.zekro.de/api/v1/sounds/upload",
+      "name": "upload",
+      "description": "",
+      "method": "PUT",
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "id": "pair_d0939a722a2f476ab6609e9aa3a59d9a",
+            "name": "file",
+            "value": "",
+            "description": "",
+            "type": "file",
+            "fileName": "/home/r.hoffmann@intern.b12-group.de/Downloads/cum.mp3"
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "id": "pair_16e9c98e65ae4271baa3dbda1f943411",
+          "name": "type",
+          "value": "audio/mp3",
+          "description": ""
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_9f4ca43550484b1281efeb9d4d857bcf",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        },
+        {
+          "name": "Content-Type",
+          "value": "multipart/form-data",
+          "id": "pair_79eb0986190f4f5982f21b9144bbf471"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1651242656846,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_61ee6182ea7c4735b8c57818b8ade754",
+      "parentId": "fld_530ed2905d674db5a5ff47536b113060",
+      "modified": 1656318876617,
+      "created": 1651244068849,
+      "url": "http://localhost:8080/api/v1/sounds/cum",
+      "name": "delete",
+      "description": "",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "id": "pair_a1fa965946364c5cb55b632c8add0fc5",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1651242656821,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_2e11f383ed9a405e9950e98d7134e39b",
+      "parentId": "fld_497a46e2711542acb430bf820b81a55b",
+      "modified": 1656318851804,
+      "created": 1651833696385,
+      "url": "http://localhost:8080/api/v1/players/play/random",
+      "name": "play",
+      "description": "",
+      "method": "POST",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "bearer {{ _.apikey }}",
+          "description": ""
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778497.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_497a46e2711542acb430bf820b81a55b",
+      "parentId": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "modified": 1656318342408,
+      "created": 1656318342408,
+      "name": "player",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1656318342408,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_33819b8326164bc3bc7f27fac0d06736",
+      "parentId": "fld_497a46e2711542acb430bf820b81a55b",
+      "modified": 1656318853924,
+      "created": 1651836628213,
+      "url": "http://localhost:8080/api/v1/players/join",
+      "name": "join",
+      "description": "",
+      "method": "POST",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778447.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_e268ede9031f45f895bbfd6fbfa63f88",
+      "parentId": "fld_497a46e2711542acb430bf820b81a55b",
+      "modified": 1656318855929,
+      "created": 1651836639854,
+      "url": "http://localhost:8080/api/v1/players/leave",
+      "name": "leave",
+      "description": "",
+      "method": "POST",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778397.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_2f76df317ef34adcbeeaf3dcd3d80f16",
+      "parentId": "fld_497a46e2711542acb430bf820b81a55b",
+      "modified": 1656318857812,
+      "created": 1651837315610,
+      "url": "http://localhost:8080/api/v1/players/volume",
+      "name": "volume",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"volume\": 100\n}"
+      },
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_6c0cc5afc94145a49122d8b783a0457b"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778347.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_c2203d742dab43568c6e0dc862bbef62",
+      "parentId": "fld_1a856f3e6fed402db8c71170d7909be6",
+      "modified": 1656318860421,
+      "created": 1651785142158,
+      "url": "http://localhost:8080/api/v1/guilds/filters",
+      "name": "filters",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1651242656621,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_1a856f3e6fed402db8c71170d7909be6",
+      "parentId": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "modified": 1656318327987,
+      "created": 1656318327987,
+      "name": "guild",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1656318327987,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_086cd22877ec454f974e6fc5304faeb0",
+      "parentId": "fld_1a856f3e6fed402db8c71170d7909be6",
+      "modified": 1656318862625,
+      "created": 1651785281532,
+      "url": "http://localhost:8080/api/v1/guilds/filters",
+      "name": "filters",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"include\": [\"pog\", \"Kek\"],\n\t\"exclude\": [\"CHAMP\"]\n}"
+      },
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_1676dc2c1718434a86dd56c58b9e5c40"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1651242656571,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_1113eb8ce3454cd3bdc7e18538838568",
+      "parentId": "fld_e77153cb09fe40fea9f9ebd16121829a",
+      "modified": 1656318880296,
+      "created": 1652357083913,
+      "url": "http://localhost:8080/api/v1/stats/log",
+      "name": "logs",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778297.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_e77153cb09fe40fea9f9ebd16121829a",
+      "parentId": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "modified": 1656318373748,
+      "created": 1656318362580,
+      "name": "stats",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1652848028636.75,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_dfb7dc9d1b3545ba8e6965147068c1bf",
+      "parentId": "fld_e77153cb09fe40fea9f9ebd16121829a",
+      "modified": 1656318882039,
+      "created": 1652358044333,
+      "url": "http://localhost:8080/api/v1/stats/count",
+      "name": "stats",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": ""
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778247.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_78dd9ca5e6fe46dbbe2ee5614a5498c2",
+      "parentId": "fld_e77153cb09fe40fea9f9ebd16121829a",
+      "modified": 1656318924316,
+      "created": 1652367183545,
+      "url": "http://localhost:8080/api/v1/stats/state",
+      "name": "state",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": "",
+          "disabled": false
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778197.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_00871c347ef3406c9bdd95c7a8be0870",
+      "parentId": "fld_1aa8f6623fa440ba80310ce6169228b4",
+      "modified": 1656319358000,
+      "created": 1656318936640,
+      "url": "http://localhost:8080/api/v1/twitch/state",
+      "name": "state",
+      "description": "",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": "",
+          "disabled": false
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778147.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "fld_1aa8f6623fa440ba80310ce6169228b4",
+      "parentId": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "modified": 1656318917112,
+      "created": 1656318913909,
+      "name": "twitch",
+      "description": "",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1652848028586.75,
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_c9c48330795b4cb1bc7656379230cf3d",
+      "parentId": "fld_1aa8f6623fa440ba80310ce6169228b4",
+      "modified": 1656320163049,
+      "created": 1656319245678,
+      "url": "http://localhost:8080/api/v1/twitch/settings",
+      "name": "settings",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"twitch_user_name\": \"zekrotja\",\n\t\"prefix\": \"!yuri\",\n\t\"ratelimit\": {\n\t\t\"burst\": 3,\n\t\t\"reset_seconds\": 30\n\t},\n\t\"filters\": {\n\t\t\"include\": null,\n\t\t\"exclude\": null\n\t}\n}"
+      },
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": "",
+          "disabled": false
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_e32bb41000384ad9a187c70696614227"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778097.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_b890ada8d7fa4f7a9be42c41b1698620",
+      "parentId": "fld_1aa8f6623fa440ba80310ce6169228b4",
+      "modified": 1656320069107,
+      "created": 1656319483457,
+      "url": "http://localhost:8080/api/v1/twitch/join",
+      "name": "join",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"twitch_user_name\": \"zekrotja\",\n\t\"prefix\": \"!y\",\n\t\"ratelimit\": {\n\t\t\"burst\": 3,\n\t\t\"reset_seconds\": 30\n\t},\n\t\"filters\": {\n\t\t\"include\": null,\n\t\t\"exclude\": null\n\t}\n}"
+      },
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": "",
+          "disabled": false
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_e32bb41000384ad9a187c70696614227"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377778047.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "req_42c1bda9d5a5423f828aaf4b3482fa8c",
+      "parentId": "fld_1aa8f6623fa440ba80310ce6169228b4",
+      "modified": 1656319758517,
+      "created": 1656319755911,
+      "url": "http://localhost:8080/api/v1/twitch/leave",
+      "name": "leave",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n\t\"twitch_user_name\": \"zekrotja\",\n\t\"prefix\": \"!y\",\n\t\"ratelimit\": {\n\t\t\"burst\": 3,\n\t\t\"reset_seconds\": 30\n\t},\n\t\"filters\": {\n\t\t\"include\": null,\n\t\t\"exclude\": null\n\t}\n}"
+      },
+      "parameters": [
+        {
+          "id": "pair_d03e7d6340cd43afb872a5a44a444bf8",
+          "name": "order",
+          "value": "name",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_36f3de20fb894443997006b2ab00bd5c",
+          "name": "include",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        },
+        {
+          "id": "pair_6a3ee58ea9dc4696b55141cfdb504e62",
+          "name": "exclude",
+          "value": "sexual",
+          "description": "",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "id": "pair_4fd8de7cb9834303b38b6cef7cb01e53",
+          "name": "Authorization",
+          "value": "basic {{ _.apikey }}",
+          "description": "",
+          "disabled": false
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "id": "pair_e32bb41000384ad9a187c70696614227"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1649377777997.5,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global",
+      "_type": "request"
+    },
+    {
+      "_id": "env_0dd3a98fd642fb5cfbbc5b093bb781d209c40120",
+      "parentId": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "modified": 1656318484709,
+      "created": 1651242645984,
+      "name": "Base Environment",
+      "data": {},
+      "dataPropertyOrder": {},
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1651242645984,
+      "_type": "environment"
+    },
+    {
+      "_id": "jar_0dd3a98fd642fb5cfbbc5b093bb781d209c40120",
+      "parentId": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "modified": 1651242645985,
+      "created": 1651242645985,
+      "name": "Default Jar",
+      "cookies": [],
+      "_type": "cookie_jar"
+    },
+    {
+      "_id": "spc_6a1cdfe32a094371a56f6443b691d6e4",
+      "parentId": "wrk_36eb46a5dd33494883580b6bf24413d6",
+      "modified": 1651242645978,
+      "created": 1651242645978,
+      "fileName": "yuri69",
+      "contents": "",
+      "contentType": "yaml",
+      "_type": "api_spec"
+    }
+  ]
+}
+
