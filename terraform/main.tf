@@ -57,6 +57,28 @@ variable "step3_OS" {
   sensitive = true
 }
 
+variable "workspace_base_image" {
+  description = "Which base Docker image would you like to use for your workspace?"
+  # The codercom/enterprise-* images are only built for amd64
+  default = "codercom/enterprise-base:ubuntu"
+  validation {
+    condition     = contains(
+      ["codercom/enterprise-base:ubuntu", "codercom/enterprise-node:ubuntu", "codercom/enterprise-intellij:ubuntu"], 
+      var.workspace_base_image)
+    error_message = "Invalid Docker image!"
+  }
+}
+
+variable "dotfiles_uri" {
+  description = <<-EOF
+  Dotfiles repo URI (optional)
+
+  see https://dotfiles.github.io
+  EOF
+    # The codercom/enterprise-* images are only built for amd64
+  default = ""
+}
+
 # --------------------------------------------------------------------------------------------------
 
 provider "docker" {
@@ -72,20 +94,7 @@ data "coder_workspace" "me" {
 resource "coder_agent" "dev" {
   arch = var.step2_arch
   os   = "linux"
-  startup_script = ""
-}
-
-variable "workspace_base_image" {
-  description = "Which base Docker image would you like to use for your workspace?"
-  # The codercom/enterprise-* images are only built for amd64
-  default = "codercom/enterprise-base:ubuntu"
-  validation {
-    condition     = contains(
-      ["codercom/enterprise-base:ubuntu", "codercom/enterprise-node:ubuntu", "codercom/enterprise-intellij:ubuntu"], 
-      var.workspace_base_image)
-    error_message = "Invalid Docker image!"
-  }
-
+  startup_script = var.dotfiles_uri != "" ? "coder dotfiles -y ${var.dotfiles_uri}" : null
 }
 
 resource "docker_image" "workspace_image" {
