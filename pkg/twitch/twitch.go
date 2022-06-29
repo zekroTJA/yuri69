@@ -8,6 +8,7 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/sirupsen/logrus"
+	"github.com/zekroTJA/ratelimit"
 	"github.com/zekroTJA/timedmap"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"
@@ -23,9 +24,10 @@ type TwitchConfig struct {
 }
 
 type Instance struct {
-	settings models.TwitchSettings
-	rlh      rlhandler.RatelimitHandler
-	userID   string
+	Settings models.TwitchSettings
+
+	rlh    rlhandler.RatelimitHandler
+	userID string
 }
 
 type InternalEvent struct {
@@ -101,7 +103,7 @@ func (t *Twitch) Update(s models.TwitchSettings) {
 		return
 	}
 
-	instance.settings = s
+	instance.Settings = s
 	instance.rlh.Update(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second)
 }
 
@@ -119,7 +121,7 @@ func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
 
 	instance = &Instance{
 		userID:   userid,
-		settings: s,
+		Settings: s,
 		rlh:      rlhandler.New(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second),
 	}
 
@@ -159,14 +161,14 @@ func (t *Twitch) Leave(twitchname string) error {
 	timeout := time.NewTimer(5 * time.Second)
 	defer timeout.Stop()
 
-	t.client.Depart(instance.settings.TwitchUserName)
+	t.client.Depart(instance.Settings.TwitchUserName)
 
 	for {
 		select {
 		case <-timeout.C:
 			return errors.New("timed out")
 		case e := <-ch:
-			if e.Type == "leave" && e.Payload == instance.settings.TwitchUserName {
+			if e.Type == "leave" && e.Payload == instance.Settings.TwitchUserName {
 				return nil
 			}
 		}
@@ -177,6 +179,41 @@ func (t *Twitch) Joined(userid string) bool {
 	return t.instances.Contains(userid)
 }
 
+func (t *Twitch) GetConnectedChannel(username string) (string, *Instance, error) {
+	for channel, instance := range t.instances.Snapshot() {
+		users, err := t.client.Userlist(channel)
+		if err != nil {
+			return "", instance, err
+		}
+		if util.Contains(users, username) {
+			return channel, instance, nil
+		}
+	}
+
+	return "", nil, errs.WrapUserError("not connected to any twitch chat")
+}
+
+func (t *Twitch) Play(username, ident string) (bool, ratelimit.Reservation, error) {
+	_, instance, err := t.GetConnectedChannel(username)
+	if err != nil {
+		return false, ratelimit.Reservation{}, err
+	}
+	ok, res := t.play(instance, username, ident)
+	return ok, res, nil
+}
+
+func (t *Twitch) play(instance *Instance, username string, ident string) (bool, ratelimit.Reservation) {
+	ok, res := instance.rlh.Get(username).Reserve()
+	if ok {
+		t.Publish(PlayEvent{
+			UserID:  instance.userID,
+			Sound:   ident,
+			Filters: instance.Settings.Filters,
+		})
+	}
+	return ok, res
+}
+
 func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 	msg := strings.TrimSpace(message.Message)
 
@@ -185,7 +222,7 @@ func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 		return
 	}
 
-	prefix := instance.settings.Prefix
+	prefix := instance.Settings.Prefix
 
 	if !strings.HasPrefix(message.Message, prefix) {
 		return
@@ -212,23 +249,9 @@ func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 			t.publicAddress))
 
 	case "r", "rand", "random":
-		if !instance.rlh.Get(message.User.ID).Allow() {
-			return
-		}
-		t.Publish(PlayEvent{
-			UserID:  instance.userID,
-			Sound:   "",
-			Filters: instance.settings.Filters,
-		})
+		t.play(instance, message.User.Name, "")
 
 	default:
-		if !instance.rlh.Get(message.User.ID).Allow() {
-			return
-		}
-		t.Publish(PlayEvent{
-			UserID:  instance.userID,
-			Sound:   invoke,
-			Filters: instance.settings.Filters,
-		})
+		t.play(instance, message.User.Name, invoke)
 	}
 }

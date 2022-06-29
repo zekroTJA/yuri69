@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/zekroTJA/ratelimit"
 )
 
 var (
@@ -22,6 +23,11 @@ const (
 type StatusModel struct {
 	Status  int    `json:"status"`
 	Message string `json:"message"`
+}
+
+type StatusWithReservation struct {
+	StatusModel
+	Ratelimit ratelimit.Reservation `json:"ratelimit"`
 }
 
 type AuthLoginResponse struct {
@@ -126,4 +132,12 @@ type TwitchState struct {
 	TwitchSettings
 
 	Connected bool `json:"connected"`
+}
+
+type TwitchAPIState struct {
+	Channel   string `json:"channel"`
+	RateLimit struct {
+		Burst        int `json:"burst"`
+		ResetSeconds int `json:"reset_seconds"`
+	} `json:"rate_limit"`
 }

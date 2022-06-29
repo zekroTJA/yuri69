@@ -28,7 +28,7 @@ const Avatar = styled.img`
 
 export const LoginRoute: React.FC<Props> = ({}) => {
   const _onLogin = () => {
-    window.location.assign(ApiClientInstance.loginUrl());
+    window.location.assign(ApiClientInstance.discordLoginUrl());
   };
 
   return (

@@ -20,6 +20,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/discordoauth"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/twitch"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 	"github.com/zekrotja/yuri69/pkg/webserver/controllers"
 	"github.com/zekrotja/yuri69/pkg/webserver/middleware"
@@ -71,16 +72,23 @@ func New(cfg WebserverConfig, ct *controller.Controller) (*Webserver, error) {
 		return nil, err
 	}
 
-	oauth := discordoauth.NewDiscordOAuth(
+	discordOauth := discordoauth.NewDiscordOAuth(
 		cfg.DiscordOAuth.ClientID,
 		cfg.DiscordOAuth.ClientSecret,
-		fmt.Sprintf("%s/api/v1/auth/oauthcallback", cfg.PublicAddress),
+		fmt.Sprintf("%s/api/v1/auth/oauth2/discord/callback", cfg.PublicAddress),
 		t.onAuthError,
-		t.authHandler.HandleLogin)
+		t.authHandler.HandleLogin("/"))
+
+	twitchOauth := twitch.NewTwitchOAuth(
+		cfg.TwitchOAuth.ClientID,
+		cfg.TwitchOAuth.ClientSecret,
+		fmt.Sprintf("%s/api/v1/auth/oauth2/twitch/callback", cfg.PublicAddress),
+		t.onAuthError,
+		t.authHandler.HandleLogin("/twitch"))
 
 	t.hub = ws.NewHub(t.authHandler, t.ct)
 
-	t.registerRoutes(oauth)
+	t.registerRoutes(discordOauth, twitchOauth)
 	t.hookFS()
 
 	t.ct.SubscribeFunc(t.eventHandler)
@@ -97,7 +105,10 @@ func (t *Webserver) ListenAndServeBlocking() error {
 	return t.server.ListenAndServe()
 }
 
-func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
+func (t *Webserver) registerRoutes(
+	discordOAuth *discordoauth.DiscordOAuth,
+	twitchOAuth twitch.TwitchOAuth,
+) {
 	t.router.Any("/ws", t.hub.Upgrade)
 	t.router.Get("/invite", func(ctx *routing.Context) error {
 		url := fmt.Sprintf(
@@ -111,25 +122,37 @@ func (t *Webserver) registerRoutes(oauth *discordoauth.DiscordOAuth) {
 	gApi := t.router.Group("/api/v1")
 
 	gAuth := gApi.Group("/auth")
-	gAuth.Get("/login", oauth.HandlerInit)
 	gAuth.Get("/logout", t.authHandler.HandleLogout)
-	gAuth.Get("/oauthcallback", oauth.HandlerCallback)
 	gAuth.Get("/refresh", t.authHandler.HandleRefresh)
 	gAuth.Get("/ota/login", t.authHandler.HandleOTALogin)
 
-	controllers.NewPublicController(gApi.Group("/public"), t.ct)
+	gOAuth2 := gAuth.Group("/oauth2")
+	gOAuth2.Get("/discord/login", discordOAuth.HandlerInit)
+	gOAuth2.Get("/discord/callback", discordOAuth.HandlerCallback)
+	gOAuth2.Get("/twitch/login", twitchOAuth.HandlerInit)
+	gOAuth2.Get("/twitch/callback", twitchOAuth.HandlerCallback)
 
+	// --- AUTHENTICATED ROUTES --------------------------------------------------------------------
 	gApi.Use(t.authHandler.CheckAuth)
 
-	gApi.Get("/auth/ota/token", t.authHandler.HandleGetOtaQR)
 	gApi.Get("/auth/check", func(ctx *routing.Context) error { return ctx.Write(models.StatusOK) })
+
+	// --- TWITCH REALM ROUTES ---------------------------------------------------------------------
+	controllers.NewTwitchController(
+		gApi.Group("/twitch", t.authHandler.CheckScopes("origin:twitch")),
+		t.ct)
+
+	// --- DISCORD REALM ROUTES --------------------------------------------------------------------
+	gApi.Use(t.authHandler.CheckScopes("origin:discord"))
+
+	gApi.Get("/auth/ota/token", t.authHandler.HandleGetOtaQR)
 	controllers.NewSoundsController(gApi.Group("/sounds"), t.ct)
 	controllers.NewPlayerController(gApi.Group("/players"), t.ct)
 	controllers.NewUsersController(gApi.Group("/users"), t.ct)
 	controllers.NewGuildsController(gApi.Group("/guilds"), t.ct)
 	controllers.NewStatsController(gApi.Group("/stats"), t.ct)
-	controllers.NewTwitchController(gApi.Group("/twitch"), t.ct)
 	controllers.NewAdminController(gApi.Group("/admins"), t.ct)
+	controllers.NewTwitchController(gApi.Group("/twitch"), t.ct)
 }
 
 func (t *Webserver) hookFS() error {

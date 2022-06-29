@@ -33,8 +33,8 @@ export class APIClient extends HttpClient {
     this._onWsEvent = handler;
   }
 
-  loginUrl(): string {
-    return this.basePath('auth/login');
+  discordLoginUrl(): string {
+    return this.basePath('auth/oauth2/discord/login');
   }
 
   logoutUrl(): string {
@@ -145,6 +145,22 @@ export class APIClient extends HttpClient {
     return this.req('DELETE', 'users/settings/apikey');
   }
 
+  twitchState(): Promise<TwitchState> {
+    return this.req('GET', 'users/settings/twitch/state');
+  }
+
+  setTwitchSettings(settings: TwitchSettings): Promise<Status> {
+    return this.req('POST', 'users/settings/twitch/settings', settings);
+  }
+
+  joinTwitch(settings?: TwitchSettings): Promise<Status> {
+    return this.req('POST', 'users/settings/twitch/join', settings);
+  }
+
+  leaveTwitch(): Promise<Status> {
+    return this.req('POST', 'users/settings/twitch/leave');
+  }
+
   statsLog(
     guildid: string = '',
     userid: string = '',
@@ -180,21 +196,5 @@ export class APIClient extends HttpClient {
 
   soundsImport(file: File): Promise<ImportSoundsResult> {
     return this.req('POST', 'sounds/import', file);
-  }
-
-  twitchState(): Promise<TwitchState> {
-    return this.req('GET', 'twitch/state');
-  }
-
-  setTwitchSettings(settings: TwitchSettings): Promise<Status> {
-    return this.req('POST', 'twitch/settings', settings);
-  }
-
-  joinTwitch(settings?: TwitchSettings): Promise<Status> {
-    return this.req('POST', 'twitch/join', settings);
-  }
-
-  leaveTwitch(): Promise<Status> {
-    return this.req('POST', 'twitch/leave');
   }
 }

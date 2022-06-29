@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"net/http"
+
 	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
-	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 )
 
 type twitchController struct {
@@ -13,17 +15,17 @@ type twitchController struct {
 
 func NewTwitchController(r *routing.RouteGroup, ct *controller.Controller) {
 	t := twitchController{ct: ct}
-	r.Get("/state", t.getState)
-	r.Post("/settings", t.postSettings)
-	r.Post("/join", t.postJoin)
-	r.Post("/leave", t.postLeave)
+	r.Get("state", t.getState)
+	r.Get("sounds", t.getSounds)
+	r.Get("play/random", t.play)
+	r.Get("play/<id>", t.play)
 	return
 }
 
 func (t *twitchController) getState(ctx *routing.Context) error {
-	userid, _ := ctx.Get("userid").(string)
+	claims, _ := ctx.Get("claims").(auth.Claims)
 
-	state, err := t.ct.GetTwitchState(userid)
+	state, err := t.ct.TwitchState(claims.Username)
 	if err != nil {
 		return err
 	}
@@ -31,48 +33,36 @@ func (t *twitchController) getState(ctx *routing.Context) error {
 	return ctx.Write(state)
 }
 
-func (t *twitchController) postSettings(ctx *routing.Context) error {
-	userid, _ := ctx.Get("userid").(string)
+func (t *twitchController) getSounds(ctx *routing.Context) error {
+	claims, _ := ctx.Get("claims").(auth.Claims)
+	order := ctx.Query("order")
 
-	var settings TwitchSettings
-	if err := ctx.Read(&settings); err != nil {
-		return errs.WrapUserError(err)
-	}
-
-	err := t.ct.UpdateTwitchSettings(userid, &settings, false)
+	sounds, err := t.ct.TwitchListSounds(claims.Username, order)
 	if err != nil {
 		return err
 	}
 
-	return ctx.Write(StatusOK)
+	return ctx.Write(sounds)
 }
 
-func (t *twitchController) postJoin(ctx *routing.Context) error {
-	userid, _ := ctx.Get("userid").(string)
+func (t *twitchController) play(ctx *routing.Context) error {
+	claims, _ := ctx.Get("claims").(auth.Claims)
+	ident := ctx.Param("id")
 
-	var settings *TwitchSettings
-	if ctx.Request.ContentLength > 0 {
-		settings = new(TwitchSettings)
-		if err := ctx.Read(&settings); err != nil {
-			return errs.WrapUserError(err)
-		}
-	}
-
-	err := t.ct.UpdateTwitchSettings(userid, settings, true)
+	ok, res, err := t.ct.TwitchPlay(claims.Username, ident)
 	if err != nil {
 		return err
 	}
 
-	return ctx.Write(StatusOK)
-}
+	var payload StatusWithReservation
+	payload.Ratelimit = res
 
-func (t *twitchController) postLeave(ctx *routing.Context) error {
-	userid, _ := ctx.Get("userid").(string)
-
-	err := t.ct.LeaveTwitch(userid)
-	if err != nil {
-		return err
+	if !ok {
+		payload.StatusModel.Status = http.StatusTooManyRequests
+		payload.StatusModel.Message = "you have been rate limited"
+		return ctx.WriteWithStatus(payload, http.StatusTooManyRequests)
 	}
 
-	return ctx.Write(StatusOK)
+	payload.StatusModel = StatusOK
+	return ctx.Write(payload)
 }

@@ -11,7 +11,9 @@ import (
 type Claims struct {
 	jwt.PublicClaims
 
-	UserID string
+	UserID   string
+	Username string
+	Scopes   []string
 }
 
 type JWTHandler struct {

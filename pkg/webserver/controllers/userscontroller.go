@@ -21,6 +21,10 @@ func NewUsersController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Get("/settings/apikey", t.handleGetApiKey)
 	r.Post("/settings/apikey", t.handlePostApiKey)
 	r.Delete("/settings/apikey", t.handleDeleteApiKey)
+	r.Get("/settings/twitch/state", t.getTwitchState)
+	r.Post("/settings/twitch/settings", t.postTwitchSettings)
+	r.Post("/settings/twitch/join", t.postTwitchJoin)
+	r.Post("/settings/twitch/leave", t.postTwitchLeave)
 	return
 }
 
@@ -120,6 +124,63 @@ func (t *usersController) handleDeleteApiKey(ctx *routing.Context) error {
 	userid, _ := ctx.Get("userid").(string)
 
 	err := t.ct.RemoveApiKey(userid)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(StatusOK)
+}
+
+func (t *usersController) getTwitchState(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	state, err := t.ct.GetTwitchState(userid)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(state)
+}
+
+func (t *usersController) postTwitchSettings(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	var settings TwitchSettings
+	if err := ctx.Read(&settings); err != nil {
+		return errs.WrapUserError(err)
+	}
+
+	err := t.ct.UpdateTwitchSettings(userid, &settings, false)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(StatusOK)
+}
+
+func (t *usersController) postTwitchJoin(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	var settings *TwitchSettings
+	if ctx.Request.ContentLength > 0 {
+		settings = new(TwitchSettings)
+		if err := ctx.Read(&settings); err != nil {
+			return errs.WrapUserError(err)
+		}
+	}
+
+	err := t.ct.UpdateTwitchSettings(userid, settings, true)
+	if err != nil {
+		return err
+	}
+
+	return ctx.Write(StatusOK)
+}
+
+func (t *usersController) postTwitchLeave(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	err := t.ct.LeaveTwitch(userid)
 	if err != nil {
 		return err
 	}
