@@ -139,5 +139,5 @@ type TwitchAPIState struct {
 	RateLimit struct {
 		Burst        int `json:"burst"`
 		ResetSeconds int `json:"reset_seconds"`
-	} `json:"rate_limit"`
+	} `json:"ratelimit"`
 }

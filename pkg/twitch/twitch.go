@@ -26,8 +26,10 @@ type TwitchConfig struct {
 type Instance struct {
 	Settings models.TwitchSettings
 
-	rlh    rlhandler.RatelimitHandler
 	userID string
+	rlh    rlhandler.RatelimitHandler
+
+	users *lockMap[string, any]
 }
 
 type InternalEvent struct {
@@ -60,6 +62,8 @@ func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 	t.eventbus = util.NewEventBus[InternalEvent](100)
 	t.publicAddress = publicAddress
 
+	t.client.Capabilities = []string{"twitch.tv/membership"}
+
 	t.client.OnSelfJoinMessage(func(message twitch.UserJoinMessage) {
 		logrus.WithField("channel", message.Channel).Info("Joined twitch channel")
 		t.eventbus.Publish(InternalEvent{
@@ -75,6 +79,30 @@ func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 			Type:    "leave",
 			Payload: message.Channel,
 		})
+	})
+
+	t.client.OnUserJoinMessage(func(message twitch.UserJoinMessage) {
+		logrus.
+			WithField("channel", message.Channel).
+			WithField("user", message.User).
+			Debug("twitch: user joined")
+
+		instance := t.instances.GetValue(message.Channel)
+		if instance != nil {
+			instance.users.Set(message.User, struct{}{})
+		}
+	})
+
+	t.client.OnUserPartMessage(func(message twitch.UserPartMessage) {
+		logrus.
+			WithField("channel", message.Channel).
+			WithField("user", message.User).
+			Debug("twitch: user left")
+
+		instance := t.instances.GetValue(message.Channel)
+		if instance != nil {
+			instance.users.Delete(message.User)
+		}
 	})
 
 	t.client.OnPrivateMessage(t.onMessage)
@@ -123,6 +151,7 @@ func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
 		userID:   userid,
 		Settings: s,
 		rlh:      rlhandler.New(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second),
+		users:    newLockMap[string, any](),
 	}
 
 	t.instances.Set(s.TwitchUserName, instance, 24*time.Hour, func(value *Instance) {
@@ -181,11 +210,8 @@ func (t *Twitch) Joined(userid string) bool {
 
 func (t *Twitch) GetConnectedChannel(username string) (string, *Instance, error) {
 	for channel, instance := range t.instances.Snapshot() {
-		users, err := t.client.Userlist(channel)
-		if err != nil {
-			return "", instance, err
-		}
-		if util.Contains(users, username) {
+		_, ok := instance.users.Get(username)
+		if ok {
 			return channel, instance, nil
 		}
 	}
@@ -221,6 +247,8 @@ func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 	if instance == nil {
 		return
 	}
+
+	instance.users.SetIfUnset(message.User.Name, struct{}{})
 
 	prefix := instance.Settings.Prefix
 

@@ -15,10 +15,10 @@ type twitchController struct {
 
 func NewTwitchController(r *routing.RouteGroup, ct *controller.Controller) {
 	t := twitchController{ct: ct}
-	r.Get("state", t.getState)
-	r.Get("sounds", t.getSounds)
-	r.Get("play/random", t.play)
-	r.Get("play/<id>", t.play)
+	r.Get("/state", t.getState)
+	r.Get("/sounds", t.getSounds)
+	r.Post("/play/random", t.play)
+	r.Post("/play/<id>", t.play)
 	return
 }
 

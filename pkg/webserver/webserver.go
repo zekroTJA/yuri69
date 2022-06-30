@@ -138,9 +138,9 @@ func (t *Webserver) registerRoutes(
 	gApi.Get("/auth/check", func(ctx *routing.Context) error { return ctx.Write(models.StatusOK) })
 
 	// --- TWITCH REALM ROUTES ---------------------------------------------------------------------
-	controllers.NewTwitchController(
-		gApi.Group("/twitch", t.authHandler.CheckScopes("origin:twitch")),
-		t.ct)
+	gApiTwitch := gApi.Group("/twitch")
+	gApiTwitch.Use(t.authHandler.CheckScopes("origin:twitch"))
+	controllers.NewTwitchController(gApiTwitch, t.ct)
 
 	// --- DISCORD REALM ROUTES --------------------------------------------------------------------
 	gApi.Use(t.authHandler.CheckScopes("origin:discord"))

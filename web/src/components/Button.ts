@@ -13,6 +13,7 @@ export type ButtonVariant =
 
 type Props = {
   variant?: ButtonVariant;
+  color?: string;
 };
 
 export const Button = styled.button<Props>`
@@ -46,7 +47,7 @@ export const Button = styled.button<Props>`
       case 'pink':
         return LinearGradient(p.theme.pink);
       default:
-        return LinearGradient(p.theme.accent);
+        return LinearGradient(p.color ?? p.theme.accent);
     }
   }}
 

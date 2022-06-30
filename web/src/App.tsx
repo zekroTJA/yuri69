@@ -14,6 +14,8 @@ import { EditRoute } from './routes/Edit';
 import { WsDisconnectScreen } from './components/WsDisconnectScreen';
 import { StatsRoute } from './routes/Stats';
 import { AdminRoute } from './routes/Admin';
+import { TwitchMainRoute } from './routes/twitch/Main';
+import { TwitchSoundsRoute } from './routes/twitch/Sounds';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -52,6 +54,9 @@ const App: React.FC = () => {
               <Route path="settings" element={<SettingsRoute />} />
               <Route path="stats" element={<StatsRoute />} />
               <Route path="admin" element={<AdminRoute />} />
+            </Route>
+            <Route path="/twitch" element={<TwitchMainRoute />}>
+              <Route index element={<TwitchSoundsRoute />} />
             </Route>
             <Route path="/login" element={<LoginRoute />} />
             <Route path="*" element={<Navigate to="/" />} />

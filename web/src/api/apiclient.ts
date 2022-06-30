@@ -12,6 +12,8 @@ import {
   Sound,
   StateStats,
   Status,
+  StatusWithReservation,
+  TwitchPageState,
   TwitchSettings,
   TwitchState,
   UploadSoundResponse,
@@ -33,8 +35,8 @@ export class APIClient extends HttpClient {
     this._onWsEvent = handler;
   }
 
-  discordLoginUrl(): string {
-    return this.basePath('auth/oauth2/discord/login');
+  loginUrl(provider: 'discord' | 'twitch'): string {
+    return this.basePath(`auth/oauth2/${provider}/login`);
   }
 
   logoutUrl(): string {
@@ -196,5 +198,21 @@ export class APIClient extends HttpClient {
 
   soundsImport(file: File): Promise<ImportSoundsResult> {
     return this.req('POST', 'sounds/import', file);
+  }
+
+  twitchPageState(): Promise<TwitchPageState> {
+    return this.req('GET', 'twitch/state');
+  }
+
+  twitchPageSounds(order: string): Promise<Sound[]> {
+    return this.req('GET', `twitch/sounds?order=${order}`);
+  }
+
+  twitchPagePlay(ident: string): Promise<StatusWithReservation> {
+    return this.req('POST', `twitch/play/${ident}`);
+  }
+
+  twitchPagePlayRandom(): Promise<StatusWithReservation> {
+    return this.req('POST', 'twitch/play/random');
   }
 }
