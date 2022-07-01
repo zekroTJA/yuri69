@@ -11,6 +11,7 @@ import (
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
 	. "github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 )
 
 const authenticationDeadline = 15 * time.Second
@@ -180,12 +181,18 @@ func (t *subscription) onMessage(msg []byte) {
 			t.Close()
 			return
 		}
-		t.userId = claims.UserID
-		payload, err := t.hub.ct.GetCurrentState(t.userId)
-		if err != nil {
-			logrus.WithError(err).Error("Getting current state failed")
+		if claims.IsAuthOrigin(auth.AuthOriginDiscord) {
+			t.userId = claims.UserID
+			payload, err := t.hub.ct.GetCurrentState(t.userId)
+			if err != nil {
+				logrus.WithError(err).Error("Getting current state failed")
+			}
+			t.publishEvent(Event[any]{Type: "authok", Payload: payload})
+		} else if claims.IsAuthOrigin(auth.AuthOriginTwitch) {
+			t.userId = claims.Username
+			payload := struct{}{}
+			t.publishEvent(Event[any]{Type: "authok", Payload: payload})
 		}
-		t.publishEvent(Event[any]{Type: "authok", Payload: payload})
 	}
 }
 

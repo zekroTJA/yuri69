@@ -166,16 +166,32 @@ export type ImportSoundsResult = {
   }[];
 };
 
+export type RateLimitParams = {
+  burst: number;
+  reset_seconds: number;
+};
+
 export type TwitchSettings = {
   twitch_user_name: string;
   prefix: string;
-  ratelimit: {
-    burst: number;
-    reset_seconds: number;
-  };
+  ratelimit: RateLimitParams;
   filters: GuildFilters;
+  blocklist: string[];
 };
 
 export type TwitchState = TwitchSettings & {
   connected: boolean;
+};
+
+export type TwitchPageState = {
+  channel: string;
+  ratelimit: RateLimitParams;
+};
+
+export type StatusWithReservation = Status & {
+  ratelimit: {
+    burst: number;
+    remaining: number;
+    reset?: string;
+  };
 };

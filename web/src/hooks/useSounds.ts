@@ -1,18 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Sound } from '../api';
+import { APIClient, Sound } from '../api';
 import { useStore } from '../store';
 import { useApi } from './useApi';
 
-export const useSounds = (filter?: string) => {
+type FetchFunc = (order: string) => (c: APIClient) => Promise<Sound[]>;
+
+export const useSounds = (
+  filter?: string,
+  fetchFunc: FetchFunc = (order) => (c) => c.sounds(order),
+) => {
   const fetch = useApi();
 
   const [sounds, setSounds, order] = useStore((s) => [s.sounds, s.setSounds, s.order]);
   const [filteredSounds, setFilteredSounds] = useState<Sound[]>();
 
-  useEffect(() => {
-    fetch((c) => c.sounds(order))
+  const _refetch = () => {
+    fetch(fetchFunc(order))
       .then((sounds) => setSounds(sounds))
       .catch();
+  };
+
+  useEffect(() => {
+    console.log(fetchFunc);
+    _refetch();
   }, [order]);
 
   useEffect(() => {
@@ -25,7 +35,7 @@ export const useSounds = (filter?: string) => {
     setFilteredSounds(_filteredSounds);
   }, [sounds, filter]);
 
-  return { sounds, filteredSounds: filteredSounds ?? sounds };
+  return { sounds, filteredSounds: filteredSounds ?? sounds, refetchSounds: _refetch };
 };
 
 const soundsFilter = (filter: string) => {
@@ -42,8 +52,6 @@ const soundsFilter = (filter: string) => {
     }
     return (v: string) => v.includes(filter);
   });
-
-  console.log(checkFuncs);
 
   const check = (v: string) => !!checkFuncs.find((filter) => filter(v));
 

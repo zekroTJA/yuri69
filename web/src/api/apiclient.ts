@@ -12,6 +12,8 @@ import {
   Sound,
   StateStats,
   Status,
+  StatusWithReservation,
+  TwitchPageState,
   TwitchSettings,
   TwitchState,
   UploadSoundResponse,
@@ -33,8 +35,12 @@ export class APIClient extends HttpClient {
     this._onWsEvent = handler;
   }
 
-  loginUrl(): string {
-    return this.basePath('auth/login');
+  loginCapabilities(): Promise<string[]> {
+    return this.req('GET', 'auth/logincapabilities');
+  }
+
+  loginUrl(provider: 'discord' | 'twitch'): string {
+    return this.basePath(`auth/oauth2/${provider}/login`);
   }
 
   logoutUrl(): string {
@@ -145,6 +151,22 @@ export class APIClient extends HttpClient {
     return this.req('DELETE', 'users/settings/apikey');
   }
 
+  twitchState(): Promise<TwitchState> {
+    return this.req('GET', 'users/settings/twitch/state');
+  }
+
+  setTwitchSettings(settings: TwitchSettings): Promise<Status> {
+    return this.req('POST', 'users/settings/twitch/settings', settings);
+  }
+
+  joinTwitch(settings?: TwitchSettings): Promise<Status> {
+    return this.req('POST', 'users/settings/twitch/join', settings);
+  }
+
+  leaveTwitch(): Promise<Status> {
+    return this.req('POST', 'users/settings/twitch/leave');
+  }
+
   statsLog(
     guildid: string = '',
     userid: string = '',
@@ -182,19 +204,19 @@ export class APIClient extends HttpClient {
     return this.req('POST', 'sounds/import', file);
   }
 
-  twitchState(): Promise<TwitchState> {
+  twitchPageState(): Promise<TwitchPageState> {
     return this.req('GET', 'twitch/state');
   }
 
-  setTwitchSettings(settings: TwitchSettings): Promise<Status> {
-    return this.req('POST', 'twitch/settings', settings);
+  twitchPageSounds(order: string): Promise<Sound[]> {
+    return this.req('GET', `twitch/sounds?order=${order}`);
   }
 
-  joinTwitch(settings?: TwitchSettings): Promise<Status> {
-    return this.req('POST', 'twitch/join', settings);
+  twitchPagePlay(ident: string): Promise<StatusWithReservation> {
+    return this.req('POST', `twitch/play/${ident}`);
   }
 
-  leaveTwitch(): Promise<Status> {
-    return this.req('POST', 'twitch/leave');
+  twitchPagePlayRandom(): Promise<StatusWithReservation> {
+    return this.req('POST', 'twitch/play/random');
   }
 }

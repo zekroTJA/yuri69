@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/zekroTJA/ratelimit"
+	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 var (
@@ -22,6 +24,11 @@ const (
 type StatusModel struct {
 	Status  int    `json:"status"`
 	Message string `json:"message"`
+}
+
+type StatusWithReservation struct {
+	StatusModel
+	Ratelimit ratelimit.Reservation `json:"ratelimit"`
 }
 
 type AuthLoginResponse struct {
@@ -126,4 +133,22 @@ type TwitchState struct {
 	TwitchSettings
 
 	Connected bool `json:"connected"`
+}
+
+type TwitchAPIState struct {
+	Channel   string `json:"channel"`
+	RateLimit struct {
+		Burst        int `json:"burst"`
+		ResetSeconds int `json:"reset_seconds"`
+	} `json:"ratelimit"`
+}
+
+type Capabilities []string
+
+func (t Capabilities) Add(cap string, enabled ...bool) Capabilities {
+	e := util.Opt(enabled, true)
+	if e {
+		return append(t, cap)
+	}
+	return t
 }

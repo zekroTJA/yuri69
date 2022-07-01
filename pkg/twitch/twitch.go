@@ -8,6 +8,7 @@ import (
 
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/sirupsen/logrus"
+	"github.com/zekroTJA/ratelimit"
 	"github.com/zekroTJA/timedmap"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"
@@ -15,7 +16,9 @@ import (
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
-var prefixes = []string{"!yuri", "!y"}
+var (
+	ErrBlocklisted = errors.New("blocklisted")
+)
 
 type TwitchConfig struct {
 	Username   string
@@ -23,9 +26,21 @@ type TwitchConfig struct {
 }
 
 type Instance struct {
-	settings models.TwitchSettings
-	rlh      rlhandler.RatelimitHandler
-	userID   string
+	Settings models.TwitchSettings
+
+	userID string
+	rlh    rlhandler.RatelimitHandler
+
+	users *lockMap[string, any]
+}
+
+func (t *Instance) GetConnectedUsers() []string {
+	snap := t.users.Snapshot()
+	res := make([]string, 0, len(snap))
+	for k := range t.users.Snapshot() {
+		res = append(res, k)
+	}
+	return res
 }
 
 type InternalEvent struct {
@@ -58,6 +73,8 @@ func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 	t.eventbus = util.NewEventBus[InternalEvent](100)
 	t.publicAddress = publicAddress
 
+	t.client.Capabilities = []string{"twitch.tv/membership"}
+
 	t.client.OnSelfJoinMessage(func(message twitch.UserJoinMessage) {
 		logrus.WithField("channel", message.Channel).Info("Joined twitch channel")
 		t.eventbus.Publish(InternalEvent{
@@ -73,6 +90,30 @@ func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 			Type:    "leave",
 			Payload: message.Channel,
 		})
+	})
+
+	t.client.OnUserJoinMessage(func(message twitch.UserJoinMessage) {
+		logrus.
+			WithField("channel", message.Channel).
+			WithField("user", message.User).
+			Debug("twitch: user joined")
+
+		instance := t.instances.GetValue(message.Channel)
+		if instance != nil {
+			instance.users.Set(message.User, struct{}{})
+		}
+	})
+
+	t.client.OnUserPartMessage(func(message twitch.UserPartMessage) {
+		logrus.
+			WithField("channel", message.Channel).
+			WithField("user", message.User).
+			Debug("twitch: user left")
+
+		instance := t.instances.GetValue(message.Channel)
+		if instance != nil {
+			instance.users.Delete(message.User)
+		}
 	})
 
 	t.client.OnPrivateMessage(t.onMessage)
@@ -101,7 +142,7 @@ func (t *Twitch) Update(s models.TwitchSettings) {
 		return
 	}
 
-	instance.settings = s
+	instance.Settings = s
 	instance.rlh.Update(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second)
 }
 
@@ -119,8 +160,9 @@ func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
 
 	instance = &Instance{
 		userID:   userid,
-		settings: s,
+		Settings: s,
 		rlh:      rlhandler.New(s.RateLimit.Burst, time.Duration(s.RateLimit.ResetSeconds)*time.Second),
+		users:    newLockMap[string, any](),
 	}
 
 	t.instances.Set(s.TwitchUserName, instance, 24*time.Hour, func(value *Instance) {
@@ -159,14 +201,14 @@ func (t *Twitch) Leave(twitchname string) error {
 	timeout := time.NewTimer(5 * time.Second)
 	defer timeout.Stop()
 
-	t.client.Depart(instance.settings.TwitchUserName)
+	t.client.Depart(instance.Settings.TwitchUserName)
 
 	for {
 		select {
 		case <-timeout.C:
 			return errors.New("timed out")
 		case e := <-ch:
-			if e.Type == "leave" && e.Payload == instance.settings.TwitchUserName {
+			if e.Type == "leave" && e.Payload == instance.Settings.TwitchUserName {
 				return nil
 			}
 		}
@@ -177,6 +219,56 @@ func (t *Twitch) Joined(userid string) bool {
 	return t.instances.Contains(userid)
 }
 
+func (t *Twitch) GetConnectedChannel(username string) (string, *Instance, error) {
+	for channel, instance := range t.instances.Snapshot() {
+		_, ok := instance.users.Get(username)
+		if ok {
+			return channel, instance, nil
+		}
+	}
+
+	return "", nil, errs.WrapUserError("not connected to any twitch chat")
+}
+
+func (t *Twitch) GetInstances(dcIds []string) []*Instance {
+	snap := t.instances.Snapshot()
+	instances := make([]*Instance, 0, len(snap))
+	for _, instance := range snap {
+		if util.Contains(dcIds, instance.userID) {
+			instances = append(instances, instance)
+		}
+	}
+	return instances
+}
+
+func (t *Twitch) Play(username, ident string) (bool, ratelimit.Reservation, error) {
+	_, instance, err := t.GetConnectedChannel(username)
+	if err != nil {
+		return false, ratelimit.Reservation{}, err
+	}
+	ok, res, err := t.play(instance, username, ident)
+	return ok, res, err
+}
+
+func (t *Twitch) play(
+	instance *Instance,
+	username string,
+	ident string,
+) (bool, ratelimit.Reservation, error) {
+	if util.Contains(instance.Settings.Blocklist, username) {
+		return false, ratelimit.Reservation{}, ErrBlocklisted
+	}
+	ok, res := instance.rlh.Get(username).Reserve()
+	if ok {
+		t.Publish(PlayEvent{
+			UserID:  instance.userID,
+			Sound:   ident,
+			Filters: instance.Settings.Filters,
+		})
+	}
+	return ok, res, nil
+}
+
 func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 	msg := strings.TrimSpace(message.Message)
 
@@ -185,7 +277,9 @@ func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 		return
 	}
 
-	prefix := instance.settings.Prefix
+	instance.users.SetIfUnset(message.User.Name, struct{}{})
+
+	prefix := instance.Settings.Prefix
 
 	if !strings.HasPrefix(message.Message, prefix) {
 		return
@@ -208,27 +302,13 @@ func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 
 	case "list", "sounds", "ls":
 		t.client.Reply(message.Channel, message.ID, fmt.Sprintf(
-			"Here you can find a list of available sounds (Yes, this will be improved some day 😅): %s/api/v1/public/twitch/sounds",
+			"Here you get to the interactive web interface 🤯: %s/twitch",
 			t.publicAddress))
 
 	case "r", "rand", "random":
-		if !instance.rlh.Get(message.User.ID).Allow() {
-			return
-		}
-		t.Publish(PlayEvent{
-			UserID:  instance.userID,
-			Sound:   "",
-			Filters: instance.settings.Filters,
-		})
+		t.play(instance, message.User.Name, "")
 
 	default:
-		if !instance.rlh.Get(message.User.ID).Allow() {
-			return
-		}
-		t.Publish(PlayEvent{
-			UserID:  instance.userID,
-			Sound:   invoke,
-			Filters: instance.settings.Filters,
-		})
+		t.play(instance, message.User.Name, invoke)
 	}
 }

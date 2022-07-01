@@ -14,6 +14,7 @@ import (
 	"github.com/zekrotja/yuri69/pkg/debug"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 const (
@@ -78,27 +79,27 @@ func New(
 	return &t, nil
 }
 
-func (t AuthHandler) HandleLogin(ctx *routing.Context, userID string) error {
-	var claims Claims
-	claims.UserID = userID
-	refreshToken, err := t.refreshTokenHandler.Generate(claims)
-	if err != nil {
-		return err
+func (t AuthHandler) HandleLogin(redirectPath string) func(ctx *routing.Context, claims Claims) error {
+	return func(ctx *routing.Context, claims Claims) error {
+		refreshToken, err := t.refreshTokenHandler.Generate(claims)
+		if err != nil {
+			return err
+		}
+
+		http.SetCookie(ctx.Response, &http.Cookie{
+			Name:     "refreshToken",
+			Value:    refreshToken,
+			Domain:   ctx.Request.URL.Host,
+			Path:     "/",
+			MaxAge:   int(t.refreshTokenHandler.Lifetime().Seconds()),
+			HttpOnly: true,
+			Secure:   !debug.Enabled(),
+		})
+
+		ctx.Response.Header().Set("Location", redirectPath)
+		ctx.Response.WriteHeader(http.StatusTemporaryRedirect)
+		return nil
 	}
-
-	http.SetCookie(ctx.Response, &http.Cookie{
-		Name:     "refreshToken",
-		Value:    refreshToken,
-		Domain:   ctx.Request.URL.Host,
-		Path:     "/",
-		MaxAge:   int(t.refreshTokenHandler.Lifetime().Seconds()),
-		HttpOnly: true,
-		Secure:   !debug.Enabled(),
-	})
-
-	ctx.Response.Header().Set("Location", "/")
-	ctx.Response.WriteHeader(http.StatusTemporaryRedirect)
-	return nil
 }
 
 func (t AuthHandler) HandleLogout(ctx *routing.Context) error {
@@ -185,6 +186,21 @@ func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
 	return nil
 }
 
+func (t *AuthHandler) CheckScopes(must ...string) func(ctx *routing.Context) error {
+	if len(must) == 0 {
+		return func(*routing.Context) error { return nil }
+	}
+
+	return func(ctx *routing.Context) error {
+		claims, ok := ctx.Get("claims").(Claims)
+		if !ok || !util.ContainsAll(claims.Scopes, must) {
+			return errs.WrapUserError("invalid scopes", http.StatusUnauthorized)
+		}
+
+		return nil
+	}
+}
+
 func (t AuthHandler) HandleGetOtaQR(ctx *routing.Context) error {
 	userID, ok := ctx.Get("userid").(string)
 	if !ok || userID == "" {
@@ -230,7 +246,7 @@ func (t AuthHandler) HandleOTALogin(ctx *routing.Context) error {
 		return err
 	}
 
-	return t.HandleLogin(ctx, claims.UserID)
+	return t.HandleLogin("/")(ctx, claims)
 }
 
 // --- Helpers ---

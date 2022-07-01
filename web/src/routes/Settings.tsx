@@ -104,7 +104,7 @@ const twitchReducer = (
         payload: number;
       }
     | {
-        type: 'set_filters_include' | 'set_filters_exclude';
+        type: 'set_filters_include' | 'set_filters_exclude' | 'set_blocked';
         payload: string[];
       }
     | {
@@ -129,6 +129,8 @@ const twitchReducer = (
       return { ...state, filters: { ...state.filters, include: action.payload } };
     case 'set_filters_exclude':
       return { ...state, filters: { ...state.filters, exclude: action.payload } };
+    case 'set_blocked':
+      return { ...state, blocklist: action.payload };
     case 'set_connected':
       return { ...state, connected: action.payload };
     case 'set_state':
@@ -464,7 +466,7 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
               placeholder="!yuri"
               value={twitchState.ratelimit.burst}
               type="number"
-              min="0"
+              min="1"
               onInput={(e) =>
                 dispatchTwitchState({
                   type: 'set_ratelimit_burst',
@@ -479,7 +481,7 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
               placeholder="!yuri"
               value={twitchState.ratelimit.reset_seconds}
               type="number"
-              min="0"
+              min="1"
               onInput={(e) =>
                 dispatchTwitchState({
                   type: 'set_ratelimit_reset',
@@ -500,6 +502,11 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
               onTagsChange={(payload) =>
                 dispatchTwitchState({ type: 'set_filters_exclude', payload })
               }
+            />
+            <label>User Blocklist</label>
+            <TagsInput
+              tags={twitchState.blocklist}
+              onTagsChange={(payload) => dispatchTwitchState({ type: 'set_blocked', payload })}
             />
             <ControlButtons>
               <Button

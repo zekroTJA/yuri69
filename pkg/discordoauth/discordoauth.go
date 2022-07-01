@@ -12,6 +12,7 @@ import (
 	"net/url"
 
 	routing "github.com/zekrotja/ozzo-routing/v2"
+	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 )
 
 const (
@@ -26,7 +27,7 @@ type OnErrorFunc func(ctx *routing.Context, status int, msg string) error
 
 // OnSuccessFuc is the func to be used to handle the successful
 // authentication.
-type OnSuccessFuc func(ctx *routing.Context, userID string) error
+type OnSuccessFuc func(ctx *routing.Context, claims auth.Claims) error
 
 // DiscordOAuth provides http handlers for
 // authenticating a discord User by your Discord
@@ -59,10 +60,10 @@ func NewDiscordOAuth(
 	onSuccess OnSuccessFuc,
 ) *DiscordOAuth {
 	if onError == nil {
-		onError = func(ctx *routing.Context, status int, msg string) error { return nil }
+		onError = func(*routing.Context, int, string) error { return nil }
 	}
 	if onSuccess == nil {
-		onSuccess = func(ctx *routing.Context, userID string) error { return nil }
+		onSuccess = func(*routing.Context, auth.Claims) error { return nil }
 	}
 
 	return &DiscordOAuth{
@@ -164,7 +165,10 @@ func (d *DiscordOAuth) HandlerCallback(ctx *routing.Context) error {
 		return nil
 	}
 
-	d.onSuccess(ctx, resGetMe.ID)
+	d.onSuccess(ctx, auth.Claims{
+		UserID: resGetMe.ID,
+		Scopes: []string{string(auth.AuthOriginDiscord)},
+	})
 
 	return nil
 }
