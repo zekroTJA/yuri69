@@ -176,6 +176,7 @@ export type TwitchSettings = {
   prefix: string;
   ratelimit: RateLimitParams;
   filters: GuildFilters;
+  blocklist: string[];
 };
 
 export type TwitchState = TwitchSettings & {

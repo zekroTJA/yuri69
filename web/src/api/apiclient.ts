@@ -35,6 +35,10 @@ export class APIClient extends HttpClient {
     this._onWsEvent = handler;
   }
 
+  loginCapabilities(): Promise<string[]> {
+    return this.req('GET', 'auth/logincapabilities');
+  }
+
   loginUrl(provider: 'discord' | 'twitch'): string {
     return this.basePath(`auth/oauth2/${provider}/login`);
   }

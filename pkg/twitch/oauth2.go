@@ -57,8 +57,8 @@ func NewTwitchOAuth(
 	redirectURI string,
 	onError OnErrorFunc,
 	onSuccess OnSuccessFuc,
-) TwitchOAuth {
-	return TwitchOAuth{
+) *TwitchOAuth {
+	return &TwitchOAuth{
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		redirectURI:  redirectURI,
@@ -144,7 +144,7 @@ func (t *TwitchOAuth) HandlerCallback(ctx *routing.Context) error {
 	return t.onSuccess(ctx, auth.Claims{
 		UserID:   resValidate.UserID,
 		Username: resValidate.Username,
-		Scopes:   []string{"origin:twitch"},
+		Scopes:   []string{string(auth.AuthOriginTwitch)},
 	})
 }
 

@@ -24,9 +24,7 @@ export const TwitchMainRoute: React.FC<Props> = ({}) => {
   const fetch = useApi();
 
   useEffect(() => {
-    fetch((c) => c.checkAuth())
-      .then(() => setLoggedIn(true))
-      .catch();
+    fetch((c) => c.checkAuth()).then(() => setLoggedIn(true));
   }, []);
 
   return (

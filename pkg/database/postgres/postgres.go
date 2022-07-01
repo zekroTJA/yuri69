@@ -151,6 +151,7 @@ func (t *Postgres) init() error {
 			ratelimitreset   INT          NOT NULL DEFAULT '0',
 			filtersinclude   TEXT         NOT NULL DEFAULT '',
 			filtersexclude   TEXT         NOT NULL DEFAULT '',
+			blocklist        TEXT		  NOT NULL DEFAULT '',
 			PRIMARY KEY (userid)
 		)`)
 		if err != nil {
@@ -578,6 +579,7 @@ func (t *Postgres) RemoveApiKey(userID string) error {
 func (t *Postgres) SetTwitchSettings(s TwitchSettings) error {
 	filterInclude := strings.Join(s.Filters.Include, ",")
 	filterExclude := strings.Join(s.Filters.Exclude, ",")
+	blocklist := strings.Join(s.Blocklist, ",")
 
 	res, err := t.db.Exec(`
 		UPDATE twitchsettings
@@ -586,10 +588,11 @@ func (t *Postgres) SetTwitchSettings(s TwitchSettings) error {
 			"ratelimitburst" = $3,
 			"ratelimitreset" = $4,
 			"filtersinclude" = $5,
-			"filtersexclude" = $6
-		WHERE "userid" = $7;
-	`, s.TwitchUserName, s.Prefix, s.RateLimit.Burst,
-		s.RateLimit.ResetSeconds, filterInclude, filterExclude, s.UserID)
+			"filtersexclude" = $6,
+			"blocklist" = $7
+		WHERE "userid" = $8;
+	`, s.TwitchUserName, s.Prefix, s.RateLimit.Burst, s.RateLimit.ResetSeconds,
+		filterInclude, filterExclude, blocklist, s.UserID)
 	if err != nil {
 		return err
 	}
@@ -603,10 +606,10 @@ func (t *Postgres) SetTwitchSettings(s TwitchSettings) error {
 		_, err = t.db.Exec(`
 			INSERT INTO twitchsettings (
 				"userid", "twitchusername", "prefix", "ratelimitburst", 
-				"ratelimitreset", "filtersinclude", "filtersexclude"
-			) VALUES ($1, $2, $3, $4, $5, $6, $7);
+				"ratelimitreset", "filtersinclude", "filtersexclude", "blocklist"
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
 		`, s.UserID, s.TwitchUserName, s.Prefix, s.RateLimit.Burst,
-			s.RateLimit.ResetSeconds, filterInclude, filterExclude)
+			s.RateLimit.ResetSeconds, filterInclude, filterExclude, blocklist)
 		if err == nil {
 			return err
 		}
@@ -617,16 +620,16 @@ func (t *Postgres) SetTwitchSettings(s TwitchSettings) error {
 
 func (t *Postgres) GetTwitchSettings(twitchname string) (TwitchSettings, error) {
 	var (
-		s                            TwitchSettings
-		filterInclude, filterExclude string
+		s                                       TwitchSettings
+		filterInclude, filterExclude, blockList string
 	)
 	err := t.db.QueryRow(`
 		SELECT "twitchusername", "prefix", "ratelimitburst", "ratelimitreset", 
-		       "filtersinclude", "filtersexclude"
+		       "filtersinclude", "filtersexclude", "blocklist"
 		FROM twitchsettings
 		WHERE "userid" = $1;
 	`, twitchname).Scan(&s.TwitchUserName, &s.Prefix, &s.RateLimit.Burst,
-		&s.RateLimit.ResetSeconds, &filterInclude, &filterExclude)
+		&s.RateLimit.ResetSeconds, &filterInclude, &filterExclude, &blockList)
 	if err != nil {
 		return TwitchSettings{}, t.wrapErr(err)
 	}
@@ -636,6 +639,9 @@ func (t *Postgres) GetTwitchSettings(twitchname string) (TwitchSettings, error) 
 	}
 	if filterExclude != "" {
 		s.Filters.Exclude = strings.Split(filterExclude, ",")
+	}
+	if blockList != "" {
+		s.Blocklist = strings.Split(blockList, ",")
 	}
 
 	return s, nil

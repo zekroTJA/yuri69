@@ -15,7 +15,7 @@ func (t *Controller) TwitchState(username string) (TwitchAPIState, error) {
 
 	res.Channel = channel
 	res.RateLimit.Burst = instance.Settings.RateLimit.Burst
-	res.RateLimit.Burst = instance.Settings.RateLimit.ResetSeconds
+	res.RateLimit.ResetSeconds = instance.Settings.RateLimit.ResetSeconds
 
 	return res, nil
 }

@@ -94,6 +94,13 @@ func (t *Controller) UpdateTwitchSettings(userid string, setting *TwitchSettings
 		return errs.WrapUserError("twitch user name can not be changed whilest connected")
 	}
 
+	if setting.RateLimit.Burst < 1 {
+		return errs.WrapUserError("ratelimit.burst must be larger than 0")
+	}
+	if setting.RateLimit.ResetSeconds < 1 {
+		return errs.WrapUserError("ratelimit.reset_seconds must be larger than 0")
+	}
+
 	setting.UserID = userid
 	err = t.db.SetTwitchSettings(*setting)
 	if err != nil {

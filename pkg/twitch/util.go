@@ -43,3 +43,16 @@ func (t *lockMap[TKey, TVal]) Delete(key TKey) {
 
 	delete(t.m, key)
 }
+
+func (t *lockMap[TKey, TVal]) Snapshot() map[TKey]TVal {
+	snap := make(map[TKey]TVal)
+
+	t.mtx.RLock()
+	defer t.mtx.RUnlock()
+
+	for k, v := range t.m {
+		snap[k] = v
+	}
+
+	return snap
+}

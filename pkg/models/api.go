@@ -6,6 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekroTJA/ratelimit"
+	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 var (
@@ -140,4 +141,14 @@ type TwitchAPIState struct {
 		Burst        int `json:"burst"`
 		ResetSeconds int `json:"reset_seconds"`
 	} `json:"ratelimit"`
+}
+
+type Capabilities []string
+
+func (t Capabilities) Add(cap string, enabled ...bool) Capabilities {
+	e := util.Opt(enabled, true)
+	if e {
+		return append(t, cap)
+	}
+	return t
 }

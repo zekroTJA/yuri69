@@ -167,7 +167,7 @@ func (d *DiscordOAuth) HandlerCallback(ctx *routing.Context) error {
 
 	d.onSuccess(ctx, auth.Claims{
 		UserID: resGetMe.ID,
-		Scopes: []string{"origin:discord"},
+		Scopes: []string{string(auth.AuthOriginDiscord)},
 	})
 
 	return nil

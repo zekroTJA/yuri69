@@ -5,7 +5,9 @@ import (
 
 	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/controller"
+	"github.com/zekrotja/yuri69/pkg/errs"
 	. "github.com/zekrotja/yuri69/pkg/models"
+	"github.com/zekrotja/yuri69/pkg/twitch"
 	"github.com/zekrotja/yuri69/pkg/webserver/auth"
 )
 
@@ -51,6 +53,10 @@ func (t *twitchController) play(ctx *routing.Context) error {
 
 	ok, res, err := t.ct.TwitchPlay(claims.Username, ident)
 	if err != nil {
+		if err == twitch.ErrBlocklisted {
+			return errs.WrapUserError(
+				"you are blocked from using this service", http.StatusForbidden)
+		}
 		return err
 	}
 

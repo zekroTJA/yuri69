@@ -201,6 +201,14 @@ func (t *Controller) publishToGuildUsers(guildID string, e Event[any]) error {
 		Receivers: users,
 		Event:     e,
 	})
+	if t.tw != nil {
+		for _, instance := range t.tw.GetInstances(users) {
+			t.Publish(ControllerEvent{
+				Receivers: instance.GetConnectedUsers(),
+				Event:     e,
+			})
+		}
+	}
 	return nil
 }
 

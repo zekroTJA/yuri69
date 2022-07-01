@@ -14,6 +14,6 @@ type WebserverConfig struct {
 	BindAddress   string
 	PublicAddress string
 	DiscordOAuth  DiscordOAuthConfig
-	TwitchOAuth   twitch.TwitchOAuthConfig
+	TwitchOAuth   *twitch.TwitchOAuthConfig
 	Auth          auth.AuthConfig
 }

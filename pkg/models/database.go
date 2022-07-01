@@ -83,7 +83,8 @@ type TwitchSettings struct {
 		Burst        int `json:"burst"`
 		ResetSeconds int `json:"reset_seconds"`
 	} `json:"ratelimit"`
-	Filters GuildFilters `json:"filters"`
+	Filters   GuildFilters `json:"filters"`
+	Blocklist []string     `json:"blocklist"`
 
 	UserID string `json:"userid,omitempty"`
 }

@@ -16,7 +16,9 @@ import (
 	"github.com/zekrotja/yuri69/pkg/util"
 )
 
-var prefixes = []string{"!yuri", "!y"}
+var (
+	ErrBlocklisted = errors.New("blocklisted")
+)
 
 type TwitchConfig struct {
 	Username   string
@@ -30,6 +32,15 @@ type Instance struct {
 	rlh    rlhandler.RatelimitHandler
 
 	users *lockMap[string, any]
+}
+
+func (t *Instance) GetConnectedUsers() []string {
+	snap := t.users.Snapshot()
+	res := make([]string, 0, len(snap))
+	for k := range t.users.Snapshot() {
+		res = append(res, k)
+	}
+	return res
 }
 
 type InternalEvent struct {
@@ -219,16 +230,34 @@ func (t *Twitch) GetConnectedChannel(username string) (string, *Instance, error)
 	return "", nil, errs.WrapUserError("not connected to any twitch chat")
 }
 
+func (t *Twitch) GetInstances(dcIds []string) []*Instance {
+	snap := t.instances.Snapshot()
+	instances := make([]*Instance, 0, len(snap))
+	for _, instance := range snap {
+		if util.Contains(dcIds, instance.userID) {
+			instances = append(instances, instance)
+		}
+	}
+	return instances
+}
+
 func (t *Twitch) Play(username, ident string) (bool, ratelimit.Reservation, error) {
 	_, instance, err := t.GetConnectedChannel(username)
 	if err != nil {
 		return false, ratelimit.Reservation{}, err
 	}
-	ok, res := t.play(instance, username, ident)
-	return ok, res, nil
+	ok, res, err := t.play(instance, username, ident)
+	return ok, res, err
 }
 
-func (t *Twitch) play(instance *Instance, username string, ident string) (bool, ratelimit.Reservation) {
+func (t *Twitch) play(
+	instance *Instance,
+	username string,
+	ident string,
+) (bool, ratelimit.Reservation, error) {
+	if util.Contains(instance.Settings.Blocklist, username) {
+		return false, ratelimit.Reservation{}, ErrBlocklisted
+	}
 	ok, res := instance.rlh.Get(username).Reserve()
 	if ok {
 		t.Publish(PlayEvent{
@@ -237,7 +266,7 @@ func (t *Twitch) play(instance *Instance, username string, ident string) (bool, 
 			Filters: instance.Settings.Filters,
 		})
 	}
-	return ok, res
+	return ok, res, nil
 }
 
 func (t *Twitch) onMessage(message twitch.PrivateMessage) {
@@ -273,7 +302,7 @@ func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 
 	case "list", "sounds", "ls":
 		t.client.Reply(message.Channel, message.ID, fmt.Sprintf(
-			"Here you can find a list of available sounds (Yes, this will be improved some day 😅): %s/api/v1/public/twitch/sounds",
+			"Here you get to the interactive web interface 🤯: %s/twitch",
 			t.publicAddress))
 
 	case "r", "rand", "random":
