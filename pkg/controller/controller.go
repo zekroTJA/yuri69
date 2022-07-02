@@ -128,3 +128,7 @@ func (t *Controller) GetCurrentState(userID string) (EventStatePayload, error) {
 func (t *Controller) GetSelfUser() discordgo.User {
 	return *t.dg.Session().State.User
 }
+
+func (t *Controller) HasSharedGuild(userID string) (bool, error) {
+	return t.dg.HasSharedGuild(userID)
+}

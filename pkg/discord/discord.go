@@ -2,6 +2,7 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 type Discord struct {
@@ -85,4 +86,33 @@ func (t *Discord) GetGuild(id string) (discordgo.Guild, error) {
 
 func (t *Discord) GetUser(id string) (*discordgo.User, error) {
 	return t.session.User(id)
+}
+
+func (t *Discord) HasSharedGuild(userID string) (bool, error) {
+	for _, guild := range t.session.State.Guilds {
+		member, err := t.getMember(guild.ID, userID)
+		if err != nil && !util.IsErrCode(err, discordgo.ErrCodeUnknownMember) {
+			return false, err
+		}
+		if member != nil {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func (t *Discord) getMember(guildID, userID string) (*discordgo.Member, error) {
+	member, err := t.session.State.Member(guildID, userID)
+	if err != nil && err != discordgo.ErrStateNotFound {
+		return nil, err
+	}
+
+	member, err = t.session.GuildMember(guildID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	t.session.State.MemberAdd(member)
+	return member, nil
 }

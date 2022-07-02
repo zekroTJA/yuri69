@@ -157,7 +157,9 @@ func (t *Webserver) registerRoutes(
 	}
 
 	// --- DISCORD REALM ROUTES --------------------------------------------------------------------
-	gApi.Use(t.authHandler.CheckScopes(string(auth.AuthOriginDiscord)))
+	gApi.Use(
+		t.authHandler.CheckScopes(string(auth.AuthOriginDiscord)),
+		middleware.SharedGuild(t.ct))
 
 	gApi.Get("/auth/ota/token", t.authHandler.HandleGetOtaQR)
 	controllers.NewSoundsController(gApi.Group("/sounds"), t.ct)
