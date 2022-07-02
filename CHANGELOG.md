@@ -1,13 +1,15 @@
 [VERSION]
 
-- In the sound editor, you can now see who originally uploaded the sound!
+# Twitch integration
 
-- Added exporting and downloading all sounds to a `.tar.gz` archive.  
-  *The archive contains all sounds as they weer stored in Yuri's storage system named by the UID of the sound. Also, the archive contains a `meta.json` summarizing all meta data of all sounds exported.*
+You can now provide Twitch Application and Bot Account credentials in the config. Please go to [dev.twitch.tv](https://dev.twitch.tv) to obtain these credentials. After that, users are able to let Yuri join as Twitch bot into your Twitch chat.
 
-- Added importing sounds from a previously generated export archive.  
-  *This is currently limited to users with admin privileges becasue it creates database entries for the new sounds one-to-one from the `meta.json` in the archive. Though, sounds are pulled through the same FFMPEG processing as by uploading sounds so that potential migration of sound files between versions can be achieved by exporting and re-importing.*
+![](https://user-images.githubusercontent.com/16734205/177009945-1ee0b280-5754-43a9-8609-f7f263caeac0.png) 
 
-- Added a `--verbose` flag which shows more versbose log infos like the code files where the log originated from.
+Then, your viewers are able to play sounds in your voice channel directly from your Twitch chat! Also, your viewers will also be able to log in to Yuri via Twitch and access a separate web interface where they can play sounds.
 
-- Added a terraform template and preconfigured lavalink Docker image so that you can set up a [Coder](https://coder.com) instance using it.
+![](https://user-images.githubusercontent.com/16734205/177010299-5172f25c-7ec4-4c3a-af35-095a5bf5012f.png)  
+
+# Additional Changes
+
+- For security reasons, Discord users are only allowed to access and upload sounds to Yuri as well as gettings insights into stats and settings when they share a Guild with the Discord account of the instance.
