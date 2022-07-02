@@ -112,52 +112,48 @@ export const TwitchSoundsRoute: React.FC<Props> = ({}) => {
     return () => window.removeEventListener('keydown', _onKeyDown);
   }, []);
 
-  return (
+  return twitchState?.channel ? (
     <RouteContainer>
-      {twitchState?.channel ? (
-        <div>
-          <SearchBar
-            show={search.show}
-            value={search.filter}
-            onInput={(v) => dispatchSearch({ type: 'setFilter', payload: v })}
-          />
+      <SearchBar
+        show={search.show}
+        value={search.filter}
+        onInput={(v) => dispatchSearch({ type: 'setFilter', payload: v })}
+      />
 
-          {(limited && (
-            <StyledInfoPanel color={theme.red}>
-              Oh snap, you have been rate limited! Please wait a short while until you can play
-              sounds again.
-            </StyledInfoPanel>
-          )) || (
-            <StyledInfoPanel>
-              <p>Click a button to play a sound in {possessive(twitchState.channel)} stream.</p>
-              <Smol>
-                💡 Pro Tip: Press <Embed>CTRL</Embed> + <Embed>F</Embed> to pop up a search!
-              </Smol>
-            </StyledInfoPanel>
-          )}
-
-          <ButtonsContainer>
-            {sounds?.map((s) => (
-              <SoundButton
-                key={uid(s)}
-                sound={s}
-                activate={_activateSound}
-                active={s.uid === playing}
-                playable={!limited}
-              />
-            ))}
-          </ButtonsContainer>
-        </div>
-      ) : (
-        <div>
-          <p>You are nor connected to any twitch chat.</p>
-          <p>Please connect to the desired twitch chat and then reload the page.</p>
+      {(limited && (
+        <StyledInfoPanel color={theme.red}>
+          Oh snap, you have been rate limited! Please wait a short while until you can play sounds
+          again.
+        </StyledInfoPanel>
+      )) || (
+        <StyledInfoPanel>
+          <p>Click a button to play a sound in {possessive(twitchState.channel)} stream.</p>
           <Smol>
-            If you are indeed connected to the stream, simply write something in the chat so that
-            Yuri can find you more easily. 😉
+            💡 Pro Tip: Press <Embed>CTRL</Embed> + <Embed>F</Embed> to pop up a search!
           </Smol>
-        </div>
+        </StyledInfoPanel>
       )}
+
+      <ButtonsContainer>
+        {sounds?.map((s) => (
+          <SoundButton
+            key={uid(s)}
+            sound={s}
+            activate={_activateSound}
+            active={s.uid === playing}
+            playable={!limited}
+          />
+        ))}
+      </ButtonsContainer>
+    </RouteContainer>
+  ) : (
+    <RouteContainer center>
+      <h3>You are nor connected to any twitch chat.</h3>
+      <p>Please connect to the desired twitch chat and then reload the page.</p>
+      <Smol>
+        If you are indeed connected to the stream, simply write something in the chat so that Yuri
+        can find you more easily. 😉
+      </Smol>
     </RouteContainer>
   );
 };

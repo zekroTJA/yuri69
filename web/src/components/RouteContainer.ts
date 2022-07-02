@@ -23,5 +23,6 @@ export const RouteContainer = styled.div<Props>`
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      text-align: center;
     `}
 `;
