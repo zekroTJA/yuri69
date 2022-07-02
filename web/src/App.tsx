@@ -16,6 +16,7 @@ import { StatsRoute } from './routes/Stats';
 import { AdminRoute } from './routes/Admin';
 import { TwitchMainRoute } from './routes/twitch/Main';
 import { TwitchSoundsRoute } from './routes/twitch/Sounds';
+import { NoGuildRoute } from './routes/NoGuild';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -59,6 +60,7 @@ const App: React.FC = () => {
               <Route index element={<TwitchSoundsRoute />} />
             </Route>
             <Route path="/login" element={<LoginRoute />} />
+            <Route path="/noguild" element={<NoGuildRoute />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </BrowserRouter>

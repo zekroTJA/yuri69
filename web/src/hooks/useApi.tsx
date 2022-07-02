@@ -24,6 +24,12 @@ export const useApi = () => {
         if (e.code === 401) {
           nav('/login');
           setLoggedIn(false);
+        } else if (
+          e.code === 403 &&
+          e.message.toLowerCase() === 'you need to share a guild with yuri to access this resource'
+        ) {
+          nav('/noguild');
+          setLoggedIn(false);
         } else {
           show(
             <span>

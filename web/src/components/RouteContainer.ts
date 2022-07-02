@@ -2,6 +2,7 @@ import styled, { css } from 'styled-components';
 
 type Props = {
   maxWidth?: string;
+  center?: boolean;
 };
 
 export const RouteContainer = styled.div<Props>`
@@ -13,5 +14,14 @@ export const RouteContainer = styled.div<Props>`
     p.maxWidth &&
     css`
       max-width: ${p.maxWidth};
+    `}
+
+  ${(p) =>
+    p.center &&
+    css`
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     `}
 `;
