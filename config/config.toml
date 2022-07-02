@@ -23,6 +23,10 @@ publicaddress = "http://localhost:8080"
 clientid = "*****"
 clientsecret = "*****"
 
+[Webserver.TwitchOAuth]
+clientid = "*****"
+clientsecret = "*****"
+
 [Webserver.Auth]
 refreshtokenkey = "*****"
 refreshtokenlifetime = "720h"
@@ -48,3 +52,7 @@ Port = 5432
 Database = "yuri69"
 Username = "yuri69"
 Password = "******"
+
+[Twitch]
+oauthtoken = "oauth:*****"
+username = "yuri69bot"
