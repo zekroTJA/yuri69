@@ -441,85 +441,87 @@ export const SettingsRoute: React.FC<Props> = ({}) => {
           )}
         </Card>
 
-        <Card>
-          <h2>Twitch</h2>
-          <Controls>
-            <label>Twitch Channel to Join</label>
-            <Input
-              disabled={twitchState.connected}
-              placeholder="zekrotja"
-              value={twitchState.twitch_user_name}
-              onInput={(e) =>
-                dispatchTwitchState({ type: 'set_username', payload: e.currentTarget.value })
-              }
-            />
-            <label>Chat Command Prefix</label>
-            <Input
-              placeholder="!yuri"
-              value={twitchState.prefix}
-              onInput={(e) =>
-                dispatchTwitchState({ type: 'set_prefix', payload: e.currentTarget.value })
-              }
-            />
-            <label>Rate Limit Burst Rate</label>
-            <Input
-              placeholder="!yuri"
-              value={twitchState.ratelimit.burst}
-              type="number"
-              min="1"
-              onInput={(e) =>
-                dispatchTwitchState({
-                  type: 'set_ratelimit_burst',
-                  payload: parseInt(e.currentTarget.value),
-                })
-              }
-            />
-            <label>
-              Rate Limit Reset <Smol>(in seconds)</Smol>
-            </label>
-            <Input
-              placeholder="!yuri"
-              value={twitchState.ratelimit.reset_seconds}
-              type="number"
-              min="1"
-              onInput={(e) =>
-                dispatchTwitchState({
-                  type: 'set_ratelimit_reset',
-                  payload: parseInt(e.currentTarget.value),
-                })
-              }
-            />
-            <label>Include Filter Tags</label>
-            <TagsInput
-              tags={twitchState.filters.include}
-              onTagsChange={(payload) =>
-                dispatchTwitchState({ type: 'set_filters_include', payload })
-              }
-            />
-            <label>Exclude Filter Tags</label>
-            <TagsInput
-              tags={twitchState.filters.exclude}
-              onTagsChange={(payload) =>
-                dispatchTwitchState({ type: 'set_filters_exclude', payload })
-              }
-            />
-            <label>User Blocklist</label>
-            <TagsInput
-              tags={twitchState.blocklist}
-              onTagsChange={(payload) => dispatchTwitchState({ type: 'set_blocked', payload })}
-            />
-            <ControlButtons>
-              <Button
-                variant={twitchState.connected ? 'orange' : 'blue'}
-                onClick={twitchState.connected ? _onTwitchLeave : _onTwitchJoin}>
-                {twitchState.connected ? 'Disconnect' : 'Connect'}
-              </Button>
-              <Button variant="green" onClick={_onTwitchSave}>
-                Save
-              </Button>
-            </ControlButtons>
-          </Controls>
-        </Card>
+        {twitchState.capable && (
+          <Card>
+            <h2>Twitch</h2>
+            <Controls>
+              <label>Twitch Channel to Join</label>
+              <Input
+                disabled={twitchState.connected}
+                placeholder="zekrotja"
+                value={twitchState.twitch_user_name}
+                onInput={(e) =>
+                  dispatchTwitchState({ type: 'set_username', payload: e.currentTarget.value })
+                }
+              />
+              <label>Chat Command Prefix</label>
+              <Input
+                placeholder="!yuri"
+                value={twitchState.prefix}
+                onInput={(e) =>
+                  dispatchTwitchState({ type: 'set_prefix', payload: e.currentTarget.value })
+                }
+              />
+              <label>Rate Limit Burst Rate</label>
+              <Input
+                placeholder="!yuri"
+                value={twitchState.ratelimit.burst}
+                type="number"
+                min="1"
+                onInput={(e) =>
+                  dispatchTwitchState({
+                    type: 'set_ratelimit_burst',
+                    payload: parseInt(e.currentTarget.value),
+                  })
+                }
+              />
+              <label>
+                Rate Limit Reset <Smol>(in seconds)</Smol>
+              </label>
+              <Input
+                placeholder="!yuri"
+                value={twitchState.ratelimit.reset_seconds}
+                type="number"
+                min="1"
+                onInput={(e) =>
+                  dispatchTwitchState({
+                    type: 'set_ratelimit_reset',
+                    payload: parseInt(e.currentTarget.value),
+                  })
+                }
+              />
+              <label>Include Filter Tags</label>
+              <TagsInput
+                tags={twitchState.filters.include}
+                onTagsChange={(payload) =>
+                  dispatchTwitchState({ type: 'set_filters_include', payload })
+                }
+              />
+              <label>Exclude Filter Tags</label>
+              <TagsInput
+                tags={twitchState.filters.exclude}
+                onTagsChange={(payload) =>
+                  dispatchTwitchState({ type: 'set_filters_exclude', payload })
+                }
+              />
+              <label>User Blocklist</label>
+              <TagsInput
+                tags={twitchState.blocklist}
+                onTagsChange={(payload) => dispatchTwitchState({ type: 'set_blocked', payload })}
+              />
+              <ControlButtons>
+                <Button
+                  variant={twitchState.connected ? 'orange' : 'blue'}
+                  onClick={twitchState.connected ? _onTwitchLeave : _onTwitchJoin}>
+                  {twitchState.connected ? 'Disconnect' : 'Connect'}
+                </Button>
+                <Button variant="green" onClick={_onTwitchSave}>
+                  Save
+                </Button>
+              </ControlButtons>
+            </Controls>
+          </Card>
+        )}
       </SplitContainer>
     </SettingsRouteContainer>
   );

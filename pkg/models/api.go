@@ -132,6 +132,7 @@ type ImportResult struct {
 type TwitchState struct {
 	TwitchSettings
 
+	Capable   bool `json:"capable"`
 	Connected bool `json:"connected"`
 }
 

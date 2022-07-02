@@ -70,6 +70,10 @@ func (t *Controller) GetUserByApiKey(token string) (string, error) {
 }
 
 func (t *Controller) GetTwitchState(userid string) (TwitchState, error) {
+	if t.tw == nil {
+		return TwitchState{Capable: false}, nil
+	}
+
 	setting, err := t.db.GetTwitchSettings(userid)
 	if err != nil && err != dberrors.ErrNotFound {
 		return TwitchState{}, err
@@ -78,6 +82,7 @@ func (t *Controller) GetTwitchState(userid string) (TwitchState, error) {
 	var state TwitchState
 	state.TwitchSettings = setting
 	state.Connected = setting.TwitchUserName != "" && t.tw.Joined(setting.TwitchUserName)
+	state.Capable = true
 
 	return state, nil
 }

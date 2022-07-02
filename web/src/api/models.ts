@@ -180,6 +180,7 @@ export type TwitchSettings = {
 };
 
 export type TwitchState = TwitchSettings & {
+  capable: boolean;
   connected: boolean;
 };
 
