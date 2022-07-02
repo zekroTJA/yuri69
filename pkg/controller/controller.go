@@ -9,6 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
 	"github.com/zekroTJA/timedmap"
+	"github.com/zekrotja/eventbus"
 	"github.com/zekrotja/yuri69/pkg/database"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/generic"
@@ -17,7 +18,6 @@ import (
 	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/storage"
 	"github.com/zekrotja/yuri69/pkg/twitch"
-	"github.com/zekrotja/yuri69/pkg/util"
 )
 
 var (
@@ -31,7 +31,7 @@ type ControllerEvent struct {
 }
 
 type Controller struct {
-	*util.EventBus[ControllerEvent]
+	*eventbus.EventBus[ControllerEvent]
 
 	ownerID string
 	db      database.IDatabase
@@ -62,7 +62,7 @@ func New(
 
 	rand.Seed(time.Now().UnixNano())
 
-	t.EventBus = util.NewEventBus[ControllerEvent]()
+	t.EventBus = eventbus.New[ControllerEvent]()
 
 	t.ownerID = ownerID
 	t.db = db

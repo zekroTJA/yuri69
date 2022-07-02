@@ -12,6 +12,7 @@ import (
 	"github.com/lukasl-dev/waterlink/v2/event"
 	"github.com/sirupsen/logrus"
 	"github.com/zekroTJA/timedmap"
+	"github.com/zekrotja/eventbus"
 	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/discord"
 	"github.com/zekrotja/yuri69/pkg/generic"
@@ -22,7 +23,7 @@ import (
 )
 
 type Player struct {
-	*util.EventBus[Event]
+	*eventbus.EventBus[Event]
 
 	dc *discord.Discord
 	st storage.IStorage
@@ -65,7 +66,7 @@ func NewPlayer(
 		}
 	}
 
-	t.EventBus = util.NewEventBus[Event](100)
+	t.EventBus = eventbus.New[Event](100)
 	t.trackCache = timedmap.New[string, string](5 * time.Minute)
 
 	t.dc = dc

@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/zekroTJA/ratelimit"
 	"github.com/zekroTJA/timedmap"
+	"github.com/zekrotja/eventbus"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/rlhandler"
@@ -55,22 +56,22 @@ type PlayEvent struct {
 }
 
 type Twitch struct {
-	*util.EventBus[PlayEvent]
+	*eventbus.EventBus[PlayEvent]
 
 	client *twitch.Client
 
 	instances *timedmap.TimedMap[string, *Instance]
-	eventbus  *util.EventBus[InternalEvent]
+	eventbus  *eventbus.EventBus[InternalEvent]
 
 	publicAddress string
 }
 
 func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 	var t Twitch
-	t.EventBus = util.NewEventBus[PlayEvent](100)
+	t.EventBus = eventbus.New[PlayEvent](100)
 	t.client = twitch.NewClient(config.Username, config.OAuthToken)
 	t.instances = timedmap.New[string, *Instance](1 * time.Hour)
-	t.eventbus = util.NewEventBus[InternalEvent](100)
+	t.eventbus = eventbus.New[InternalEvent](100)
 	t.publicAddress = publicAddress
 
 	t.client.Capabilities = []string{"twitch.tv/membership"}

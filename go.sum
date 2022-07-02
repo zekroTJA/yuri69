@@ -151,6 +151,8 @@ github.com/zekroTJA/ratelimit v1.1.0 h1:6VCcsA0WEXD5cBIzPy2S5RTLA6hOhIavYw++SWJ2
 github.com/zekroTJA/ratelimit v1.1.0/go.mod h1:vMj8LMv+KSN8vQASf1Y7f5Lxz12XTMXFhNVghnzOIgI=
 github.com/zekroTJA/timedmap v1.4.1-0.20220429084118-b915da1846e3 h1:HX4d6gVLddiABQcQ37DtktgFOxLfUS+Y1lFfts5H4oA=
 github.com/zekroTJA/timedmap v1.4.1-0.20220429084118-b915da1846e3/go.mod h1:ltvd4WQGCd1YsI+Haq++TPbKW78I34ehksV+fGMws7Q=
+github.com/zekrotja/eventbus v1.0.0 h1:/ljMlVrcYPu5NUI/EsAbHDZsgykkQoO71Iyr5PWtI3o=
+github.com/zekrotja/eventbus v1.0.0/go.mod h1:ihuYZw959CKdbzM7oXK4H2rABt3tlx9FdG1zUGiAJR4=
 github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9 h1:9l6wL2Ed+ViHVfC5GiwsI2XH6f+c5HnAdLPpPEcKESA=
 github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9/go.mod h1:/RiMK5BoO+YaH/yqSJ72AYLLOfV9m0rvjfdbfA7AYig=
 github.com/zekrotja/ozzo-routing/v2 v2.4.1-0.20220508092606-078a43fee8b5 h1:h7UD1T71YI+3YTRHkBtq/CPq+Shvc50WK6fTkbjP3xA=
