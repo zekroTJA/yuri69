@@ -317,7 +317,7 @@ func (t *Player) checkFastTrigger(e *discordgo.VoiceStateUpdate) {
 	}
 
 	if e.BeforeUpdate != nil && !e.BeforeUpdate.SelfMute && e.SelfMute {
-		time.AfterFunc(250*time.Millisecond, func() {
+		time.AfterFunc(1500*time.Millisecond, func() {
 			vs, ok := t.dc.FindUserVS(e.UserID)
 			if ok && !vs.SelfMute {
 				t.Publish(Event{
