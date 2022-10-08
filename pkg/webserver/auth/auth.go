@@ -168,6 +168,7 @@ func (t AuthHandler) CheckAuth(ctx *routing.Context) error {
 			return errs.WrapUserError("invalid basic token", http.StatusUnauthorized)
 		}
 		claims.UserID = userid
+		claims.Scopes = []string{string(AuthOriginDiscord)}
 	} else if ok, token := getAuthorizationToken(ctx, "bearer"); ok {
 		claims, err = t.CheckAuthRaw(token)
 		if jwt.IsJWTError(err) {

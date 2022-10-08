@@ -157,6 +157,8 @@ github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9 h1:9l6wL2Ed+ViHVfC5Gi
 github.com/zekrotja/jwt v0.0.0-20220515133240-d66362c9fbc9/go.mod h1:/RiMK5BoO+YaH/yqSJ72AYLLOfV9m0rvjfdbfA7AYig=
 github.com/zekrotja/ozzo-routing/v2 v2.4.1-0.20220508092606-078a43fee8b5 h1:h7UD1T71YI+3YTRHkBtq/CPq+Shvc50WK6fTkbjP3xA=
 github.com/zekrotja/ozzo-routing/v2 v2.4.1-0.20220508092606-078a43fee8b5/go.mod h1:DyJ8uSaC0rUXLLRyUy4mmxmGCs2uTRWaK8sBFPlANB8=
+golang.design/x/hotkey v0.3.0 h1:rz/MLaZOEfvDQidizmxgIVzF1US74SdvOXW+1KBjOQ4=
+golang.design/x/hotkey v0.3.0/go.mod h1:M8SGcwFYHnKRa83FpTFQoZvPO5vVT+kWPztFqTQKmXA=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20200414173820-0848c9571904/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b/go.mod h1:T9bdIzuCu7OtxOm1hfPfRQxPLYneinmdGuTeoZ9dtd4=
