@@ -210,6 +210,7 @@ func (t AuthHandler) HandleGetOtaQR(ctx *routing.Context) error {
 
 	var claims Claims
 	claims.UserID = userID
+	claims.Scopes = []string{string(AuthOriginDiscord)}
 	deadline := time.Now().Add(t.otaTokenHandler.Lifetime())
 	otaToken, err := t.otaTokenHandler.Generate(claims)
 	if err != nil {
