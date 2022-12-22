@@ -91,3 +91,19 @@ func (t *Controller) CheckAdmin(userID string) error {
 
 	return nil
 }
+
+func (t *Controller) GetGuilds(userID string) ([]*discordgo.Guild, error) {
+	if err := t.CheckAdmin(userID); err != nil {
+		return nil, err
+	}
+
+	return t.dg.Session().State.Guilds, nil
+}
+
+func (t *Controller) RemoveGuild(userID, guildID string) error {
+	if err := t.CheckAdmin(userID); err != nil {
+		return err
+	}
+
+	return t.dg.Session().GuildLeave(guildID)
+}

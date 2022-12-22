@@ -17,6 +17,8 @@ func NewAdminController(r *routing.RouteGroup, ct *controller.Controller) {
 	r.Put("/<id>", t.putAdmin)
 	r.Delete("/<id>", t.deleteAdmin)
 	r.Get("/is", t.isAdmin)
+	r.Get("/guilds", t.getGuilds)
+	r.Delete("/guilds/<id>", t.removeGuilds)
 	return
 }
 
@@ -67,6 +69,33 @@ func (t *adminController) deleteAdmin(ctx *routing.Context) error {
 	}
 
 	if err := t.ct.RemoveAdmin(userid, adminid); err != nil {
+		return err
+	}
+
+	return ctx.Write(models.StatusOK)
+}
+
+func (t *adminController) getGuilds(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+
+	guilds, err := t.ct.GetGuilds(userid)
+	if err != nil {
+		return err
+	}
+
+	guildsResponse := make([]models.Guild, 0, len(guilds))
+	for _, g := range guilds {
+		guildsResponse = append(guildsResponse, models.GuildFromGuild(g))
+	}
+
+	return ctx.Write(guildsResponse)
+}
+
+func (t *adminController) removeGuilds(ctx *routing.Context) error {
+	userid, _ := ctx.Get("userid").(string)
+	guildid := ctx.Param("id")
+
+	if err := t.ct.RemoveGuild(userid, guildid); err != nil {
 		return err
 	}
 

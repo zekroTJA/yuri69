@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from 'react';
 import { uid } from 'react-uid';
-import { User } from '../api';
+import { GuildInfo, User } from '../api';
 import { Card } from '../components/Card';
 import { Flex } from '../components/Flex';
 import { RouteContainer } from '../components/RouteContainer';
@@ -11,6 +11,7 @@ import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import styled from 'styled-components';
 import { useSnackBar } from '../hooks/useSnackBar';
+import { GuildTile } from '../components/GuildTile';
 
 type Props = {};
 
@@ -24,6 +25,13 @@ const AdminControls = styled.div`
   > input {
     width: 100%;
   }
+`;
+
+const GuildControls = styled.div``;
+
+const StyledGuildTile = styled(GuildTile)`
+  width: 100%;
+  background-color: ${(p) => p.theme.background3} !important;
 `;
 
 type AdminsReducerAction =
@@ -62,6 +70,7 @@ export const AdminRoute: React.FC<Props> = ({}) => {
   const { show } = useSnackBar();
   const [admins, adminsDispatch] = useReducer(adminsReducer, []);
   const [userID, setUserID] = useState('');
+  const [guilds, setGuilds] = useState<GuildInfo[]>();
 
   const _addAdmin = async () => {
     try {
@@ -80,15 +89,28 @@ export const AdminRoute: React.FC<Props> = ({}) => {
     } catch {}
   };
 
+  const _removeGuild = async (id: string) => {
+    try {
+      await fetch((c) => c.removeGuild(id));
+      setGuilds(guilds?.filter((g) => g.id != id));
+      show('Yuri has left the guild.', 'success');
+    } catch {}
+  };
+
   useEffect(() => {
     fetch((c) => c.admins())
       .then((res) => adminsDispatch({ type: 'set', payload: res }))
+      .catch();
+
+    fetch((c) => c.guilds())
+      .then((g) => setGuilds(g))
       .catch();
   }, []);
 
   return (
     <RouteContainer>
       <h1>Admin Area</h1>
+
       <Card margin="0 0 1.5em 0">
         <h2>Admins</h2>
         <AdminControls>
@@ -114,6 +136,25 @@ export const AdminRoute: React.FC<Props> = ({}) => {
             ))}
           </Flex>
         )}
+      </Card>
+
+      <Card>
+        <h2>Guilds</h2>
+        <GuildControls>
+          {guilds && (
+            <Flex direction="column" gap="0.5em">
+              {guilds.map((g) => (
+                <Flex key={uid(g)} gap="1em" vCenter>
+                  <StyledGuildTile guild={g} />
+                  <Button variant="red" onClick={() => _removeGuild(g.id)}>
+                    <IconCross />
+                    Remove
+                  </Button>
+                </Flex>
+              ))}
+            </Flex>
+          )}
+        </GuildControls>
       </Card>
     </RouteContainer>
   );

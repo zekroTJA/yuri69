@@ -3,8 +3,9 @@ import { GuildInfo } from '../../api';
 import { DiscordImage } from '../DiscordImage';
 import { Embed } from '../Embed';
 import { Flex } from '../Flex';
+import { Styled } from '../props';
 
-type Props = {
+type Props = Styled & {
   guild: GuildInfo;
 };
 
@@ -21,9 +22,9 @@ const GuildTileContainer = styled.div`
   padding: 0.5em;
 `;
 
-export const GuildTile: React.FC<Props> = ({ guild }) => {
+export const GuildTile: React.FC<Props> = ({ guild, ...props }) => {
   return (
-    <GuildTileContainer>
+    <GuildTileContainer {...props}>
       <StyledDiscordImage src={guild.icon_url} />
       <Flex direction="column" gap="0.2em">
         <strong>{guild.name}</strong>

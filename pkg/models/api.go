@@ -153,3 +153,17 @@ func (t Capabilities) Add(cap string, enabled ...bool) Capabilities {
 	}
 	return t
 }
+
+type Guild struct {
+	Id      string `json:"id"`
+	Name    string `json:"name"`
+	IconURL string `json:"icon_url"`
+}
+
+func GuildFromGuild(g *discordgo.Guild) Guild {
+	return Guild{
+		Id:      g.ID,
+		Name:    g.Name,
+		IconURL: g.IconURL(),
+	}
+}

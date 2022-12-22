@@ -5,6 +5,7 @@ import {
   Event,
   FastTrigger,
   GuildFilters,
+  GuildInfo,
   ImportSoundsResult,
   OTAToken,
   PlaybackLogEntry,
@@ -198,6 +199,14 @@ export class APIClient extends HttpClient {
 
   removeAdmin(id: string): Promise<User[]> {
     return this.req('DELETE', `admins/${id}`);
+  }
+
+  guilds(): Promise<GuildInfo[]> {
+    return this.req('GET', `admins/guilds`);
+  }
+
+  removeGuild(id: string): Promise<any> {
+    return this.req('DELETE', `admins/guilds/${id}`);
   }
 
   soundsImport(file: File): Promise<ImportSoundsResult> {
