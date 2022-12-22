@@ -23,7 +23,7 @@ import { ReactComponent as IconUnstar } from '../assets/unstar.svg';
 import { ReactComponent as IconDownload } from '../assets/download.svg';
 import { useNavigate } from 'react-router';
 import { Modal } from '../components/Modal';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import { Embed } from '../components/Embed';
 import { Button } from '../components/Button';
 import { useSnackBar } from '../hooks/useSnackBar';
@@ -31,6 +31,7 @@ import { UrlImport } from '../components/UrlImport';
 import { SearchBar } from '../components/SearchBar';
 import { useFavorites } from '../hooks/useFavorites';
 import { ApiClientInstance } from '../instances';
+import { EVENT_BUS } from '../util/eventbus';
 
 const SOUNDS_MENU_ID = 'sounds-menu';
 
@@ -177,7 +178,14 @@ export const SoundsRoute: React.FC<Props> = ({}) => {
 
   useEffect(() => {
     window.addEventListener('keydown', _onKeyDown);
-    return () => window.removeEventListener('keydown', _onKeyDown);
+    const unsub = EVENT_BUS.subscribe('clear_search', () => {
+      dispatchSearch({ type: 'hide' });
+      console.log('test clear search');
+    });
+    return () => {
+      window.removeEventListener('keydown', _onKeyDown);
+      unsub();
+    };
   }, []);
 
   const _sounds = sounds?.map((s) => ({

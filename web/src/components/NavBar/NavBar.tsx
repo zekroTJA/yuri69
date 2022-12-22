@@ -17,6 +17,7 @@ import { Slider } from '../Slider';
 import { debounce } from 'debounce';
 import { useCallback, useState } from 'react';
 import { ApiClientInstance } from '../../instances';
+import { EVENT_BUS } from '../../util/eventbus';
 
 type Props = {};
 
@@ -132,6 +133,10 @@ export const NavBar: React.FC<Props> = ({}) => {
     window.location.assign(ApiClientInstance.logoutUrl());
   };
 
+  const _onMain = () => {
+    EVENT_BUS.publish('clear_search');
+  };
+
   return (
     <NavBarContainer>
       {showVolume && (
@@ -140,7 +145,7 @@ export const NavBar: React.FC<Props> = ({}) => {
         </ExternalSlider>
       )}
       <EntryContainer>
-        <Entry to="/" icon={<Avatar src={ImgAvatar} />} label="Yuri" />
+        <Entry to="/" icon={<Avatar src={ImgAvatar} />} label="Yuri" action={_onMain} />
         <Spacer />
         <Entry
           action={() => setOrder(order === 'created' ? 'name' : 'created')}

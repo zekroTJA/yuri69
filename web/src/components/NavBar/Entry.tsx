@@ -72,8 +72,8 @@ export const Entry: React.FC<Props> = ({ icon, label, to, action = () => {}, col
   const nav = useNavigate();
 
   const _onClick = () => {
+    action();
     if (!!to) nav(to);
-    else action();
   };
 
   const _label = typeof label === 'string' ? <Label>{label}</Label> : label;
