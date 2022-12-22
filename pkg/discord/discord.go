@@ -1,6 +1,8 @@
 package discord
 
 import (
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/zekrotja/yuri69/pkg/util"
 )
@@ -29,7 +31,7 @@ func (t *Discord) Session() *discordgo.Session {
 func (t *Discord) Open() error {
 	cReady := make(chan struct{})
 
-	t.session.AddHandlerOnce(func(_ *discordgo.Session, e *discordgo.Ready) {
+	t.session.AddHandlerOnce(func(s *discordgo.Session, e *discordgo.Ready) {
 		cReady <- struct{}{}
 	})
 
@@ -39,6 +41,8 @@ func (t *Discord) Open() error {
 	}
 
 	<-cReady
+
+	rotateStatus(t.session, 1*time.Minute)
 
 	return nil
 }
