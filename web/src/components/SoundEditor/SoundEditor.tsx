@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { CreateSoundRequest } from '../../api';
+import { sanitizeUid } from '../../util/uid';
 import { Button } from '../Button';
 import { Flex } from '../Flex';
 import { Input } from '../Input';
@@ -88,7 +89,7 @@ export const SoundEditor: React.FC<Props> = ({
         id="uid"
         disabled={!isNew}
         value={sound.uid ?? ''}
-        onInput={(e) => _update({ uid: e.currentTarget.value })}
+        onInput={(e) => _update({ uid: sanitizeUid(e.currentTarget.value) })}
       />
       <label htmlFor="displayname">Display Name</label>
       <Input

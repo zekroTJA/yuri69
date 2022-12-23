@@ -18,6 +18,7 @@ import Loading5 from '../../assets/loading/5.gif';
 import { randomFrom } from '../util/rand';
 import { useSearchParams } from 'react-router-dom';
 import { YouTubePreview } from '../components/YouTubePreview';
+import { sanitizeUid } from '../util/uid';
 
 const LOADINGS = [Loading0, Loading1, Loading2, Loading3, Loading4, Loading5];
 
@@ -125,5 +126,5 @@ export const UploadRoute: React.FC<Props> = ({}) => {
 function fileName(name: string): string {
   const i = name.lastIndexOf('.');
   if (i != -1) name = name.substring(0, i);
-  return name;
+  return sanitizeUid(name);
 }
