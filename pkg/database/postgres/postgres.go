@@ -6,6 +6,9 @@ import (
 	"strings"
 
 	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
+	"github.com/sirupsen/logrus"
+	"github.com/zekrotja/yuri69/internal/embedded"
 	"github.com/zekrotja/yuri69/pkg/database/dberrors"
 	. "github.com/zekrotja/yuri69/pkg/models"
 	"github.com/zekrotja/yuri69/pkg/util"
@@ -41,125 +44,15 @@ func NewPostgres(c PostgresConfig) (*Postgres, error) {
 		return nil, err
 	}
 
-	err = t.init()
+	goose.SetBaseFS(embedded.Migrations)
+	goose.SetDialect("postgres")
+	goose.SetLogger(logrus.StandardLogger())
+	err = goose.Up(t.db, "migrations/postgres")
 	if err != nil {
 		return nil, err
 	}
 
 	return &t, nil
-}
-
-func (t *Postgres) init() error {
-	return t.tx(func(tx *sql.Tx) error {
-		var err error
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS migrations (
-			id           INT          NOT NULL,
-			timestamp    TIMESTAMP    NOT NULL,
-			PRIMARY KEY (id)
-		)`)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS sounds (
-			uid          VARCHAR(30)  NOT NULL,
-			displayname  TEXT         NOT NULL DEFAULT '',
-			created      TIMESTAMP    NOT NULL,
-			creatorid    TEXT         NOT NULL,
-			PRIMARY KEY (uid)
-		)`)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS sounds_tags (
-			id           INT          GENERATED ALWAYS AS IDENTITY,
-			sound		 VARCHAR(30)  NOT NULL,
-			tag			 TEXT         NOT NULL,
-			PRIMARY KEY (id),
-			CONSTRAINT fk_tags
-				FOREIGN KEY(sound)
-					REFERENCES sounds(uid)
-					ON DELETE CASCADE
-		)`)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS guilds (
-			id           VARCHAR(32)    NOT NULL,
-			volume 		 INT         NOT NULL DEFAULT '0',
-			PRIMARY KEY (id)
-		)`)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS guild_filters (
-			id           INT       GENERATED ALWAYS AS IDENTITY,
-			guildid		 VARCHAR(32)  NOT NULL,
-			exclude		 BOOLEAN   NOT NULL,
-			tag			 TEXT      NOT NULL,
-			PRIMARY KEY (id)
-		)`)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS users (
-			id           VARCHAR(32)    NOT NULL,
-			fasttrigger  TEXT        NOT NULL DEFAULT '',
-			admin        BOOLEAN     NOT NULL DEFAULT 'false',
-			apikey       TEXT        NOT NULL DEFAULT '',
-			PRIMARY KEY (id)
-		)`)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS user_favorites (
-			id           INT          GENERATED ALWAYS AS IDENTITY,
-			userid       VARCHAR(32)     NOT NULL,
-			sound        VARCHAR(30)  NOT NULL,
-			PRIMARY KEY (id),
-			CONSTRAINT fk_favorites
-				FOREIGN KEY(sound)
-					REFERENCES sounds(uid)
-					ON DELETE CASCADE
-		)`)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS playbacklog (
-			id           VARCHAR(20)  NOT NULL,
-			sound        VARCHAR(30)  NOT NULL,
-			guildid      VARCHAR(32)  NOT NULL,
-			userid       VARCHAR(32)  NOT NULL,
-			timestamp    TIMESTAMP    NOT NULL,
-			PRIMARY KEY (id)
-		)`)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS twitchsettings (
-			userid           VARCHAR(32)  NOT NULL,
-			twitchusername   VARCHAR(30)  NOT NULL DEFAULT '',
-			prefix           VARCHAR(20)  NOT NULL DEFAULT '',
-			ratelimitburst   INT          NOT NULL DEFAULT '0',
-			ratelimitreset   INT          NOT NULL DEFAULT '0',
-			filtersinclude   TEXT         NOT NULL DEFAULT '',
-			filtersexclude   TEXT         NOT NULL DEFAULT '',
-			blocklist        TEXT		  NOT NULL DEFAULT '',
-			PRIMARY KEY (userid)
-		)`)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
 }
 
 func (t *Postgres) Close() error {
@@ -605,7 +498,7 @@ func (t *Postgres) SetTwitchSettings(s TwitchSettings) error {
 	if ar == 0 {
 		_, err = t.db.Exec(`
 			INSERT INTO twitchsettings (
-				"userid", "twitchusername", "prefix", "ratelimitburst", 
+				"userid", "twitchusername", "prefix", "ratelimitburst",
 				"ratelimitreset", "filtersinclude", "filtersexclude", "blocklist"
 			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
 		`, s.UserID, s.TwitchUserName, s.Prefix, s.RateLimit.Burst,
@@ -624,7 +517,7 @@ func (t *Postgres) GetTwitchSettings(twitchname string) (TwitchSettings, error) 
 		filterInclude, filterExclude, blockList string
 	)
 	err := t.db.QueryRow(`
-		SELECT "twitchusername", "prefix", "ratelimitburst", "ratelimitreset", 
+		SELECT "twitchusername", "prefix", "ratelimitburst", "ratelimitreset",
 		       "filtersinclude", "filtersexclude", "blocklist"
 		FROM twitchsettings
 		WHERE "userid" = $1;

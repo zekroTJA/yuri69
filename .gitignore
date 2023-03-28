@@ -17,3 +17,6 @@ pkg/webserver/_webdist/*
 .task/
 
 data/
+
+internal/embedded/migrations/*
+!internal/embedded/migrations/.keep

@@ -29,6 +29,7 @@ tasks:
   buildbe:
     desc: "Builds the backend binary."
     cmds:
+      - cp -R migrations internal/embedded
       - go build
         -v
         -o {{.BIN}}
