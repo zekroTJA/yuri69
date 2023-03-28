@@ -199,8 +199,8 @@ resource "docker_container" "minio" {
     read_only      = false
   }
   env = [
-    "MINIO_ACCESS_KEY=yuri69",
-    "MINIO_SECRET_KEY=yuri69_secret_key"
+    "MINIO_ROOT_USER=yuri69",
+    "MINIO_ROOT_PASSWORD=yuri69_secret_key"
   ]
   command = ["server", "/data"]
 }

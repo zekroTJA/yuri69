@@ -8,9 +8,10 @@ RUN apt clean \
     && apt update -y
 
 # Install Golang
-RUN sudo add-apt-repository ppa:longsleep/golang-backports \
-    && apt update -y \
-    && apt install -y golang
+RUN curl -L "https://go.dev/dl/$(curl -Ls https://go.dev/VERSION?m=text).linux-amd64.tar.gz" \
+  | tar -C /usr/local -xzv
+
+RUN echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
 
 # Install NodeJS
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - \
@@ -23,9 +24,14 @@ RUN corepack enable \
 # Install ffmpeg
 RUN apt install -y ffmpeg
 
-# Install Taskfile
-RUN env GOBIN=/bin go install github.com/go-task/task/v3/cmd/task@latest
+# Install tools
+RUN env GOBIN=/bin /usr/local/go/bin/go install github.com/go-task/task/v3/cmd/task@latest
+RUN env GOBIN=/bin /usr/local/go/bin/go install github.com/vektra/mockery/v2@latest
+RUN env GOBIN=/bin /usr/local/go/bin/go install github.com/swaggo/swag/cmd/swag@latest
+RUN env GOBIN=/bin /usr/local/go/bin/go install github.com/zekrotja/schnittstelle/cmd/schnittstelle@latest
+RUN env GOBIN=/bin /usr/local/go/bin/go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN npm install -g swagger-markdown
 
 USER coder
 
-RUN echo "alias make=task" >> ~/.profile
+RUN echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
