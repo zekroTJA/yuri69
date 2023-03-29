@@ -21,19 +21,19 @@ services:
     restart: unless-stopped
 
   minio:
-    image: "minio/minio:latest"
+    image: "quay.io/minio/minio"
     ports:
       - "9001:9001"
     volumes:
       - "minio:/data"
     environment:
-      MINIO_ACCESS_KEY: "yuri69"
-      MINIO_SECRET_KEY: "yuri69"
+      MINIO_ROOT_USER: "yuri69"
+      MINIO_ROOT_PASSWORD: "yuri69"
     command: server /data --console-address :9001
     restart: unless-stopped
 
   yuri69:
-    image: "zekro/yuri69:alpha"
+    image: "ghcr.io/zekrotja/yuri69:latest"
     hostname: "yuri69"
     ports:
       - "80:80"
@@ -58,3 +58,7 @@ services:
       YURI_PLAYER_LAVALINK_PASSWORD: "password"
     restart: unless-stopped
     command: "-l 5"
+    depends_on:
+      - "minio"
+      - "postgres"
+      - "lavalink"
