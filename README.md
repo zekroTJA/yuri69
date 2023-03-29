@@ -1,7 +1,7 @@
 <div align="center">
      <img src=".github/media/avatar_round.png" width="200"/>
      <h1>~ YURI 69 ~</h1>
-     <strong>Even faster, harder, louder!<br/>The best Discord Soundboard you can get - Successor of <a href="https://github.com/zekroTJA/yuri2">yuri2</a></strong><br><br>
+     <strong>Even faster, harder, louder!<br/>The best Discord Soundboard you can get.</strong><br><br>
      <img src="https://forthebadge.com/images/badges/made-with-go.svg" height="30" />&nbsp;
      <img src="https://forthebadge.com/images/badges/uses-html.svg" height="30" />&nbsp;
      <img src="https://forthebadge.com/images/badges/uses-css.svg" height="30" />&nbsp;
@@ -11,6 +11,19 @@
 ---
 
 Yuri69 is the next level of Discord Sound Boards. Featuring a fancy web interface where you can manage all your sounds, hotkey control, an open REST API to connect to devices like a Stream Deck, for example, and much more!
+
+## Why?
+
+- You can upload, play, search, manage, favorite and delete sounds via the interactive web interface (which is easy to use on mobile as well).
+- Play and import sounds directly from YouTube.
+- Twitch integrations where viewers can play sounds via the chat or web interface.
+- An open REST API so you can use Yuri with the StreamDeck, for example.
+- Playback statistics.
+
+## Why not just use the integrated Discord Soundboard?
+
+- Discord only allows up to 25 sounds per guild - you can upload as many sounds as you want in yuri!
+- Discord only allows using sounds across guilds with a nitro subscription - you can share as many sounds between guilds as you want (as long as yuri is part of the guilds)!
 
 ## Features
 
