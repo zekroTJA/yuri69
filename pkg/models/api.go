@@ -164,6 +164,6 @@ func GuildFromGuild(g *discordgo.Guild) Guild {
 	return Guild{
 		Id:      g.ID,
 		Name:    g.Name,
-		IconURL: g.IconURL(),
+		IconURL: g.IconURL(""),
 	}
 }

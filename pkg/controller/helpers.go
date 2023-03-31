@@ -271,7 +271,7 @@ func (t *Controller) getVoiceJoinPayload(guildID string) (EventVoiceJoinPayload,
 	}
 	e.Guild.ID = guild.ID
 	e.Guild.Name = guild.Name
-	e.Guild.IconUrl = guild.IconURL()
+	e.Guild.IconUrl = guild.IconURL("")
 
 	e.Volume, err = t.db.GetGuildVolume(guildID)
 	if err == dberrors.ErrNotFound {
