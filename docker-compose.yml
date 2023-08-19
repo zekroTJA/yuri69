@@ -3,6 +3,22 @@ volumes:
   minio:
 
 services:
+  traefik:
+    image: "traefik:latest"
+    command:
+      - "--providers.docker"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--providers.docker.exposedByDefault=false"
+      - "--certificatesResolvers.le.acme.email={{ACME_EMAIL}}"
+      - "--certificatesResolvers.le.acme.httpChallenge.entryPoint=http"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    restart: unless-stopped
+
   lavalink:
     container_name: lavalink
     image: fredboat/lavalink:3.6.1
@@ -35,8 +51,6 @@ services:
   yuri69:
     image: "ghcr.io/zekrotja/yuri69:latest"
     hostname: "yuri69"
-    ports:
-      - "80:80"
     environment:
       YURI_STORAGE_TYPE: "minio"
       YURI_STORAGE_MINIO_ENDPOINT: "minio"
@@ -62,3 +76,9 @@ services:
       - "minio"
       - "postgres"
       - "lavalink"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.yuri69.entrypoints: "{{HTTP_ENTRYPOINT}}"
+      traefik.http.routers.yuri69.tls: "{{ENABLE_TLS}}"
+      traefik.http.routers.yuri69.tls.certresolver: "le"
+      traefik.http.routers.yuri69.rule: "Host(`{{PUBLIC_DOMAIN}}`)"
