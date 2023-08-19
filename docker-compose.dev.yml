@@ -5,7 +5,7 @@ volumes:
 services:
   lavalink:
     container_name: lavalink
-    image: fredboat/lavalink:master
+    image: fredboat/lavalink:3.6.1
     ports:
       - "2333:2333"
     volumes:
