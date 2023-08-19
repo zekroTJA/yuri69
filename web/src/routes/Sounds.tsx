@@ -1,37 +1,38 @@
-import { useSounds } from '../hooks/useSounds';
-import { uid } from 'react-uid';
-import { SoundButton } from '../components/SoundButton';
-import styled, { css } from 'styled-components';
-import { useStore } from '../store';
-import { Sound } from '../api/models';
-import { useApi } from '../hooks/useApi';
-import { RouteContainer } from '../components/RouteContainer';
 import {
-  animation,
   Item,
   ItemParams,
   Menu,
   PredicateParams,
   Separator,
+  animation,
   theme,
   useContextMenu,
 } from 'react-contexify';
+import styled, { css } from 'styled-components';
+import { useEffect, useReducer } from 'react';
+
+import { ApiClientInstance } from '../instances';
+import { Button } from '../components/Button';
+import { EVENT_BUS } from '../util/eventbus';
+import { Embed } from '../components/Embed';
 import { ReactComponent as IconDelete } from '../assets/delete.svg';
+import { ReactComponent as IconDownload } from '../assets/download.svg';
 import { ReactComponent as IconEdit } from '../assets/edit.svg';
 import { ReactComponent as IconStar } from '../assets/star.svg';
 import { ReactComponent as IconUnstar } from '../assets/unstar.svg';
-import { ReactComponent as IconDownload } from '../assets/download.svg';
-import { useNavigate } from 'react-router';
 import { Modal } from '../components/Modal';
-import { useEffect, useReducer } from 'react';
-import { Embed } from '../components/Embed';
-import { Button } from '../components/Button';
-import { useSnackBar } from '../hooks/useSnackBar';
-import { UrlImport } from '../components/UrlImport';
+import { RouteContainer } from '../components/RouteContainer';
 import { SearchBar } from '../components/SearchBar';
+import { Sound } from '../api/models';
+import { SoundButton } from '../components/SoundButton';
+import { UrlImport } from '../components/UrlImport';
+import { uid } from 'react-uid';
+import { useApi } from '../hooks/useApi';
 import { useFavorites } from '../hooks/useFavorites';
-import { ApiClientInstance } from '../instances';
-import { EVENT_BUS } from '../util/eventbus';
+import { useNavigate } from 'react-router';
+import { useSnackBar } from '../hooks/useSnackBar';
+import { useSounds } from '../hooks/useSounds';
+import { useStore } from '../store';
 
 const SOUNDS_MENU_ID = 'sounds-menu';
 

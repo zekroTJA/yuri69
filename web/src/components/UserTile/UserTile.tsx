@@ -1,8 +1,8 @@
-import styled from 'styled-components';
-import { User } from '../../api';
 import { DiscordImage } from '../DiscordImage';
 import { Embed } from '../Embed';
 import { Smol } from '../Smol';
+import { User } from '../../api';
+import styled from 'styled-components';
 
 type Props = {
   user: User;
@@ -32,11 +32,10 @@ export const UserTile: React.FC<Props> = ({ user }) => {
     <UserTileContainer>
       <DiscordImage src={user.avatar_url} round />
       <div>
-        <strong>
-          {user.username}#{user.discriminator}
-        </strong>
+        <strong>{user.username}</strong>
         <Smol>{user.id}</Smol>
       </div>
     </UserTileContainer>
   );
 };
+

@@ -149,7 +149,6 @@ export type OTAToken = {
 export type User = {
   id: string;
   username: string;
-  discriminator: string;
   avatar_url: string;
   is_owner: boolean;
 };

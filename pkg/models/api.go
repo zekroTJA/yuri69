@@ -104,18 +104,16 @@ type ApiKey struct {
 }
 
 type UserSlim struct {
-	ID            string `json:"id"`
-	Username      string `json:"username,omitempty"`
-	Discriminator string `json:"discriminator,omitempty"`
-	AvatarURL     string `json:"avatar_url,omitempty"`
+	ID        string `json:"id"`
+	Username  string `json:"username,omitempty"`
+	AvatarURL string `json:"avatar_url,omitempty"`
 }
 
 func UserSlimFromUser(u discordgo.User) UserSlim {
 	return UserSlim{
-		ID:            u.ID,
-		Username:      u.Username,
-		Discriminator: u.Discriminator,
-		AvatarURL:     u.AvatarURL(""),
+		ID:        u.ID,
+		Username:  u.Username,
+		AvatarURL: u.AvatarURL(""),
 	}
 }
 

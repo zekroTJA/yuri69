@@ -1,17 +1,18 @@
+import { CreateSoundRequest, Sound } from '../api';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import styled from 'styled-components';
-import { CreateSoundRequest, Sound } from '../api';
+
+import { Button } from '../components/Button';
+import { DiscordImage } from '../components/DiscordImage';
 import { Embed } from '../components/Embed';
+import { ReactComponent as IconDelete } from '..//assets/delete.svg';
+import { Modal } from '../components/Modal';
 import { RouteContainer } from '../components/RouteContainer';
+import { Smol } from '../components/Smol';
 import { SoundEditor } from '../components/SoundEditor';
+import styled from 'styled-components';
 import { useApi } from '../hooks/useApi';
 import { useSnackBar } from '../hooks/useSnackBar';
-import { ReactComponent as IconDelete } from '..//assets/delete.svg';
-import { Button } from '../components/Button';
-import { Modal } from '../components/Modal';
-import { DiscordImage } from '../components/DiscordImage';
-import { Smol } from '../components/Smol';
 
 type Props = {};
 
@@ -122,9 +123,7 @@ export const EditRoute: React.FC<Props> = ({}) => {
               <div>
                 <DiscordImage src={sound.creator.avatar_url} round />
                 <div>
-                  <span>
-                    {sound.creator.username}#{sound.creator.discriminator}
-                  </span>
+                  <span>{sound.creator.username}</span>
                   <Smol>{sound.creator.id}</Smol>
                 </div>
               </div>
