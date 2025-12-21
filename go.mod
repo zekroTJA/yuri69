@@ -8,12 +8,10 @@ require (
 	github.com/disgoorg/snowflake/v2 v2.0.3
 	github.com/gabriel-vasile/mimetype v1.4.12
 	github.com/gempir/go-twitch-irc/v3 v3.3.0
-	github.com/gompus/snowflake v0.0.4
 	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/kkdai/youtube/v2 v2.10.5
 	github.com/lib/pq v1.10.9
-	github.com/lukasl-dev/waterlink/v2 v2.0.1
 	github.com/minio/minio-go/v7 v7.0.97
 	github.com/pressly/goose/v3 v3.26.0
 	github.com/rs/xid v1.6.0
@@ -23,6 +21,7 @@ require (
 	github.com/traefik/paerser v0.2.2
 	github.com/xujiajun/nutsdb v0.11.1
 	github.com/zekroTJA/ratelimit v1.1.3
+	github.com/zekroTJA/timedmap/v2 v2.0.0
 	github.com/zekrotja/eventbus v1.0.0
 	github.com/zekrotja/jwt v1.0.0
 	github.com/zekrotja/ozzo-routing/v2 v2.4.1-0.20220508092606-078a43fee8b5
@@ -42,19 +41,14 @@ require (
 	github.com/go-ozzo/ozzo-routing/v2 v2.4.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20251213031049-b05bdaca462f // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/klauspost/crc32 v1.3.0 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/minio/crc64nvme v1.1.1 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/minio/sha256-simd v1.0.1 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -62,13 +56,11 @@ require (
 	github.com/tinylib/msgp v1.6.1 // indirect
 	github.com/xujiajun/mmap-go v1.0.1 // indirect
 	github.com/xujiajun/utils v0.0.0-20220904132955-5f7c5b914235 // indirect
-	github.com/zekroTJA/timedmap/v2 v2.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
-	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

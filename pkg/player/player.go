@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/davecgh/go-spew/spew"
 	dgl "github.com/disgoorg/disgolink/v3/disgolink"
 	ll "github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/sirupsen/logrus"
@@ -364,6 +365,7 @@ func (t *Player) getIdentFromCache(trackID string) string {
 }
 
 func (t *Player) OnEvent(_ dgl.Player, event ll.Message) {
+	spew.Dump(event)
 	switch event.Op() {
 	case ll.OpEvent:
 		e := event.(ll.Event)
