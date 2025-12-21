@@ -351,16 +351,8 @@ func (t *Player) getChannelVoiceConnections(guildID, channelID string) (int, err
 	return n, nil
 }
 
-func (t *Player) getIdentFromCache(trackID string) string {
-	info, err := t.ll.DecodeTrack(trackID)
-	if err != nil {
-		logrus.WithError(err).
-			WithField("trackID", trackID).
-			Error("Failed decoding track id")
-		return ""
-	}
-
-	v, _ := t.trackCache.GetValue(*info.Info.URI)
+func (t *Player) getIdentFromCache(track ll.Track) string {
+	v, _ := t.trackCache.GetValue(*track.Info.URI)
 	return v
 }
 
@@ -371,7 +363,7 @@ func (t *Player) OnEvent(_ dgl.Player, event ll.Message) {
 		e := event.(ll.Event)
 		switch e.Type() {
 		case ll.EventTypeTrackStart:
-			ident := t.getIdentFromCache(e.(ll.TrackStartEvent).Track.Info.Identifier)
+			ident := t.getIdentFromCache(e.(ll.TrackStartEvent).Track)
 			if ident == "" {
 				return
 			}
@@ -381,7 +373,7 @@ func (t *Player) OnEvent(_ dgl.Player, event ll.Message) {
 				GuildID: e.GuildID().String(),
 			})
 		case ll.EventTypeTrackEnd:
-			ident := t.getIdentFromCache(e.(ll.TrackEndEvent).Track.Info.Identifier)
+			ident := t.getIdentFromCache(e.(ll.TrackEndEvent).Track)
 			if ident == "" {
 				return
 			}
@@ -391,7 +383,7 @@ func (t *Player) OnEvent(_ dgl.Player, event ll.Message) {
 				GuildID: e.GuildID().String(),
 			})
 		case ll.EventTypeTrackStuck:
-			ident := t.getIdentFromCache(e.(ll.TrackStuckEvent).Track.Info.Identifier)
+			ident := t.getIdentFromCache(e.(ll.TrackStuckEvent).Track)
 			if ident == "" {
 				return
 			}
@@ -401,7 +393,7 @@ func (t *Player) OnEvent(_ dgl.Player, event ll.Message) {
 				GuildID: e.GuildID().String(),
 			})
 		case ll.EventTypeTrackException:
-			ident := t.getIdentFromCache(e.(ll.TrackExceptionEvent).Track.Info.Identifier)
+			ident := t.getIdentFromCache(e.(ll.TrackExceptionEvent).Track)
 			if ident == "" {
 				return
 			}
