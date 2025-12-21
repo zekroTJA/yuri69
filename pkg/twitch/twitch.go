@@ -9,7 +9,7 @@ import (
 	"github.com/gempir/go-twitch-irc/v3"
 	"github.com/sirupsen/logrus"
 	"github.com/zekroTJA/ratelimit"
-	"github.com/zekroTJA/timedmap"
+	"github.com/zekroTJA/timedmap/v2"
 	"github.com/zekrotja/eventbus"
 	"github.com/zekrotja/yuri69/pkg/errs"
 	"github.com/zekrotja/yuri69/pkg/models"
@@ -30,7 +30,7 @@ type Instance struct {
 	Settings models.TwitchSettings
 
 	userID string
-	rlh    rlhandler.RatelimitHandler
+	rlh    *rlhandler.RatelimitHandler
 
 	users *lockMap[string, any]
 }
@@ -99,8 +99,8 @@ func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 			WithField("user", message.User).
 			Debug("twitch: user joined")
 
-		instance := t.instances.GetValue(message.Channel)
-		if instance != nil {
+		instance, ok := t.instances.GetValue(message.Channel)
+		if ok {
 			instance.users.Set(message.User, struct{}{})
 		}
 	})
@@ -111,8 +111,8 @@ func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 			WithField("user", message.User).
 			Debug("twitch: user left")
 
-		instance := t.instances.GetValue(message.Channel)
-		if instance != nil {
+		instance, ok := t.instances.GetValue(message.Channel)
+		if ok {
 			instance.users.Delete(message.User)
 		}
 	})
@@ -138,8 +138,8 @@ func New(config TwitchConfig, publicAddress string) (*Twitch, error) {
 }
 
 func (t *Twitch) Update(s models.TwitchSettings) {
-	instance := t.instances.GetValue(s.TwitchUserName)
-	if instance == nil {
+	instance, ok := t.instances.GetValue(s.TwitchUserName)
+	if !ok {
 		return
 	}
 
@@ -148,9 +148,9 @@ func (t *Twitch) Update(s models.TwitchSettings) {
 }
 
 func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
-	instance := t.instances.GetValue(s.TwitchUserName)
+	instance, ok := t.instances.GetValue(s.TwitchUserName)
 
-	if instance != nil {
+	if ok {
 		if instance.userID != userid {
 			return errors.New("already joined same channel by another user")
 		}
@@ -191,8 +191,8 @@ func (t *Twitch) Join(userid string, s models.TwitchSettings) error {
 }
 
 func (t *Twitch) Leave(twitchname string) error {
-	instance := t.instances.GetValue(twitchname)
-	if instance == nil {
+	instance, ok := t.instances.GetValue(twitchname)
+	if !ok {
 		return errs.WrapUserError("no instance initialized")
 	}
 
@@ -273,8 +273,8 @@ func (t *Twitch) play(
 func (t *Twitch) onMessage(message twitch.PrivateMessage) {
 	msg := strings.TrimSpace(message.Message)
 
-	instance := t.instances.GetValue(message.Channel)
-	if instance == nil {
+	instance, ok := t.instances.GetValue(message.Channel)
+	if !ok {
 		return
 	}
 

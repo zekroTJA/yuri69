@@ -1,7 +1,6 @@
 package player
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,14 +8,15 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/lukasl-dev/waterlink/v2/event"
+	dgl "github.com/disgoorg/disgolink/v3/disgolink"
+	ll "github.com/disgoorg/disgolink/v3/lavalink"
 	"github.com/sirupsen/logrus"
-	"github.com/zekroTJA/timedmap"
+	"github.com/zekroTJA/timedmap/v2"
 	"github.com/zekrotja/eventbus"
 	routing "github.com/zekrotja/ozzo-routing/v2"
 	"github.com/zekrotja/yuri69/pkg/discord"
+	"github.com/zekrotja/yuri69/pkg/disgolink"
 	"github.com/zekrotja/yuri69/pkg/generic"
-	"github.com/zekrotja/yuri69/pkg/lavalink"
 	"github.com/zekrotja/yuri69/pkg/static"
 	"github.com/zekrotja/yuri69/pkg/storage"
 	"github.com/zekrotja/yuri69/pkg/util"
@@ -27,7 +27,7 @@ type Player struct {
 
 	dc *discord.Discord
 	st storage.IStorage
-	ll *lavalink.Lavalink
+	ll *disgolink.Disgolink
 
 	hostname string
 
@@ -72,7 +72,7 @@ func NewPlayer(
 	t.dc = dc
 	t.st = st
 
-	t.ll, err = lavalink.New(c.Lavalink, dc, t.handleEvent)
+	t.ll, err = disgolink.New(&c.Lavalink, dc, &t)
 	if err != nil {
 		return nil, err
 	}
@@ -127,11 +127,14 @@ func (t *Player) PlaySound(guildID, channelID, ident string) error {
 
 func (t *Player) Play(guildID, channelID, url, ident string) error {
 	track, err := t.ll.Play(guildID, url)
-	if track.ID != "" {
+	if err != nil {
+		return err
+	}
+	if track.Info.Identifier != "" {
 		if ident == "" {
 			ident = url
 		}
-		t.trackCache.Set(track.Info.URI, ident,
+		t.trackCache.Set(*track.Info.URI, ident,
 			time.Duration(track.Info.Length)*time.Microsecond+30*time.Second)
 	}
 	return err
@@ -155,7 +158,7 @@ func (t *Player) Stop(guildID string) error {
 	return t.ll.Stop(guildID)
 }
 
-func (t *Player) SetVolume(guildID string, volume uint16) error {
+func (t *Player) SetVolume(guildID string, volume int) error {
 	_, ok := t.vcs.Load(guildID)
 	if !ok {
 		return ErrNoGuildPlayer
@@ -348,7 +351,7 @@ func (t *Player) getChannelVoiceConnections(guildID, channelID string) (int, err
 }
 
 func (t *Player) getIdentFromCache(trackID string) string {
-	info, err := t.ll.DecodeTrackId(trackID)
+	info, err := t.ll.DecodeTrack(trackID)
 	if err != nil {
 		logrus.WithError(err).
 			WithField("trackID", trackID).
@@ -356,58 +359,106 @@ func (t *Player) getIdentFromCache(trackID string) string {
 		return ""
 	}
 
-	return t.trackCache.GetValue(info.URI)
+	v, _ := t.trackCache.GetValue(*info.Info.URI)
+	return v
 }
 
-func (t *Player) handleEvent(e any) {
-	switch et := e.(type) {
-	// case event.PlayerUpdate:
-	// case event.Stats:
-
-	case event.WebSocketClosed:
-		logrus.Warn("Lavalink websokcet connection closed. Trying reconnect ...")
-		// TODO: Try reconnect
-
-	case event.TrackException:
-		ident := t.getIdentFromCache(et.TrackID)
-		if ident == "" {
-			return
+func (t *Player) OnEvent(_ dgl.Player, event ll.Message) {
+	switch event.Op() {
+	case ll.OpEvent:
+		e := event.(ll.Event)
+		switch e.Type() {
+		case ll.EventTypeTrackStart:
+			ident := t.getIdentFromCache(e.(ll.TrackStartEvent).Track.Info.Identifier)
+			if ident == "" {
+				return
+			}
+			t.Publish(Event{
+				Type:    EventPlayStart,
+				Ident:   ident,
+				GuildID: e.GuildID().String(),
+			})
+		case ll.EventTypeTrackEnd:
+			ident := t.getIdentFromCache(e.(ll.TrackEndEvent).Track.Info.Identifier)
+			if ident == "" {
+				return
+			}
+			t.Publish(Event{
+				Type:    EventPlayEnd,
+				Ident:   ident,
+				GuildID: e.GuildID().String(),
+			})
+		case ll.EventTypeTrackStuck:
+			ident := t.getIdentFromCache(e.(ll.TrackStuckEvent).Track.Info.Identifier)
+			if ident == "" {
+				return
+			}
+			t.Publish(Event{
+				Type:    EventPlayStuck,
+				Ident:   ident,
+				GuildID: e.GuildID().String(),
+			})
+		case ll.EventTypeTrackException:
+			ident := t.getIdentFromCache(e.(ll.TrackExceptionEvent).Track.Info.Identifier)
+			if ident == "" {
+				return
+			}
+			t.Publish(Event{
+				Type:    EventPlayException,
+				Ident:   ident,
+				GuildID: e.GuildID().String(),
+			})
 		}
-		t.Publish(Event{
-			Type:    EventPlayException,
-			Ident:   ident,
-			GuildID: et.GuildID.String(),
-			Err:     errors.New(et.Error),
-		})
-	case event.TrackStuck:
-		ident := t.getIdentFromCache(et.TrackID)
-		if ident == "" {
-			return
-		}
-		t.Publish(Event{
-			Type:    EventPlayStuck,
-			Ident:   ident,
-			GuildID: et.GuildID.String(),
-		})
-	case event.TrackStart:
-		ident := t.getIdentFromCache(et.TrackID)
-		if ident == "" {
-			return
-		}
-		t.Publish(Event{
-			Type:    EventPlayStart,
-			Ident:   ident,
-			GuildID: et.GuildID.String(),
-		})
-	case event.TrackEnd:
-		ident := t.getIdentFromCache(et.TrackID)
-		if ident == "" {
-			return
-		}
-		t.Publish(Event{
-			Type:    EventPlayEnd,
-			Ident:   ident,
-			GuildID: et.GuildID.String(),
-		})
 	}
+	//
+	//switch et := e.(type) {
+	//// case event.PlayerUpdate:
+	//// case event.Stats:
+	//
+	//case event.WebSocketClosed:
+	//	logrus.Warn("Lavalink websokcet connection closed. Trying reconnect ...")
+	//	// TODO: Try reconnect
+	//
+	//case event.TrackException:
+	//	ident := t.getIdentFromCache(et.TrackID)
+	//	if ident == "" {
+	//		return
+	//	}
+	//	t.Publish(Event{
+	//		Type:    EventPlayException,
+	//		Ident:   ident,
+	//		GuildID: et.GuildID.String(),
+	//		Err:     errors.New(et.Error),
+	//	})
+	//case event.TrackStuck:
+	//	ident := t.getIdentFromCache(et.TrackID)
+	//	if ident == "" {
+	//		return
+	//	}
+	//	t.Publish(Event{
+	//		Type:    EventPlayStuck,
+	//		Ident:   ident,
+	//		GuildID: et.GuildID.String(),
+	//	})
+	//case event.TrackStart:
+	//	ident := t.getIdentFromCache(et.TrackID)
+	//	if ident == "" {
+	//		return
+	//	}
+	//	t.Publish(Event{
+	//		Type:    EventPlayStart,
+	//		Ident:   ident,
+	//		GuildID: et.GuildID.String(),
+	//	})
+	//case event.TrackEnd:
+	//	ident := t.getIdentFromCache(et.TrackID)
+	//	if ident == "" {
+	//		return
+	//	}
+	//	t.Publish(Event{
+	//		Type:    EventPlayEnd,
+	//		Ident:   ident,
+	//		GuildID: et.GuildID.String(),
+	//	})
+	//}
 }

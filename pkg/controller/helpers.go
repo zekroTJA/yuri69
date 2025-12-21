@@ -142,7 +142,7 @@ func (t *Controller) play(vs discordgo.VoiceState, ident string) error {
 		return err
 	}
 
-	if err = t.pl.SetVolume(vs.GuildID, uint16(volume)); err != nil {
+	if err = t.pl.SetVolume(vs.GuildID, volume); err != nil {
 		return err
 	}
 

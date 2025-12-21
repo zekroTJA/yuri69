@@ -80,8 +80,8 @@ func (t *Controller) CreateSound(req CreateSoundRequest) (Sound, error) {
 		return Sound{}, err
 	}
 
-	typ := t.pendingCrations.GetValue(req.UploadId)
-	if typ == "" {
+	typ, ok := t.pendingCrations.GetValue(req.UploadId)
+	if !ok {
 		return Sound{}, errs.WrapUserError("no sound was uploaded or has been expired")
 	}
 

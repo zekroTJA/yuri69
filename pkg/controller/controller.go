@@ -8,7 +8,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
-	"github.com/zekroTJA/timedmap"
+	"github.com/zekroTJA/timedmap/v2"
 	"github.com/zekrotja/eventbus"
 	"github.com/zekrotja/yuri69/pkg/database"
 	"github.com/zekrotja/yuri69/pkg/discord"

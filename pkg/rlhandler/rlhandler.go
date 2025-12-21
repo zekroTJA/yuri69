@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/zekroTJA/ratelimit"
-	"github.com/zekroTJA/timedmap"
+	"github.com/zekroTJA/timedmap/v2"
 )
 
 type RatelimitHandler struct {
@@ -13,7 +13,7 @@ type RatelimitHandler struct {
 	tm   *timedmap.TimedMap[string, *ratelimit.Limiter]
 }
 
-func New(burst int, reset time.Duration) RatelimitHandler {
+func New(burst int, reset time.Duration) *RatelimitHandler {
 	var t RatelimitHandler
 
 	t.pool = sync.Pool{
@@ -23,12 +23,12 @@ func New(burst int, reset time.Duration) RatelimitHandler {
 	}
 	t.tm = timedmap.New[string, *ratelimit.Limiter](5 * time.Minute)
 
-	return t
+	return &t
 }
 
-func (t RatelimitHandler) Get(key string) *ratelimit.Limiter {
-	rl := t.tm.GetValue(key)
-	if rl == nil {
+func (t *RatelimitHandler) Get(key string) *ratelimit.Limiter {
+	rl, ok := t.tm.GetValue(key)
+	if !ok {
 		rl = t.pool.Get().(*ratelimit.Limiter)
 		t.tm.Set(key, rl, time.Duration(rl.Burst())*rl.Limit())
 	} else {
@@ -37,7 +37,7 @@ func (t RatelimitHandler) Get(key string) *ratelimit.Limiter {
 	return rl
 }
 
-func (t RatelimitHandler) Update(burst int, reset time.Duration) {
+func (t *RatelimitHandler) Update(burst int, reset time.Duration) {
 	for _, rl := range t.tm.Snapshot() {
 		rl.SetBurst(burst)
 		rl.SetLimit(reset)

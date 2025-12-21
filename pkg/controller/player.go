@@ -116,7 +116,7 @@ func (t *Controller) SetVolume(userID string, volume int) error {
 		return err
 	}
 
-	err := t.pl.SetVolume(vs.GuildID, uint16(volume))
+	err := t.pl.SetVolume(vs.GuildID, volume)
 	if err != nil {
 		return err
 	}
